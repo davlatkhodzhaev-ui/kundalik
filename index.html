@@ -591,14 +591,23 @@ async function pushCheck(){
   render();
 }
 async function pushEnable(){
+  let step='рухсат';
   try{
+    if(!('Notification' in window)||!('PushManager' in window)){toast('Бу браузерда хабарнома йўқ. Иловани экранга ўрнатиб, ўша белгидан очинг.');return;}
     const perm=await Notification.requestPermission();
-    if(perm!=='granted'){toast('Хабарномага рухсат берилмади. Телефон созламаларида «Кундалик» учун хабарномаларни ёқинг.');return;}
-    const reg=await navigator.serviceWorker.ready, k=await call({a:'push.key'});
+    if(perm!=='granted'){toast('Рухсат берилмади (ҳолат: '+perm+'). Телефон созламаларида «Кундалик» учун хабарномаларни ёқинг.');return;}
+    step='илова хизмати';
+    let reg=await navigator.serviceWorker.getRegistration(); if(!reg) reg=await navigator.serviceWorker.register('sw.js');
+    reg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,rej)=>setTimeout(()=>rej(new Error('тайёр эмас')),10000))]);
+    step='сервер калити';
+    const k=await call({a:'push.key'}); if(!k||!k.key) throw new Error('калит йўқ');
+    step='обуна';
+    const old=await reg.pushManager.getSubscription(); if(old){try{await old.unsubscribe();}catch(e){}}
     const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64key(k.key)});
+    step='сақлаш';
     const r=await call({a:'push.sub',sub:sub.toJSON()});
-    if(r&&r.ok){pushOn=true;toast('Хабарномалар ёқилди.');} else toast('Хабарномани ёқиб бўлмади. Қайта уриниб кўринг.');
-  }catch(e){toast('Хабарномани ёқиб бўлмади. Илова экранга ўрнатилганини текширинг.');}
+    if(r&&r.ok){pushOn=true;toast('Хабарномалар ёқилди.');} else throw new Error((r&&r.error)||'жавоб йўқ');
+  }catch(e){toast('Хабарномани ёқиб бўлмади. Босқич: '+step+'. Сабаб: '+((e&&(e.name+' '+e.message))||'номаълум'));}
   render(true);
 }
 async function pushDisable(){
@@ -615,7 +624,7 @@ function pushPanel(){
   return '<section class="panel"><h2>'+ic('bell')+'Хабарномалар</h2>'+body+'</section>';
 }
 
-function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},3800)}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},Math.max(3800,String(msg).length*110))}
 function writeErr(e){
   const c=e&&e.code;
   toast(c==='invalid_argument'?'Сизда ўзгартириш ҳуқуқи йўқ: бу саҳифа сиз учун фақат кўришга очилган.':c==='quota_exceeded'?'Хотира тўлди. Эски ёзувларни ўчириш керак.':'Сақлаб бўлмади. Интернетни текшириб, қайта уриниб кўринг.');
