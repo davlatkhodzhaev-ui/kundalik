@@ -364,6 +364,22 @@ input[type=text],input[type=date],select{border-radius:12px;background:var(--sur
   .tabs a{font-size:13px;gap:4px}
 }
 img.av{object-fit:cover;display:block}
+.ritem{border-top:1px solid var(--line);border-radius:14px}
+.ritem:first-child{border-top:0}
+button.rrow{width:100%;border:0;background:transparent;text-align:left;cursor:pointer;border-top:0;color:var(--ink)}
+.rrow .rn b{font-size:16px}
+.rk.top{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:15px}
+.rk.t1{background:linear-gradient(135deg,#c79a3e,#ecd08a);color:#3a2a05}
+.rk.t2{background:#8a93a8}
+.rk.t3{background:#b9794a}
+.chev{color:var(--muted);font-size:14px;flex:none;width:14px}
+.rmore{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:2px 8px 14px 50px}
+.mini{background:var(--bg);border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.mini>span:first-child{font-size:12px;color:var(--muted);font-weight:600}
+.mini b{font-family:var(--font-display);font-size:16px}
+.mini.wide{grid-column:1/-1}
+.mini.wide b{font-family:var(--font-body);font-size:14px}
+@media (max-width:620px){.rmore{padding-left:8px}.rrow{gap:9px}}
 </style>
 </head>
 <body>
@@ -794,16 +810,15 @@ function viewRoom(){
   let h='<section class="hero"><div><h1>Умумий ҳужра: <em>ким қандай ўқияпти</em></h1><p>Охирги 30 кунлик балл бўйича рейтинг. Энг яхши ўқиётган ўқувчи биринчи ўринда.</p></div></section>';
   h+='<section class="panel"><div class="roomtop"><div class="seg2" role="group" aria-label="Гуруҳ">'+[['all','Ҳаммаси'],['b','Ётоқда қоладиганлар'],['d','Келиб кетадиганлар']].map(o=>'<button type="button" class="'+(ui.rf===o[0]?'on':'')+'" aria-pressed="'+(ui.rf===o[0])+'" data-act="rf" data-v="'+o[0]+'">'+o[1]+'</button>').join('')+'</div>'+
     '<div class="legend" style="margin:0"><span><i style="background:var(--good);border-radius:50%"></i>яхши</span><span><i style="background:var(--warn);border-radius:50%"></i>ўртача</span><span><i style="background:var(--crit);border-radius:50%"></i>суст</span><span><i style="background:var(--track);border-radius:50%"></i>маълумот йўқ</span></div></div>'+
-    '<p class="rules"><b>Балл қандай ҳисобланади:</b> топширилган дарс +10, чала топширилган +5, ҳар бир юлдузча +3, қолдирилган дарс −5. Шарикчалар охирги 5 дарс кунини кўрсатади.</p></section>';
+    '<p class="rules"><b>Балл қандай ҳисобланади:</b> топширилган дарс +10, чала топширилган +5, ҳар бир юлдузча +3, қолдирилган дарс −5. Шарикчалар охирги 5 дарс кунини кўрсатади. Батафсил кўрсаткичларни кўриш учун исмни босинг.</p></section>';
   if(!rows.length) return h+'<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ.</p></section>';
-  h+='<div class="podium">';
-  rows.slice(0,3).forEach((r,i)=>{const st=S.students[r.s];
-    h+='<article class="pcard p'+(i+1)+(mine.indexOf(r.s)>=0?' mine':'')+'"><span class="medal">'+(i+1)+'</span>'+avatar(st.name,'xl')+'<b class="pn">'+esc(st.name)+'</b><span class="pb">'+r.b+' балл</span>'+studentDots(r.s)+'</article>';});
-  h+='</div>';
-  if(rows.length>3){h+='<section class="panel"><div class="rlist">';
-    rows.slice(3).forEach((r,i)=>{const st=S.students[r.s];
-      h+='<div class="rrow'+(mine.indexOf(r.s)>=0?' mine':'')+'"><span class="rk">'+(i+4)+'</span>'+avatar(st.name)+'<div class="rn"><b>'+esc(st.name)+'</b>'+studentDots(r.s)+'</div><span class="rb">'+r.b+'<small>балл</small></span></div>';});
-    h+='</div></section>';}
+  h+='<section class="panel"><div class="rlist">';
+  rows.forEach((r,i)=>{const st=S.students[r.s], open=ui.open===r.s, top=i<3?' top t'+(i+1):'';
+    h+='<div class="ritem'+(mine.indexOf(r.s)>=0?' mine':'')+(open?' open':'')+'"><button type="button" class="rrow" data-act="ropen" data-sid="'+r.s+'" aria-expanded="'+open+'"><span class="rk'+top+'">'+(i+1)+'</span>'+avatar(st.name)+'<span class="rn"><b>'+esc(st.name)+'</b>'+studentDots(r.s)+'</span><span class="rb">'+r.b+'<small>балл</small></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
+    if(open){const p=stats(entriesOf(r.s,from)), g=S.groups[st.gid]||{};
+      h+='<div class="rmore"><div class="mini"><span>Давомат</span>'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</div><div class="mini"><span>Дарс топшириш</span>'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</div><div class="mini"><span>Ўртача баҳо</span><b>'+(p.gn?p.avg.toFixed(1):'—')+'</b></div><div class="mini"><span>Юлдузча</span>'+(p.pts?'<span class="chip star">'+star()+p.pts+'</span>':'<b>—</b>')+'</div><div class="mini wide"><span>Гуруҳ</span><b>'+esc(g.name||'')+'</b></div></div>';}
+    h+='</div>';});
+  h+='</div></section>';
   return h;
 }
 function viewLogin(){
@@ -875,6 +890,7 @@ document.addEventListener('click',e=>{
   else if(act==='reset'){ui.reset=true;render(true);}
   else if(act==='reset-no'){ui.reset=false;render(true);}
   else if(act==='reset-yes'){ui.reset=false;seed();}
+  else if(act==='ropen'){ui.open=ui.open===sid?null:sid;refocus='[data-act="ropen"][data-sid="'+sid+'"]';render(true);}
   else if(act==='rf'){ui.rf=b.dataset.v;refocus='[data-act="rf"][data-v="'+ui.rf+'"]';render(true);}
   else if(act==='lrole'){
     if(b.dataset.v==='hujra'){auth={role:'hujra'};saveAuth();ui.role='hujra';ui.lrole=null;ui.lerr='';render(true);}
