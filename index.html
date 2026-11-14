@@ -443,13 +443,11 @@ function sampleData(todayIso){
           const Lv=level[sid], A=Math.min(0.98,Lv+(gid==='gb'?0.22:0.1));
           const r1=rnd(sid+ds+'a'), r2=rnd(sid+ds+ti+'l'), r3=rnd(sid+ds+ti+'g'), r4=rnd(sid+ds+ti+'n');
           const row={};
-          row.a = r1 < A ? (r1 > A-0.06 && gid==='gd' ? 'l' : 'p') : 'a';
-          if(row.a==='a'){ row.l='n'; if(ti===0&&r4>0.5) row.n='Сабабсиз келмади'; }
+          row.a = r1 < A ? 'p' : 'a';
+          if(row.a==='a'){ row.l='n'; }
           else{
-            row.l = r2 < Lv ? 'y' : (r2 < Lv+0.2 ? 'h' : 'n');
-            row.g = row.l==='y' ? (r3<0.55?5:4) : row.l==='h' ? (r3<0.5?4:3) : 2;
-            if(row.l==='y' && r4<0.3) row.p = 1 + (r4<0.08?1:0);
-            if(r4>0.8) row.n = row.l==='n' ? notes[2] : row.a==='l' ? notes[3] : row.l==='h' ? notes[4] : notes[r3<0.5?0:1];
+            row.l = r2 < Lv+0.1 ? 'y' : 'n';
+            row.g = row.l==='y' ? (r3<0.5?5:r3<0.85?4:3) : 2;
           }
           if(back>3) row.seen=true;
           rows[sid]=row;
@@ -508,7 +506,7 @@ function groupIds(){return Object.keys(S.groups).sort((a,b)=>{const ka=S.groups[
 function studentsOf(gid){return sortedIds(S.students,'name').filter(id=>S.students[id].gid===gid)}
 function gTeachers(g){if(!g) return [];return Array.isArray(g.teachers)?g.teachers.filter(Boolean):(g.teacher?[String(g.teacher).trim()]:[])}
 function subjectOf(gid,t){const g=S.groups[gid]; return (g&&g.subjects&&g.subjects[t])||t||'Дарс'}
-function score(list){let b=0;list.forEach(e=>{const r=e.r; if(r.a==='a') b-=5; else if(r.l==='y') b+=10; else if(r.l==='h') b+=5; b+=(r.p||0)*3;});return b}
+function score(list){let b=0;list.forEach(e=>{const r=e.r; if(r.l==='y'&&r.a!=='a') b+=10;});return b}
 function dayTeacher(d){return d.teacher||gTeachers(S.groups[d.gid])[0]||''}
 function teachers(){const o={};for(const g in S.groups) gTeachers(S.groups[g]).forEach(t=>{o[t]=1});return Object.keys(o).sort((a,b)=>a.localeCompare(b,'uz'))}
 function teacherGroups(t){return groupIds().filter(g=>gTeachers(S.groups[g]).indexOf(t)>=0)}
@@ -614,17 +612,17 @@ function groupRings(gid){
   return '<div class="stats">'+
     stat('<span class="bigstar" style="background:var(--accent-soft);color:var(--accent)">'+ic('users')+'</span>','Ўқувчилар',String(studentsOf(gid).length),'шу гуруҳда')+
     stat(ring(a,a+'%',tone(a),'Давомат'),'Давомат',(st.attAll-st.att)+' марта','дарс қолдирилган · 30 кун')+
-    stat(ring(l,l+'%',tone(l),'Дарс топшириш'),'Дарс топшириш',(st.lesAll-st.done)+' марта','тўлиқ топширилмаган · 30 кун')+
+    stat(ring(l,l+'%',tone(l),'Дарс топшириш'),'Дарс топшириш',(st.lesAll-st.done)+' марта','топширилмаган · 30 кун')+
     stat(ring(st.gn?st.avg/5*100:0,st.gn?st.avg.toFixed(1):'—','blue','Ўртача баҳо'),'Ўртача баҳо',st.gn?st.avg.toFixed(1)+' / 5':'—','учала устоз бўйича')+'</div>';
 }
 function groupTable(gid,admin){
   const ids=studentsOf(gid), from=addDays(TODAY,-30);
   if(!ids.length) return '<p class="empty">Бу гуруҳда ҳали ўқувчи йўқ.</p>';
-  let h='<div class="tablewrap"><table class="tbl"><thead><tr><th class="num">№</th><th>Ўқувчи</th><th class="num">Давомат</th><th class="num">Дарс топшириш</th><th class="num">Ўртача баҳо</th><th class="num">Юлдузча</th>'+(admin?'<th>Ота-она коди</th><th></th>':'')+'</tr></thead><tbody>';
+  let h='<div class="tablewrap"><table class="tbl"><thead><tr><th class="num">№</th><th>Ўқувчи</th><th class="num">Давомат</th><th class="num">Дарс топшириш</th><th class="num">Ўртача баҳо</th><th class="num">Балл</th>'+(admin?'<th>Ота-она коди</th><th></th>':'')+'</tr></thead><tbody>';
   ids.forEach((s,i)=>{const st=S.students[s], p=stats(entriesOf(s,from));
     h+='<tr><td class="num">'+(i+1)+'</td><td><div class="cellname">'+avatar(st.name,'sm')+'<b>'+esc(st.name)+'</b></div></td>'+
       '<td class="num">'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</td><td class="num">'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</td>'+
-      '<td class="num"><b>'+(p.gn?p.avg.toFixed(1):'—')+'</b></td><td class="num">'+(p.pts?'<span class="chip star">'+star()+p.pts+'</span>':'—')+'</td>'+
+      '<td class="num"><b>'+(p.gn?p.avg.toFixed(1):'—')+'</b></td><td class="num"><b>'+score(entriesOf(s,from))+'</b></td>'+
       (admin?'<td><span class="chip code"><b>'+sCode(s)+'</b></span></td><td class="num">'+(ui.del===s?'<span class="chips" style="justify-content:flex-end"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ</button></span>':'<button class="btn small" type="button" data-act="del" data-sid="'+s+'">Ўчириш</button>')+'</td>':'')+'</tr>';});
   return h+'</tbody></table></div>';
 }
@@ -638,7 +636,7 @@ function viewTeacher(){
   let came=0,late=0,abs=0,done=0,marked=0;
   ids.forEach(s=>{const r=(d.rows||{})[s]||{}; if(r.a==='p') came++; if(r.a==='l') late++; if(r.a==='a') abs++; if(r.l==='y') done++; if(r.a&&(r.l||r.a==='a')) marked++;});
   const p=pct(marked,ids.length);
-  let h='<section class="hero"><div><h1>Бугунги дарсни <em>белгиланг</em></h1><p>Ҳар бир ўқувчи учун учта нарсани босинг: келдими, дарсини топширдими, баҳоси қанча. Ота-она буни дарҳол кўради.</p></div>'+
+  let h='<section class="hero"><div><h1>Бугунги дарсни <em>белгиланг</em></h1><p>Ҳар бир ўқувчи учун учта нарсани босинг: келдими, дарсини топширдими, 5 баллик баҳоси қанча. Ота-она буни дарҳол кўради.</p></div>'+
     '<div class="side"><div class="ringbox">'+ring(p,marked+'/'+ids.length,'gold','Белгиланган ўқувчилар')+'<div><b>'+esc(subjectOf(ui.gid,t))+'</b><small>'+esc(t)+' · '+esc(nice(ui.date))+'</small></div></div></div></section>';
   h+='<section class="panel"><div class="controls">'+
     (auth&&auth.role==='rahbar'?'<div class="field grow"><label for="tt-t">Қайси устоз журнали</label><select id="tt-t" data-act="teacher">'+teachers().map(x=>'<option value="'+esc(x)+'"'+(x===t?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>':'')+
@@ -653,16 +651,14 @@ function viewTeacher(){
     '<div class="field grow"><label for="tt">Бугун нима ўтилди</label><input type="text" id="tt" data-act="dayfield" data-f="topic" value="'+esc(d.topic||'')+'" placeholder="Дарс мавзуси"></div>'+
     '<div class="field grow"><label for="th">Уйга вазифа</label><input type="text" id="th" data-act="dayfield" data-f="hw" value="'+esc(d.hw||'')+'" placeholder="Ота-она ҳам кўради"></div>'+
     '</div><div class="counts" style="margin-top:14px">'+
-    count('good',ic('check'),came,'келди')+count('warn',ic('clock'),late,'кечикди')+count('crit',ic('x'),abs,'келмади')+count('acc',ic('book'),done,'дарс топширди')+'</div></section>';
+    count('good',ic('check'),came,'келди')+count('crit',ic('x'),abs,'келмади')+count('acc',ic('book'),done,'дарс топширди')+'</div></section>';
   if(!ids.length){h+='<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ. Раҳбар қўшиши керак.</p></section>';return h;}
   h+='<div class="cards">';
   ids.forEach(s=>{const st=S.students[s], r=(d.rows||{})[s]||{}, state=rowState(r);
     h+='<article class="scard'+(state?' s-'+state:'')+'"><div class="head">'+avatar(st.name)+'<div><b>'+esc(st.name)+'</b><span>'+(state?esc(state==='a'?'Келмади':LES[state][0]):'Ҳали белгиланмаган')+'</span></div></div>'+
-      '<div class="q"><span class="lab">1. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],r.a)+'</div>'+
-      '<div class="q"><span class="lab">2. Дарсини топширдими?</span>'+opts(s,'l',[['y','Топширди','g',ic('check')],['h','Чала','w',ic('half')],['n','Йўқ','c',ic('x')]],r.l)+'</div>'+
-      '<div class="gradestar"><div class="q"><span class="lab">3. Баҳо</span>'+opts(s,'g',[[5,'5','b num'],[4,'4','b num'],[3,'3','b num'],[2,'2','b num']],r.g)+'</div>'+
-      '<div class="q"><span class="lab">Рағбат юлдузчаси</span><div class="stars">'+[1,2,3].map(n=>'<button type="button" class="starbtn'+((r.p||0)>=n?' on':'')+'" aria-pressed="'+((r.p||0)>=n)+'" aria-label="'+n+' юлдузча" data-act="star" data-sid="'+s+'" data-v="'+n+'">'+star()+'</button>').join('')+'</div></div></div>'+
-      '<input type="text" id="n-'+s+'" data-act="note" data-sid="'+s+'" value="'+esc(r.n||'')+'" placeholder="Ота-онага изоҳ ёзиш (ихтиёрий)" aria-label="'+esc(st.name)+' учун изоҳ"></article>';
+      '<div class="q"><span class="lab">1. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['a','Келмади','c',ic('x')]],r.a)+'</div>'+
+      '<div class="q"><span class="lab">2. Дарсини топширдими?</span>'+opts(s,'l',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],r.l)+'</div>'+
+      '<div class="q"><span class="lab">3. Баҳо (5 баллик)</span>'+opts(s,'g',[[5,'5','b num'],[4,'4','b num'],[3,'3','b num'],[2,'2','b num'],[1,'1','b num']],r.g)+'</div></article>';
   });
   h+='</div>';
   h+='<section class="panel"><h2>'+ic('users')+esc(g.name)+': умумий маълумот<small>охирги 30 кун, учала устоз дарслари бўйича</small>'+kindChip(g)+'</h2>'+groupRings(ui.gid)+'<div style="height:16px"></div>'+groupTable(ui.gid,false)+'</section>';
@@ -697,16 +693,16 @@ function viewParent(){
   const last=days[0];
   if(last){const a=last.agg, cls=a.state==='y'?'good':a.state==='h'?'warn':a.state?'crit':'none';
     h+='<div class="lastday '+cls+'" style="margin-top:14px"><span class="bub">'+ic(a.state==='y'?'check':a.state==='h'?'half':'x')+'</span><div class="txt"><small>Охирги дарс куни · '+esc(nice(last.date))+'</small><b>'+stateText(a)+'</b></div>'+
-      '<div class="chips">'+(a.gn?'<span class="chip acc">Ўртача баҳо: '+a.avg.toFixed(1)+'</span>':'')+(a.pts?'<span class="chip star">'+star()+a.pts+'</span>':'')+'</div></div>';}
+      '<div class="chips">'+(a.gn?'<span class="chip acc">Ўртача баҳо: '+a.avg.toFixed(1)+'</span>':'')+'</div></div>';}
   h+='</section>';
   if(auth&&auth.role==='ota-ona') h+='<section class="panel"><h2>'+ic('plus')+'Яна бир фарзандни қўшиш<small>бир аккаунтда ҳамма фарзандларингиз</small></h2><form data-form="addchild" class="controls"><div class="field grow"><label for="ac-c">Фарзанд коди</label><input type="text" id="ac-c" name="code" inputmode="numeric" maxlength="4" placeholder="4 та рақам" required></div><button class="btn primary" type="submit">'+ic('plus')+'Қўшиш</button></form></section>';
   if(days.length>=2&&days[0].agg.state==='a'&&days[1].agg.state==='a') h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 кун дарсга келмади.</div>';
   else if(days.length>=2&&days[0].agg.state==='n'&&days[1].agg.state==='n') h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 кун бирорта дарсини топширмади.</div>';
   h+='<div class="stats">'+
     stat(ring(aP,aP+'%',tone(aP),'Давомат'),'Давомат',s.att+' / '+s.attAll,'дарсга келди · 30 кун')+
-    stat(ring(lP,lP+'%',tone(lP),'Топширилган дарслар'),'Дарс топшириш',s.done+' / '+s.lesAll,s.half?s.half+' таси чала':'чаласи йўқ')+
+    stat(ring(lP,lP+'%',tone(lP),'Топширилган дарслар'),'Дарс топшириш',s.done+' / '+s.lesAll,'дарс топширди · 30 кун')+
     stat(ring(s.gn?s.avg/5*100:0,s.gn?s.avg.toFixed(1):'—','blue','Ўртача баҳо'),'Ўртача баҳо',s.gn?s.avg.toFixed(1)+' / 5':'—',s.gn+' та баҳо')+
-    stat('<span class="bigstar">'+star()+'</span>','Юлдузчалар',String(s.pts),'охирги 30 кунда')+'</div>';
+    stat('<span class="bigstar">'+ic('cup')+'</span>','Рейтинг балли',String(score(entriesOf(ui.sid,addDays(TODAY,-30)))),'ҳар топширилган дарс +10')+'</div>';
   const map={}; days.forEach(d=>{map[d.date]=d.agg;});
   const dow=(parse(TODAY).getDay()+6)%7, wkStart=addDays(TODAY,-dow), start=addDays(wkStart,-21);
   h+='<section class="panel"><h2>'+ic('cal')+'Охирги 4 ҳафта<small>катакдаги сон: нечта дарсдан нечтасини топширгани</small></h2><div class="cal">'+DOW2.map(x=>'<div class="dow">'+x+'</div>').join('');
@@ -721,7 +717,7 @@ function viewParent(){
       h+='<div class="lesson"><div class="lt"><b>'+esc(subjectOf(st.gid,e.teacher))+'</b><span>'+esc(e.teacher||'')+(e.topic?' · '+esc(e.topic):'')+'</span></div><div class="chips">'+
         (r.a?'<span class="chip '+ATT[r.a][1]+'">'+ic(r.a==='p'?'check':r.a==='l'?'clock':'x')+ATT[r.a][0]+'</span>':'')+
         (r.l&&r.a!=='a'?'<span class="chip '+LES[r.l][1]+'">'+ic('book')+LES[r.l][0]+'</span>':'')+
-        (r.g?'<span class="chip acc">Баҳо: '+r.g+'</span>':'')+(r.p?'<span class="chip star">'+star()+r.p+'</span>':'')+'</div>'+
+        (r.g?'<span class="chip acc">Баҳо: '+r.g+'</span>':'')+'</div>'+
         (r.n?'<div class="say"><small>Устоз изоҳи</small>'+esc(r.n)+'</div>':'')+(e.hw&&r.a!=='a'?'<div class="hw">Уйга вазифа: '+esc(e.hw)+'</div>':'')+'</div>';});
     h+='<div class="f"><span></span>'+(a.seen?'<span class="chip good">'+ic('eye')+'Кўрилган</span>':'<button class="btn small primary" type="button" data-act="seen" data-date="'+d.date+'">'+ic('eye')+'Кўрдим</button>')+'</div></div></div>';});
   h+='</section>';
@@ -754,7 +750,7 @@ function viewAdmin(){
   h+='<div class="stats">'+
     stat('<span class="bigstar" style="background:var(--accent-soft);color:var(--accent)">'+ic('users')+'</span>','Жами ўқувчилар',String(sids.length),nb+' таси ётоқда · '+nd+' таси келиб кетади')+
     stat(ring(aP,aP+'%',tone(aP),'Умумий давомат'),'Давомат',(total.attAll-total.att)+' марта','дарс қолдирилган · 30 кун')+
-    stat(ring(lP,lP+'%',tone(lP),'Дарс топшириш'),'Дарс топшириш',(total.lesAll-total.done)+' марта','тўлиқ топширилмаган · 30 кун')+
+    stat(ring(lP,lP+'%',tone(lP),'Дарс топшириш'),'Дарс топшириш',(total.lesAll-total.done)+' марта','топширилмаган · 30 кун')+
     stat(ring(total.gn?total.avg/5*100:0,total.gn?total.avg.toFixed(1):'—','blue','Ўртача баҳо'),'Ўртача баҳо',total.gn?total.avg.toFixed(1)+' / 5':'—','барча ўқувчилар')+'</div>';
   // the two (or more) group tables
   gids.forEach(gid=>{const g=S.groups[gid], st=groupStats(gid,from), a=pct(st.att,st.attAll), l=pct(st.done,st.lesAll);
@@ -767,10 +763,11 @@ function viewAdmin(){
   if(!warn.length) h+='<p class="empty">Ҳозирча орқада қолаётган ўқувчи йўқ.</p>';
   else{h+='<div class="people">';warn.forEach(w=>{const st=S.students[w.s];
     h+='<div class="person">'+avatar(st.name)+'<div class="nm"><b>'+esc(st.name)+'</b><span>'+esc((S.groups[st.gid]||{}).name||'')+'</span></div><div class="chips">'+(w.ab>=2?'<span class="chip crit">'+ic('x')+w.ab+' кун келмади</span>':'')+(w.ns>=5?'<span class="chip warn">'+ic('book')+w.ns+' дарсни топширмади</span>':'')+'</div></div>';});h+='</div>';}
-  h+='</section><section class="panel"><h2>'+star().replace('class="ic fill"','class="ic fill" style="color:var(--star)"')+'Энг фаол ўқувчилар<small>юлдузчалар бўйича</small></h2>';
-  const top=sids.filter(s=>per[s].pts>0).sort((a,b)=>per[b].pts-per[a].pts).slice(0,5);
-  if(!top.length) h+='<p class="empty">Ҳали юлдузча берилмаган.</p>';
-  else{const mx=per[top[0]].pts; h+='<div class="bars">'+top.map(s=>barRow(S.students[s].name,per[s].pts/mx*100,per[s].pts+' ★','gold',avatar(S.students[s].name,'sm'))).join('')+'</div>';}
+  h+='</section><section class="panel"><h2>'+ic('cup')+'Энг кўп дарс топширганлар<small>рейтинг балли бўйича</small></h2>';
+  const sc={}; sids.forEach(s=>{sc[s]=score(entriesOf(s,from));});
+  const top=sids.filter(s=>sc[s]>0).sort((a,b)=>sc[b]-sc[a]).slice(0,5);
+  if(!top.length) h+='<p class="empty">Ҳали дарс белгиланмаган.</p>';
+  else{const mx=sc[top[0]]; h+='<div class="bars">'+top.map(s=>barRow(S.students[s].name,sc[s]/mx*100,sc[s]+' балл','gold',avatar(S.students[s].name,'sm'))).join('')+'</div>';}
   h+='</section></div>';
   h+='<div class="two"><section class="panel"><h2>'+ic('chart')+'Кунлик давомат<small>%, барча ўқувчилар</small></h2>'+dayColumns()+'</section>';
   h+='<section class="panel"><h2>'+ic('key')+'Устозлар ва кириш кодлари</h2>';
@@ -805,18 +802,18 @@ function viewRoom(){
   const from=addDays(TODAY,-30);
   let ids=Object.keys(S.students); if(!ids.length) return emptyState();
   if(ui.rf!=='all') ids=ids.filter(s=>(S.groups[S.students[s].gid]||{}).kind===ui.rf);
-  const rows=ids.map(s=>({s:s,b:score(entriesOf(s,from))})).sort((a,b)=>b.b-a.b||S.students[a.s].name.localeCompare(S.students[b.s].name,'uz'));
+  const rows=ids.map(s=>{const l=entriesOf(s,from);return {s:s,b:score(l),g:stats(l).avg};}).sort((a,b)=>b.b-a.b||b.g-a.g||S.students[a.s].name.localeCompare(S.students[b.s].name,'uz'));
   const mine=auth&&auth.role==='ota-ona'?(auth.sids||[]):[];
   let h='<section class="hero"><div><h1>Умумий ҳужра: <em>ким қандай ўқияпти</em></h1><p>Охирги 30 кунлик балл бўйича рейтинг. Энг яхши ўқиётган ўқувчи биринчи ўринда.</p></div></section>';
   h+='<section class="panel"><div class="roomtop"><div class="seg2" role="group" aria-label="Гуруҳ">'+[['all','Ҳаммаси'],['b','Ётоқда қоладиганлар'],['d','Келиб кетадиганлар']].map(o=>'<button type="button" class="'+(ui.rf===o[0]?'on':'')+'" aria-pressed="'+(ui.rf===o[0])+'" data-act="rf" data-v="'+o[0]+'">'+o[1]+'</button>').join('')+'</div>'+
     '<div class="legend" style="margin:0"><span><i style="background:var(--good);border-radius:50%"></i>яхши</span><span><i style="background:var(--warn);border-radius:50%"></i>ўртача</span><span><i style="background:var(--crit);border-radius:50%"></i>суст</span><span><i style="background:var(--track);border-radius:50%"></i>маълумот йўқ</span></div></div>'+
-    '<p class="rules"><b>Балл қандай ҳисобланади:</b> топширилган дарс +10, чала топширилган +5, ҳар бир юлдузча +3, қолдирилган дарс −5. Шарикчалар охирги 5 дарс кунини кўрсатади. Батафсил кўрсаткичларни кўриш учун исмни босинг.</p></section>';
+    '<p class="rules"><b>Рейтинг қандай ҳисобланади:</b> ҳар бир топширилган дарс учун 10 балл. Топширилмаган ёки қолдирилган дарсга балл берилмайди. Баллар тенг бўлса, ўртача баҳоси юқори ўқувчи олдинда туради. Шарикчалар охирги 5 дарс кунини кўрсатади. Батафсил кўрсаткичларни кўриш учун исмни босинг.</p></section>';
   if(!rows.length) return h+'<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ.</p></section>';
   h+='<section class="panel"><div class="rlist">';
   rows.forEach((r,i)=>{const st=S.students[r.s], open=ui.open===r.s, top=i<3?' top t'+(i+1):'';
     h+='<div class="ritem'+(mine.indexOf(r.s)>=0?' mine':'')+(open?' open':'')+'"><button type="button" class="rrow" data-act="ropen" data-sid="'+r.s+'" aria-expanded="'+open+'"><span class="rk'+top+'">'+(i+1)+'</span>'+avatar(st.name)+'<span class="rn"><b>'+esc(st.name)+'</b>'+studentDots(r.s)+'</span><span class="rb">'+r.b+'<small>балл</small></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
     if(open){const p=stats(entriesOf(r.s,from)), g=S.groups[st.gid]||{};
-      h+='<div class="rmore"><div class="mini"><span>Давомат</span>'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</div><div class="mini"><span>Дарс топшириш</span>'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</div><div class="mini"><span>Ўртача баҳо</span><b>'+(p.gn?p.avg.toFixed(1):'—')+'</b></div><div class="mini"><span>Юлдузча</span>'+(p.pts?'<span class="chip star">'+star()+p.pts+'</span>':'<b>—</b>')+'</div><div class="mini wide"><span>Гуруҳ</span><b>'+esc(g.name||'')+'</b></div></div>';}
+      h+='<div class="rmore"><div class="mini"><span>Давомат</span>'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</div><div class="mini"><span>Дарс топшириш</span>'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</div><div class="mini"><span>Ўртача баҳо</span><b>'+(p.gn?p.avg.toFixed(1):'—')+'</b></div><div class="mini wide"><span>Гуруҳ</span><b>'+esc(g.name||'')+'</b></div></div>';}
     h+='</div>';});
   h+='</div></section>';
   return h;
