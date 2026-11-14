@@ -307,6 +307,63 @@ input[type=text],input[type=date],select{border-radius:12px;background:var(--sur
 .chip.code b{font-family:var(--font-display);font-size:12px;letter-spacing:.08em}
 @media (prefers-reduced-motion:no-preference){.rolecard{transition:transform .15s}}
 
+
+/* ----- tables and lessons ----- */
+.tablewrap{overflow-x:auto;margin:0 -6px;padding:0 6px}
+.tbl{border-collapse:collapse;width:100%;min-width:640px}
+.tbl th,.tbl td{text-align:left;padding:10px 10px;border-top:1px solid var(--line);font-size:14px;vertical-align:middle;white-space:nowrap}
+.tbl th{font-size:12px;color:var(--muted);font-weight:600;border-top:0;padding-top:0}
+.tbl td.num,.tbl th.num{text-align:center;font-variant-numeric:tabular-nums}
+.tbl td:first-child,.tbl th:first-child{color:var(--muted);width:36px}
+.cellname{display:flex;align-items:center;gap:10px}
+.chip.kind{background:var(--accent-soft);color:var(--accent)}
+.cell .m b{font-family:var(--font-display);font-size:13px;font-weight:700}
+.lesson{background:var(--bg);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:7px}
+.lesson .lt{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.lesson .lt span{color:var(--muted);font-size:14px}
+.lesson .say{background:var(--surface)}
+.lesson .hw{font-size:13px;color:var(--muted)}
+.panel>h2 .chip{margin-left:auto}
+
+/* ----- common room ----- */
+.av.xl{width:84px;height:84px;font-size:28px}
+.roomtop{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.seg2{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--track);padding:4px;border-radius:22px}
+.seg2 button{border:0;background:transparent;border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer}
+.seg2 button.on{background:var(--cta);color:var(--cta-ink)}
+.rules{margin-top:14px;font-size:14px;color:var(--muted)}
+.rules b{color:var(--ink)}
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:end}
+.pcard{position:relative;background:var(--surface);border-radius:24px;box-shadow:var(--shadow);padding:26px 14px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.pcard.p1{padding-top:34px;padding-bottom:26px;background:linear-gradient(180deg,var(--gold-soft),var(--surface) 70%)}
+.pcard .av{box-shadow:0 0 0 4px var(--surface),0 0 0 7px var(--line)}
+.pcard.p1 .av{box-shadow:0 0 0 4px var(--surface),0 0 0 8px #d9a02a}
+.pcard.p2 .av{box-shadow:0 0 0 4px var(--surface),0 0 0 7px #9aa3b8}
+.pcard.p3 .av{box-shadow:0 0 0 4px var(--surface),0 0 0 7px #b9794a}
+.medal{position:absolute;top:12px;left:14px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:15px;color:#fff;background:#8a93a8}
+.p1 .medal{background:linear-gradient(135deg,#c79a3e,#ecd08a);color:#3a2a05}
+.p3 .medal{background:#b9794a}
+.pn{font-size:16px;line-height:1.25;margin-top:6px}
+.pb{font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--gold)}
+.dots{display:flex;flex-wrap:wrap;gap:4px 10px}
+.pcard .dots{justify-content:center}
+.dot{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);white-space:nowrap}
+.dot i{width:11px;height:11px;border-radius:50%;background:var(--track);display:inline-block;flex:none}
+.dot.good i{background:var(--good)}.dot.warn i{background:var(--warn)}.dot.crit i{background:var(--crit)}
+.rlist{display:flex;flex-direction:column}
+.rrow{display:flex;align-items:center;gap:12px;padding:11px 8px;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:0}
+.rk{width:30px;text-align:center;font-family:var(--font-display);font-weight:700;color:var(--muted);flex:none}
+.rn{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.rb{font-family:var(--font-display);font-weight:700;font-size:17px;text-align:right;flex:none}
+.rb small{display:block;font-family:var(--font-body);font-weight:400;font-size:11px;color:var(--muted)}
+.mine{outline:2px solid var(--star);outline-offset:-2px;background:var(--gold-soft);border-radius:14px}
+@media (max-width:620px){
+  .podium{grid-template-columns:1fr}
+  .pcard,.pcard.p1{padding:22px 14px 18px}
+  .tabs a{font-size:13px;gap:4px}
+}
+img.av{object-fit:cover;display:block}
 </style>
 </head>
 <body>
@@ -318,6 +375,7 @@ input[type=text],input[type=date],select{border-radius:12px;background:var(--sur
       <a href="#ustoz" data-role="ustoz"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h11a3 3 0 0 1 3 3V19H7a3 3 0 0 1-3-3z"/><path d="M8 10h6M8 13.5h4"/></svg>Устоз</a>
       <a href="#ota-ona" data-role="ota-ona"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.7-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17.5" cy="10" r="2.3"/><path d="M16 14.6c2.400-.3 4 1.200 4.500 3.900"/></svg>Ота-она</a>
       <a href="#rahbar" data-role="rahbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Раҳбар</a>
+      <a href="#hujra" data-role="hujra"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.500 20h7"/></svg>Ҳужра</a>
     </nav>
     <div class="me" id="me" hidden></div>
   </div>
@@ -339,28 +397,22 @@ function sampleData(todayIso){
   const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const parse=s=>{const a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
   const rnd=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return ((h>>>0)%1000)/1000};
+  const hash4=s=>{let h=7;for(let i=0;i<s.length;i++)h=(h*33+s.charCodeAt(i))>>>0;return String(1000+h%9000)};
+  const T=['Собирхўжа устоз','Умархўжа устоз','Учинчи устоз'];
+  const SUB={'Собирхўжа устоз':'Қуръон','Умархўжа устоз':'Араб тили','Учинчи устоз':'Учинчи дарс'};
   const groups={
-    g1:{name:'Араб тили — бошланғич',subject:'Араб тили',teacher:'Абдураҳмон устоз'},
-    g2:{name:'Инглиз тили — 2-босқич',subject:'Инглиз тили',teacher:'Дилноза устоз'}
+    gb:{name:'Ётоқда қоладиганлар',kind:'b',teachers:T.slice(),subjects:SUB},
+    gd:{name:'Келиб кетадиганлар',kind:'d',teachers:T.slice(),subjects:SUB}
   };
-  const list=[
-    ['s1','Абдуллоҳ Каримов','g1','Баҳодир Каримов',.95],
-    ['s2','Зайнаб Юсупова','g1','Нодира Юсупова',.9],
-    ['s3','Иброҳим Раҳимов','g1','Шавкат Раҳимов',.55],
-    ['s4','Оиша Нурматова','g1','Гулнора Нурматова',.8],
-    ['s5','Умар Собиров','g1','Анвар Собиров',.7],
-    ['s6','Марям Алиева','g2','Саида Алиева',.92],
-    ['s7','Ҳасан Эргашев','g2','Равшан Эргашев',.5],
-    ['s8','Фотима Қодирова','g2','Муҳайё Қодирова',.85],
-    ['s9','Муҳаммадали Тошматов','g2','Икром Тошматов',.75]
-  ];
-  const students={};const level={};
-  list.forEach(x=>{students[x[0]]={name:x[1],gid:x[2],parent:x[3]};level[x[0]]=x[4]});
-  const topics={
-    g1:['Ҳарфлар ва ҳаракатлар','Сукун ва ташдид','Исм ва феъл','Ўтган замон феъли','Ҳозирги замон феъли','Кўплик шакллари','Олмошлар','Сифат ва мавсуф','Изофа','Саноқ сонлар','Буйруқ феъли','Такрорлаш дарси'],
-    g2:['Present Simple','Present Continuous','Past Simple','Тартибсиз феъллар','Future: will / going to','Саволлар тузиш','Предлоглар','Сифат даражалари','Modal феъллар','Матн ўқиш','Тинглаб тушуниш','Такрорлаш дарси']
-  };
-  const notes=['Яхши тайёрланган','Қоидани ёддан айтиб берди','Уйда қайта такрорласин','Дарсга кеч қолди','Ёзма ишда хатолар кўп','Фаол қатнашди'];
+  const F=['Абдуллоҳ','Иброҳим','Умар','Ҳасан','Ҳусан','Муҳаммадали','Юсуф','Исмоил','Зайд','Билол','Анас','Ҳамза','Солиҳ','Яҳё','Закариё','Мусо','Ҳорун','Довуд','Сулаймон','Айюб','Идрис','Нуҳ','Илёс','Юнус','Шуайб','Луқмон','Убайдуллоҳ','Абдураҳмон','Абдулазиз','Муҳаммадюсуф'];
+  const L=['Каримов','Раҳимов','Собиров','Эргашев','Тошматов','Юсупов','Нурматов','Алиев','Қодиров','Ҳакимов','Турсунов','Мирзаев','Исмоилов','Усмонов','Салимов','Ҳайдаров','Назаров','Орипов','Жўраев','Маматов','Сатторов','Холматов','Абдуллаев','Зокиров','Мамажонов','Ғаниев','Шарипов','Бобоев','Аҳмедов','Олимов'];
+  const students={}, level={};
+  for(let i=0;i<30;i++){const id='s'+(i+1); students[id]={name:F[i]+' '+L[i],gid:i<10?'gb':'gd',parent:L[i]+'лар оиласи'}; level[id]=0.6+rnd(id+'L')*0.37;}
+  level.s4=0.42; level.s17=0.4; level.s23=0.5;
+  const PH=["data:image/jpeg;base64,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", "data:image/jpeg;base64,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", "data:image/jpeg;base64,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", "data:image/jpeg;base64,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", "data:image/jpeg;base64,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", "data:image/jpeg;base64,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", "data:image/jpeg;base64,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"];
+  PH.forEach((p,i)=>{students['s'+(i+1)].photo=p;});
+  const topics=['Янги дарс','Ўтган дарсни такрорлаш','Ёд олиш','Ёзма машқ','Оғзаки сўров','Умумий такрорлаш'];
+  const notes=['Яхши тайёрланган','Дарсни ёддан айтиб берди','Уйда қайта такрорласин','Дарсга кеч қолди','Хатолари кўп, машқ қилсин'];
   const days={};
   const t=parse(todayIso);
   for(let back=14;back>=1;back--){
@@ -368,28 +420,27 @@ function sampleData(todayIso){
     if(d.getDay()===0) continue;
     const ds=iso(d);
     Object.keys(groups).forEach(gid=>{
-      const idx=(14-back)%12;
-      const rows={};
-      Object.keys(students).forEach(sid=>{
-        if(students[sid].gid!==gid) return;
-        const L=level[sid], r1=rnd(sid+ds+'a'), r2=rnd(sid+ds+'l'), r3=rnd(sid+ds+'g'), r4=rnd(sid+ds+'n');
-        const row={};
-        row.a = r1 < L*0.9+0.08 ? (r1 > L*0.9 ? 'l' : 'p') : 'a';
-        if(row.a==='a'){ row.l='n'; }
-        else{
-          row.l = r2 < L ? 'y' : (r2 < L+0.2 ? 'h' : 'n');
-          if(row.l==='y') row.g = r3<0.55?5:4;
-          else if(row.l==='h') row.g = r3<0.5?4:3;
-          else row.g = 2;
-          if(row.l==='y' && r4<0.35) row.p = 1 + (r4<0.1?1:0);
-        }
-        if(r4>0.72){
-          row.n = row.a==='a' ? 'Сабабсиз келмади' : row.l==='n' ? notes[2] : row.a==='l' ? notes[3] : row.l==='h' ? notes[4] : notes[Math.floor(r3*2)*5 % 6 === 0 ? 0 : 1];
-        }
-        if(back>3) row.seen=true;
-        rows[sid]=row;
+      T.forEach((teacher,ti)=>{
+        const rows={};
+        Object.keys(students).forEach(sid=>{
+          if(students[sid].gid!==gid) return;
+          const Lv=level[sid], A=Math.min(0.98,Lv+(gid==='gb'?0.22:0.1));
+          const r1=rnd(sid+ds+'a'), r2=rnd(sid+ds+ti+'l'), r3=rnd(sid+ds+ti+'g'), r4=rnd(sid+ds+ti+'n');
+          const row={};
+          row.a = r1 < A ? (r1 > A-0.06 && gid==='gd' ? 'l' : 'p') : 'a';
+          if(row.a==='a'){ row.l='n'; if(ti===0&&r4>0.5) row.n='Сабабсиз келмади'; }
+          else{
+            row.l = r2 < Lv ? 'y' : (r2 < Lv+0.2 ? 'h' : 'n');
+            row.g = row.l==='y' ? (r3<0.55?5:4) : row.l==='h' ? (r3<0.5?4:3) : 2;
+            if(row.l==='y' && r4<0.3) row.p = 1 + (r4<0.08?1:0);
+            if(r4>0.8) row.n = row.l==='n' ? notes[2] : row.a==='l' ? notes[3] : row.l==='h' ? notes[4] : notes[r3<0.5?0:1];
+          }
+          if(back>3) row.seen=true;
+          rows[sid]=row;
+        });
+        const idx=(14-back+ti*2)%6;
+        days[gid+'_'+ds+'_'+hash4('t'+teacher)]={gid:gid,date:ds,teacher:teacher,topic:topics[idx],hw:(idx%2===0?'Бугунги дарсни такрорлаш':'Янги дарсга тайёрланиш'),rows:rows};
       });
-      days[gid+'_'+ds]={gid:gid,date:ds,topic:topics[gid][idx],hw:(idx%3===0?'Дафтарга 5 та мисол ёзиш':idx%3===1?'Янги сўзларни ёдлаш':'Ўтилган мавзуни такрорлаш'),rows:rows};
     });
   }
   return {groups:groups,students:students,days:days};
@@ -409,20 +460,23 @@ const DOW2=['Ду','Се','Чо','Па','Жу','Ша','Як'];
 const MON=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 const nice=s=>{const d=parse(s);return d.getDate()+'-'+MON[d.getMonth()]+', '+DOW[d.getDay()].toLowerCase()};
 const TODAY=iso(new Date());
-const ROLES=['ustoz','ota-ona','rahbar'];
+const ROLES=['ustoz','ota-ona','rahbar','hujra'];
+const ALLOW={'rahbar':['ustoz','ota-ona','rahbar','hujra'],'ustoz':['ustoz','hujra'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra']};
+const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Раҳбар','hujra':'Умумий ҳужра'};
 const ATT={p:['Келди','good'],l:['Кечикди','warn'],a:['Келмади','crit']};
 const LES={y:['Топширди','good'],h:['Чала топширди','warn'],n:['Топширмади','crit']};
+const KIND={b:'Ётоқда қолади',d:'Келиб кетади'};
 
 const hash4=s=>{let h=7;for(let i=0;i<s.length;i++)h=(h*33+s.charCodeAt(i))>>>0;return String(1000+h%9000)};
-const ADMIN_CODE='2026';
+const ADMIN_CODE='2026', ROOM_CODE='3030';
 const sCode=id=>hash4('s'+id), tCode=name=>hash4('t'+name);
 let auth=null;
 try{const a=JSON.parse(localStorage.getItem('kundalik-auth')||'null'); if(a&&ROLES.indexOf(a.role)>=0) auth=a;}catch(e){}
 function saveAuth(){try{if(auth) localStorage.setItem('kundalik-auth',JSON.stringify(auth)); else localStorage.removeItem('kundalik-auth');}catch(e){}}
 let S=sampleData(TODAY);
-let db=null, mode='local', loading=false, slow=false, dbError=false;
+let db=null, mode='local', loading=false, slow=false, dbError=false, busy=false;
 const got={}, pend={}, queues={};
-const ui={role:'ustoz',gid:null,date:TODAY,sid:null,del:null,lrole:null,lerr:''};
+const ui={rf:'all',role:'ustoz',gid:null,date:TODAY,sid:null,teacher:null,del:null,reset:false,lrole:null,lerr:''};
 let dirty=false, refocus=null, toastTimer=null;
 
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},3800)}
@@ -434,16 +488,30 @@ function enqueue(key,fn){queues[key]=(queues[key]||Promise.resolve()).then(fn).c
 
 /* ---------- data helpers ---------- */
 function sortedIds(obj,by){return Object.keys(obj).sort((a,b)=>String(obj[a][by]||'').localeCompare(String(obj[b][by]||''),'uz'))}
+function groupIds(){return Object.keys(S.groups).sort((a,b)=>{const ka=S.groups[a].kind==='b'?0:1,kb=S.groups[b].kind==='b'?0:1;return ka-kb||String(S.groups[a].name).localeCompare(String(S.groups[b].name),'uz')})}
 function studentsOf(gid){return sortedIds(S.students,'name').filter(id=>S.students[id].gid===gid)}
-function teachers(){const o={};for(const g in S.groups){const t=(S.groups[g].teacher||'').trim(); if(t) o[t]=1;}return Object.keys(o).sort((a,b)=>a.localeCompare(b,'uz'))}
-function allowedGroups(){const all=sortedIds(S.groups,'name');return auth&&auth.role==='ustoz'?all.filter(g=>(S.groups[g].teacher||'').trim()===auth.teacher):all}
+function gTeachers(g){if(!g) return [];return Array.isArray(g.teachers)?g.teachers.filter(Boolean):(g.teacher?[String(g.teacher).trim()]:[])}
+function subjectOf(gid,t){const g=S.groups[gid]; return (g&&g.subjects&&g.subjects[t])||t||'Дарс'}
+function score(list){let b=0;list.forEach(e=>{const r=e.r; if(r.a==='a') b-=5; else if(r.l==='y') b+=10; else if(r.l==='h') b+=5; b+=(r.p||0)*3;});return b}
+function dayTeacher(d){return d.teacher||gTeachers(S.groups[d.gid])[0]||''}
+function teachers(){const o={};for(const g in S.groups) gTeachers(S.groups[g]).forEach(t=>{o[t]=1});return Object.keys(o).sort((a,b)=>a.localeCompare(b,'uz'))}
+function teacherGroups(t){return groupIds().filter(g=>gTeachers(S.groups[g]).indexOf(t)>=0)}
+function curTeacher(){if(auth&&auth.role==='ustoz') return auth.teacher; const ts=teachers(); if(ts.indexOf(ui.teacher)<0) ui.teacher=ts[0]||''; return ui.teacher}
 function allowedStudents(){const all=sortedIds(S.students,'name');return auth&&auth.role==='ota-ona'?all.filter(x=>(auth.sids||[]).indexOf(x)>=0):all}
-function dayOf(gid,date){return S.days[gid+'_'+date]}
+function dayId(gid,date,t){const nid=gid+'_'+date+'_'+tCode(t); if(S.days[nid]) return nid; const old=gid+'_'+date; if(S.days[old]&&dayTeacher(S.days[old])===t) return old; return nid}
+function dayOf(gid,date,t){return S.days[dayId(gid,date,t)]}
 function entriesOf(sid,from){
   const st=S.students[sid]; if(!st) return [];
   const out=[];
-  for(const id in S.days){const d=S.days[id]; if(d.gid!==st.gid) continue; if(from&&d.date<from) continue; const r=d.rows&&d.rows[sid]; if(r&&(r.a||r.l||r.g||r.p||r.n)) out.push({date:d.date,topic:d.topic,hw:d.hw,r:r});}
-  return out.sort((a,b)=>a.date<b.date?1:-1);
+  for(const id in S.days){const d=S.days[id]; if(d.gid!==st.gid) continue; if(from&&d.date<from) continue; const r=d.rows&&d.rows[sid]; if(r&&(r.a||r.l||r.g||r.p||r.n)) out.push({id:id,date:d.date,teacher:dayTeacher(d),topic:d.topic,hw:d.hw,r:r});}
+  return out.sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:a.teacher.localeCompare(b.teacher,'uz'));
+}
+function byDay(list){const out=[];let cur=null;list.forEach(e=>{if(!cur||cur.date!==e.date){cur={date:e.date,list:[]};out.push(cur);}cur.list.push(e);});return out}
+function dayAgg(list){
+  const n=list.length; let y=0,h=0,ab=0,gs=0,gn=0,pts=0,seen=true;
+  list.forEach(e=>{const r=e.r; if(r.a==='a') ab++; else if(r.l==='y') y++; else if(r.l==='h') h++; if(r.g){gs+=r.g;gn++;} pts+=r.p||0; if(!r.seen) seen=false;});
+  const state=!n?'':ab===n?'a':y===n?'y':(y===0&&h===0)?'n':'h';
+  return {n,y,h,ab,state,avg:gn?gs/gn:0,gn,pts,seen};
 }
 function stats(list){
   let att=0,attAll=0,done=0,half=0,lesAll=0,gs=0,gn=0,pts=0;
@@ -455,10 +523,11 @@ function stats(list){
   return {att,attAll,done,half,lesAll,avg:gn?gs/gn:0,gn,pts};
 }
 const pct=(a,b)=>b?Math.round(a/b*100):0;
+function groupStats(gid,from){return stats([].concat.apply([],studentsOf(gid).map(s=>entriesOf(s,from))))}
 
-function editDay(gid,date,fn){
-  const id=gid+'_'+date;
-  const d=clone(S.days[id]||{gid:gid,date:date,topic:'',hw:'',rows:{}});
+function editDay(gid,date,t,fn){
+  const id=dayId(gid,date,t);
+  const d=clone(S.days[id]||{gid:gid,date:date,teacher:t,topic:'',hw:'',rows:{}});
   if(!d.rows) d.rows={};
   fn(d); S.days[id]=d; pend[id]=d; render();
   if(!db){delete pend[id];return;}
@@ -478,7 +547,7 @@ function delDoc(coll,id){
 }
 const newId=p=>p+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);
 
-/* ---------- views ---------- */
+/* ---------- small parts ---------- */
 const IC={
   check:'<path d="M5 12.5l4.500 4.500L19 7.500"/>',
   x:'<path d="M6.500 6.500l11 11M17.500 6.500l-11 11"/>',
@@ -490,17 +559,22 @@ const IC={
   cal:'<rect x="4" y="5.500" width="16" height="14.500" rx="2.500"/><path d="M4 10h16M8.500 3.500v4M15.500 3.500v4"/>',
   bell:'<path d="M6 16.500V11a6 6 0 0 1 12 0v5.500l1.500 2h-15z"/><path d="M10 20.500a2 2 0 0 0 4 0"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
-  pen:'<path d="M5 19l1-4L16.500 4.500l3 3L9 18z"/>',
-  eye:'<path d="M2.500 12S6 5.500 12 5.500 21.500 12 21.500 12 18 18.500 12 18.500 2.500 12 2.500 12z"/><circle cx="12" cy="12" r="2.800"/>'
+  eye:'<path d="M2.500 12S6 5.500 12 5.500 21.500 12 21.500 12 18 18.500 12 18.500 2.500 12 2.500 12z"/><circle cx="12" cy="12" r="2.800"/>',
+  bed:'<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.800"/>',
+  walk:'<circle cx="13" cy="5" r="1.800"/><path d="M9 21l2.500-6-2-2.500 1-4.500 3 2.500 3 1M11.500 15l3 2 1 4M10.500 8l-3 1.500-1 3"/>',
+  cup:'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.500 20h7"/>',
+  key:'<circle cx="8" cy="15" r="3.500"/><path d="M10.500 12.500L19 4M16 7l2.500 2.500M13.500 9.500l2 2"/>'
 };
 const STAR='<path d="M12 3.200l2.700 5.500 6.100.9-4.400 4.300 1 6-5.400-2.800-5.400 2.800 1-6-4.400-4.300 6.100-.9z"/>';
 const ic=n=>'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</svg>';
 const star=()=>'<svg class="ic fill" viewBox="0 0 24 24" aria-hidden="true">'+STAR+'</svg>';
 const HUES=[['#24337f','#5868ef'],['#0a7a50','#22b983'],['#a8641a','#e0a83e'],['#7a3fc0','#b07cf2'],['#b02a55','#ea6a8f'],['#126c8c','#3fb4d6'],['#3d4763','#7d89ab'],['#8a5a12','#c79a3e']];
+function photoOf(name){for(const k in S.students){const st=S.students[k]; if(st.name===name&&st.photo) return st.photo;} return ''}
 function avatar(name,cls){
-  const parts=String(name||'?').trim().split(/\s+/); const ini=(parts[0][0]||'')+(parts[1]?parts[1][0]:'');
+  name=String(name||'?'); const ph=photoOf(name); if(ph) return '<img class="av '+(cls||'')+'" src="'+esc(ph)+'" alt="">';
+  const parts=name.trim().split(/\s+/); const ini=(parts[0][0]||'')+(parts[1]?parts[1][0]:'');
   let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
-  return '<span class="av '+(cls||'')+'"  style="background:linear-gradient(135deg,'+HUES[h%HUES.length][0]+','+HUES[h%HUES.length][1]+')" aria-hidden="true">'+esc(ini.toUpperCase())+'</span>';
+  return '<span class="av '+(cls||'')+'" style="background:linear-gradient(135deg,'+HUES[h%HUES.length][0]+','+HUES[h%HUES.length][1]+')" aria-hidden="true">'+esc(ini.toUpperCase())+'</span>';
 }
 function ring(p,txt,color,label){
   const r=34,c=2*Math.PI*r,off=c*(1-Math.max(0,Math.min(100,p))/100);
@@ -509,27 +583,50 @@ function ring(p,txt,color,label){
     '<text x="42" y="48" text-anchor="middle">'+esc(txt)+'</text></svg>';
 }
 const tone=p=>p>=80?'good':p>=55?'warn':'crit';
+const pill=p=>'<span class="chip '+tone(p)+'">'+p+'%</span>';
 function stat(graphic,k,v,s){return '<div class="stat">'+graphic+'<div><div class="k">'+k+'</div><div class="v">'+esc(v)+'</div><div class="s">'+esc(s)+'</div></div></div>'}
 function count(cls,icon,n,label){return '<div class="count '+cls+'"><span class="bub">'+icon+'</span><div><b>'+n+'</b><span>'+label+'</span></div></div>'}
 function opts(sid,f,list,cur){
   return '<div class="opts" role="group">'+list.map(o=>{const on=String(cur)===String(o[0]);
     return '<button type="button" class="opt '+o[2]+(on?' on':'')+'" aria-pressed="'+on+'" data-act="mark" data-sid="'+sid+'" data-f="'+f+'" data-v="'+o[0]+'">'+(o[3]||'')+o[1]+'</button>';}).join('')+'</div>';
 }
-function groupSelect(id){
-  return '<select id="'+id+'" data-act="group">'+allowedGroups().map(g=>'<option value="'+g+'"'+(g===ui.gid?' selected':'')+'>'+esc(S.groups[g].name)+'</option>').join('')+'</select>';
-}
 function rowState(r){return !r?'':r.a==='a'?'a':r.l||''}
+function kindChip(g){return g&&KIND[g.kind]?'<span class="chip kind">'+ic(g.kind==='b'?'bed':'walk')+KIND[g.kind]+'</span>':''}
+function barRow(name,p,label,color,av){return '<div class="bar"><div class="nm">'+(av||'')+'<span>'+esc(name)+'</span></div><div class="tr"><i class="k-'+color+'" style="width:'+Math.max(0,Math.min(100,p))+'%"></i></div><div class="n">'+label+'</div></div>'}
+function groupRings(gid){
+  const st=groupStats(gid,addDays(TODAY,-30)), a=pct(st.att,st.attAll), l=pct(st.done,st.lesAll);
+  return '<div class="stats">'+
+    stat('<span class="bigstar" style="background:var(--accent-soft);color:var(--accent)">'+ic('users')+'</span>','Ўқувчилар',String(studentsOf(gid).length),'шу гуруҳда')+
+    stat(ring(a,a+'%',tone(a),'Давомат'),'Давомат',(st.attAll-st.att)+' марта','дарс қолдирилган · 30 кун')+
+    stat(ring(l,l+'%',tone(l),'Дарс топшириш'),'Дарс топшириш',(st.lesAll-st.done)+' марта','тўлиқ топширилмаган · 30 кун')+
+    stat(ring(st.gn?st.avg/5*100:0,st.gn?st.avg.toFixed(1):'—','blue','Ўртача баҳо'),'Ўртача баҳо',st.gn?st.avg.toFixed(1)+' / 5':'—','учала устоз бўйича')+'</div>';
+}
+function groupTable(gid,admin){
+  const ids=studentsOf(gid), from=addDays(TODAY,-30);
+  if(!ids.length) return '<p class="empty">Бу гуруҳда ҳали ўқувчи йўқ.</p>';
+  let h='<div class="tablewrap"><table class="tbl"><thead><tr><th class="num">№</th><th>Ўқувчи</th><th class="num">Давомат</th><th class="num">Дарс топшириш</th><th class="num">Ўртача баҳо</th><th class="num">Юлдузча</th>'+(admin?'<th>Ота-она коди</th><th></th>':'')+'</tr></thead><tbody>';
+  ids.forEach((s,i)=>{const st=S.students[s], p=stats(entriesOf(s,from));
+    h+='<tr><td class="num">'+(i+1)+'</td><td><div class="cellname">'+avatar(st.name,'sm')+'<b>'+esc(st.name)+'</b></div></td>'+
+      '<td class="num">'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</td><td class="num">'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</td>'+
+      '<td class="num"><b>'+(p.gn?p.avg.toFixed(1):'—')+'</b></td><td class="num">'+(p.pts?'<span class="chip star">'+star()+p.pts+'</span>':'—')+'</td>'+
+      (admin?'<td><span class="chip code"><b>'+sCode(s)+'</b></span></td><td class="num">'+(ui.del===s?'<span class="chips" style="justify-content:flex-end"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ</button></span>':'<button class="btn small" type="button" data-act="del" data-sid="'+s+'">Ўчириш</button>')+'</td>':'')+'</tr>';});
+  return h+'</tbody></table></div>';
+}
 
+/* ---------- teacher ---------- */
 function viewTeacher(){
+  const t=curTeacher(), tg=t?teacherGroups(t):[];
+  if(tg.indexOf(ui.gid)<0) ui.gid=tg[0]||null;
   const g=S.groups[ui.gid]; if(!g) return emptyState();
-  const d=dayOf(ui.gid,ui.date)||{rows:{}}; const ids=studentsOf(ui.gid);
+  const d=dayOf(ui.gid,ui.date,t)||{rows:{}}; const ids=studentsOf(ui.gid);
   let came=0,late=0,abs=0,done=0,marked=0;
   ids.forEach(s=>{const r=(d.rows||{})[s]||{}; if(r.a==='p') came++; if(r.a==='l') late++; if(r.a==='a') abs++; if(r.l==='y') done++; if(r.a&&(r.l||r.a==='a')) marked++;});
   const p=pct(marked,ids.length);
   let h='<section class="hero"><div><h1>Бугунги дарсни <em>белгиланг</em></h1><p>Ҳар бир ўқувчи учун учта нарсани босинг: келдими, дарсини топширдими, баҳоси қанча. Ота-она буни дарҳол кўради.</p></div>'+
-    '<div class="side"><div class="ringbox">'+ring(p,marked+'/'+ids.length,'gold','Белгиланган ўқувчилар')+'<div><b>'+(marked===ids.length&&ids.length?'Ҳамма белгиланди':'Белгиланди')+'</b><small>'+esc(nice(ui.date))+'</small></div></div></div></section>';
+    '<div class="side"><div class="ringbox">'+ring(p,marked+'/'+ids.length,'gold','Белгиланган ўқувчилар')+'<div><b>'+esc(subjectOf(ui.gid,t))+'</b><small>'+esc(t)+' · '+esc(nice(ui.date))+'</small></div></div></div></section>';
   h+='<section class="panel"><div class="controls">'+
-    '<div class="field grow"><label for="tg">Гуруҳ</label>'+groupSelect('tg')+'</div>'+
+    (auth&&auth.role==='rahbar'?'<div class="field grow"><label for="tt-t">Қайси устоз журнали</label><select id="tt-t" data-act="teacher">'+teachers().map(x=>'<option value="'+esc(x)+'"'+(x===t?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>':'')+
+    '<div class="field grow"><label for="tg">Гуруҳ</label><select id="tg" data-act="group">'+tg.map(x=>'<option value="'+x+'"'+(x===ui.gid?' selected':'')+'>'+esc(S.groups[x].name)+' ('+studentsOf(x).length+')</option>').join('')+'</select></div>'+
     '<div class="field"><label for="td">Сана</label><div class="datenav">'+
       '<button class="btn" type="button" data-act="day" data-v="-1" aria-label="Олдинги кун">‹</button>'+
       '<input type="date" id="td" data-act="date" value="'+ui.date+'">'+
@@ -537,11 +634,11 @@ function viewTeacher(){
       (ui.date!==TODAY?'<button class="btn" type="button" data-act="today" style="font-size:15px">Бугун</button>':'')+
     '</div></div></div>'+
     '<div class="controls" style="margin-top:12px">'+
-    '<div class="field grow"><label for="tt">Бугун нима ўтилди</label><input type="text" id="tt" data-act="dayfield" data-f="topic" value="'+esc(d.topic||'')+'" placeholder="Масалан: ўтган замон феъли"></div>'+
+    '<div class="field grow"><label for="tt">Бугун нима ўтилди</label><input type="text" id="tt" data-act="dayfield" data-f="topic" value="'+esc(d.topic||'')+'" placeholder="Дарс мавзуси"></div>'+
     '<div class="field grow"><label for="th">Уйга вазифа</label><input type="text" id="th" data-act="dayfield" data-f="hw" value="'+esc(d.hw||'')+'" placeholder="Ота-она ҳам кўради"></div>'+
     '</div><div class="counts" style="margin-top:14px">'+
     count('good',ic('check'),came,'келди')+count('warn',ic('clock'),late,'кечикди')+count('crit',ic('x'),abs,'келмади')+count('acc',ic('book'),done,'дарс топширди')+'</div></section>';
-  if(!ids.length){h+='<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ. «Раҳбар» бўлимида қўшинг.</p></section>';return h;}
+  if(!ids.length){h+='<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ. Раҳбар қўшиши керак.</p></section>';return h;}
   h+='<div class="cards">';
   ids.forEach(s=>{const st=S.students[s], r=(d.rows||{})[s]||{}, state=rowState(r);
     h+='<article class="scard'+(state?' s-'+state:'')+'"><div class="head">'+avatar(st.name)+'<div><b>'+esc(st.name)+'</b><span>'+(state?esc(state==='a'?'Келмади':LES[state][0]):'Ҳали белгиланмаган')+'</span></div></div>'+
@@ -552,70 +649,71 @@ function viewTeacher(){
       '<input type="text" id="n-'+s+'" data-act="note" data-sid="'+s+'" value="'+esc(r.n||'')+'" placeholder="Ота-онага изоҳ ёзиш (ихтиёрий)" aria-label="'+esc(st.name)+' учун изоҳ"></article>';
   });
   h+='</div>';
+  h+='<section class="panel"><h2>'+ic('users')+esc(g.name)+': умумий маълумот<small>охирги 30 кун, учала устоз дарслари бўйича</small>'+kindChip(g)+'</h2>'+groupRings(ui.gid)+'<div style="height:16px"></div>'+groupTable(ui.gid,false)+'</section>';
   return h;
 }
 
-function gradeChart(list){
-  const pts=list.filter(e=>e.r.g).slice(0,14).reverse();
-  if(pts.length<2) return '<p class="empty">График чиқиши учун камида 2 та баҳо керак.</p>';
-  const W=640,H=200,L=34,R=18,T=24,B=30, x=i=>L+(W-L-R)*i/(pts.length-1), y=g=>T+(H-T-B)*(5-g)/3;
-  let s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Баҳолар графиги">';
-  [5,4,3,2].forEach(g=>{s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(g)+'" y2="'+y(g)+'"/><text x="'+(L-10)+'" y="'+(y(g)+4)+'" text-anchor="end">'+g+'</text>';});
-  const P=pts.map((e,i)=>[x(i),y(e.r.g)]); let dp='M'+P[0][0].toFixed(1)+','+P[0][1].toFixed(1);
+/* ---------- parent ---------- */
+function gradeChart(days){
+  const pts=days.filter(d=>d.agg.gn).slice(0,14).reverse();
+  if(pts.length<2) return '<p class="empty">График чиқиши учун камида 2 кунлик баҳо керак.</p>';
+  const W=640,H=210,L=34,R=18,T=26,B=30, x=i=>L+(W-L-R)*i/(pts.length-1), y=g=>T+(H-T-B)*(5-g)/3;
+  let s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Кунлик ўртача баҳолар графиги">';
+  [5,4,3,2].forEach(g=>{s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(g)+'" y2="'+y(g)+'"/><text x="'+(L-10)+'" y="'+(y(g)+5)+'" text-anchor="end">'+g+'</text>';});
+  const P=pts.map((e,i)=>[x(i),y(e.agg.avg)]); let dp='M'+P[0][0].toFixed(1)+','+P[0][1].toFixed(1);
   for(let i=0;i<P.length-1;i++){const mx=(P[i][0]+P[i+1][0])/2; dp+=' C'+mx.toFixed(1)+','+P[i][1].toFixed(1)+' '+mx.toFixed(1)+','+P[i+1][1].toFixed(1)+' '+P[i+1][0].toFixed(1)+','+P[i+1][1].toFixed(1);}
   s+='<path class="area" d="'+dp+' L'+(W-R)+','+(H-B)+' L'+L+','+(H-B)+' Z"/><path class="ln" d="'+dp+'"/>';
-  const step=Math.ceil(pts.length/7);
-  pts.forEach((e,i)=>{s+='<circle class="dot" cx="'+x(i).toFixed(1)+'" cy="'+y(e.r.g).toFixed(1)+'" r="5"/><text class="val" x="'+x(i).toFixed(1)+'" y="'+(y(e.r.g)-11).toFixed(1)+'" text-anchor="middle">'+e.r.g+'</text>';
-    if(i%step===0||i===pts.length-1){const dd=parse(e.date);s+='<text x="'+x(i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'">'+dd.getDate()+'.'+String(dd.getMonth()+1).padStart(2,'0')+'</text>';}});
+  const step=Math.ceil(pts.length/6);
+  pts.forEach((e,i)=>{const v=e.agg.avg; s+='<circle class="dot" cx="'+P[i][0].toFixed(1)+'" cy="'+P[i][1].toFixed(1)+'" r="5"/><text class="val" x="'+P[i][0].toFixed(1)+'" y="'+(P[i][1]-11).toFixed(1)+'" text-anchor="middle">'+(v%1?v.toFixed(1):v)+'</text>';
+    if(i%step===0||i===pts.length-1){const dd=parse(e.date);s+='<text x="'+P[i][0].toFixed(1)+'" y="'+(H-8)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'">'+dd.getDate()+'.'+String(dd.getMonth()+1).padStart(2,'0')+'</text>';}});
   return s+'</svg>';
 }
-
+const stateText=a=>a.state==='a'?'Дарсларга келмади':a.n+' дарсдан '+a.y+' тасини топширди';
 function viewParent(){
   const ids=allowedStudents(); if(!ids.length||!S.students[ui.sid]) return emptyState();
   const st=S.students[ui.sid], g=S.groups[st.gid]||{};
-  const month=entriesOf(ui.sid,addDays(TODAY,-30)), s=stats(month), all=entriesOf(ui.sid);
+  const s=stats(entriesOf(ui.sid,addDays(TODAY,-30)));
+  const days=byDay(entriesOf(ui.sid)).map(d=>{d.agg=dayAgg(d.list);return d;});
   const aP=pct(s.att,s.attAll), lP=pct(s.done,s.lesAll);
-  let h='<section class="hero"><div><h1>Фарзандингиз <em>қандай ўқияпти</em></h1><p>Устоз ҳар дарсдан кейин белгилайди. Бу ерда давомат, топширилган дарслар ва баҳолар бир қарашда кўринади.</p></div></section>';
-  h+='<section class="panel"><div class="child">'+avatar(st.name,'big')+'<div class="who"><b>'+esc(st.name)+'</b><span>'+esc(g.name||'')+' · '+esc(g.teacher||'')+'</span></div>'+
-    '<div class="field" style="flex:1 1 240px"><label for="pc">Бошқа фарзандни танлаш</label><select id="pc" data-act="child">'+
-    ids.map(i=>'<option value="'+i+'"'+(i===ui.sid?' selected':'')+'>'+esc(S.students[i].name)+'</option>').join('')+'</select></div></div>';
-  const last=all[0];
-  if(last){const r=last.r, stt=rowState(r), cls=stt==='y'?'good':stt==='h'?'warn':stt?'crit':'none';
-    h+='<div class="lastday '+cls+'" style="margin-top:14px"><span class="bub">'+ic(stt==='y'?'check':stt==='h'?'half':stt?'x':'clock')+'</span><div class="txt"><small>Охирги дарс · '+esc(nice(last.date))+'</small><b>'+(stt==='a'?'Дарсга келмади':stt?LES[stt][0]:'Дарс ҳали баҳоланмаган')+'</b></div>'+
-      '<div class="chips">'+(r.a&&r.a!=='a'?'<span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span>':'')+(r.g?'<span class="chip acc">Баҳо: '+r.g+'</span>':'')+(r.p?'<span class="chip star">'+star()+r.p+'</span>':'')+'</div></div>';}
+  let h='<section class="hero"><div><h1>Фарзандингиз <em>қандай ўқияпти</em></h1><p>Устозлар ҳар дарсдан кейин белгилайди. Бу ерда давомат, топширилган дарслар ва баҳолар бир қарашда кўринади.</p></div></section>';
+  h+='<section class="panel"><div class="child">'+avatar(st.name,'big')+'<div class="who"><b>'+esc(st.name)+'</b><span>'+esc(g.name||'')+'</span><div class="chips" style="margin-top:6px">'+kindChip(g)+'</div></div>'+
+    (ids.length>1||!(auth&&auth.role==='ota-ona')?'<div class="field" style="flex:1 1 240px"><label for="pc">Бошқа фарзандни танлаш</label><select id="pc" data-act="child">'+ids.map(i=>'<option value="'+i+'"'+(i===ui.sid?' selected':'')+'>'+esc(S.students[i].name)+'</option>').join('')+'</select></div>':'')+'</div>';
+  const last=days[0];
+  if(last){const a=last.agg, cls=a.state==='y'?'good':a.state==='h'?'warn':a.state?'crit':'none';
+    h+='<div class="lastday '+cls+'" style="margin-top:14px"><span class="bub">'+ic(a.state==='y'?'check':a.state==='h'?'half':'x')+'</span><div class="txt"><small>Охирги дарс куни · '+esc(nice(last.date))+'</small><b>'+stateText(a)+'</b></div>'+
+      '<div class="chips">'+(a.gn?'<span class="chip acc">Ўртача баҳо: '+a.avg.toFixed(1)+'</span>':'')+(a.pts?'<span class="chip star">'+star()+a.pts+'</span>':'')+'</div></div>';}
   h+='</section>';
   if(auth&&auth.role==='ota-ona') h+='<section class="panel"><h2>'+ic('plus')+'Яна бир фарзандни қўшиш<small>бир аккаунтда ҳамма фарзандларингиз</small></h2><form data-form="addchild" class="controls"><div class="field grow"><label for="ac-c">Фарзанд коди</label><input type="text" id="ac-c" name="code" inputmode="numeric" maxlength="4" placeholder="4 та рақам" required></div><button class="btn primary" type="submit">'+ic('plus')+'Қўшиш</button></form></section>';
-  const two=all.slice(0,2);
-  if(two.length===2&&two.every(e=>e.r.a==='a')) h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 та дарсга келмади.</div>';
-  else if(two.length===2&&two.every(e=>e.r.l==='n')) h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 та дарсни топширмади.</div>';
+  if(days.length>=2&&days[0].agg.state==='a'&&days[1].agg.state==='a') h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 кун дарсга келмади.</div>';
+  else if(days.length>=2&&days[0].agg.state==='n'&&days[1].agg.state==='n') h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 кун бирорта дарсини топширмади.</div>';
   h+='<div class="stats">'+
-    stat(ring(aP,aP+'%',tone(aP),'Давомат'),'Давомат',s.att+' / '+s.attAll,'дарсга келди')+
+    stat(ring(aP,aP+'%',tone(aP),'Давомат'),'Давомат',s.att+' / '+s.attAll,'дарсга келди · 30 кун')+
     stat(ring(lP,lP+'%',tone(lP),'Топширилган дарслар'),'Дарс топшириш',s.done+' / '+s.lesAll,s.half?s.half+' таси чала':'чаласи йўқ')+
     stat(ring(s.gn?s.avg/5*100:0,s.gn?s.avg.toFixed(1):'—','blue','Ўртача баҳо'),'Ўртача баҳо',s.gn?s.avg.toFixed(1)+' / 5':'—',s.gn+' та баҳо')+
     stat('<span class="bigstar">'+star()+'</span>','Юлдузчалар',String(s.pts),'охирги 30 кунда')+'</div>';
-  h+='<div class="two"><section class="panel"><h2>'+ic('chart')+'Баҳолар ўзгариши</h2>'+gradeChart(all)+'</section>';
-  const dow=(parse(TODAY).getDay()+6)%7, wkStart=addDays(TODAY,-dow);
-  h+='<section class="panel"><h2>'+ic('cal')+'Охирги 4 ҳафта</h2><div class="cal">'+DOW2.map(x=>'<div class="dow">'+x+'</div>').join('');
-  const start=addDays(wkStart,-21);
-  for(let i=0;i<28;i++){const ds=addDays(start,i), d=dayOf(st.gid,ds), r=d&&d.rows&&d.rows[ui.sid]; const c=rowState(r); let tt='Дарс белгиланмаган';
-    if(c==='a') tt='Келмади'; else if(c) tt=LES[c][0];
-    h+='<div class="cell '+c+(ds===TODAY?' today':'')+'" title="'+esc(nice(ds)+': '+tt)+'"><span class="d">'+parse(ds).getDate()+'</span><span class="m" role="img" aria-label="'+esc(tt)+'">'+(c==='y'?ic('check'):c==='h'?ic('half'):c?ic('x'):'')+'</span></div>';}
-  h+='</div><div class="legend"><span><i style="background:var(--good)"></i>топширди</span><span><i style="background:var(--warn)"></i>чала топширди</span><span><i style="background:var(--crit)"></i>топширмади ёки келмади</span><span><i style="background:var(--bg);border:1px solid var(--line)"></i>дарс йўқ</span></div></section></div>';
-  h+='<section class="panel"><h2>'+ic('book')+'Кундалик<small>охирги дарслар</small></h2>';
-  if(!all.length) h+='<p class="empty">Ҳали ёзув йўқ. Устоз дарсни белгилаганда шу ерда кўринади.</p>';
-  all.slice(0,10).forEach(e=>{const r=e.r, c=rowState(r)||'none', dd=parse(e.date);
-    h+='<div class="entry"><div class="dbox '+c+'"><b>'+dd.getDate()+'</b><span>'+MON[dd.getMonth()].slice(0,3)+'</span></div><div class="body"><b>'+esc(e.topic||DOW[dd.getDay()])+'</b><div class="chips">'+
-      (r.a?'<span class="chip '+ATT[r.a][1]+'">'+ic(r.a==='p'?'check':r.a==='l'?'clock':'x')+ATT[r.a][0]+'</span>':'')+
-      (r.l&&r.a!=='a'?'<span class="chip '+LES[r.l][1]+'">'+ic('book')+LES[r.l][0]+'</span>':'')+
-      (r.g?'<span class="chip acc">Баҳо: '+r.g+'</span>':'')+
-      (r.p?'<span class="chip star">'+star()+r.p+'</span>':'')+'</div>'+
-      (r.n?'<div class="say"><small>Устоз изоҳи</small>'+esc(r.n)+'</div>':'')+
-      '<div class="f"><span>'+(e.hw?'Уйга вазифа: '+esc(e.hw):'')+'</span>'+
-      (r.seen?'<span class="chip good">'+ic('eye')+'Кўрилган</span>':'<button class="btn small primary" type="button" data-act="seen" data-date="'+e.date+'">'+ic('eye')+'Кўрдим</button>')+'</div></div></div>';});
+  const map={}; days.forEach(d=>{map[d.date]=d.agg;});
+  const dow=(parse(TODAY).getDay()+6)%7, wkStart=addDays(TODAY,-dow), start=addDays(wkStart,-21);
+  h+='<section class="panel"><h2>'+ic('cal')+'Охирги 4 ҳафта<small>катакдаги сон: нечта дарсдан нечтасини топширгани</small></h2><div class="cal">'+DOW2.map(x=>'<div class="dow">'+x+'</div>').join('');
+  for(let i=0;i<28;i++){const ds=addDays(start,i), a=map[ds], c=a?a.state:''; const tt=a?stateText(a):'Дарс белгиланмаган';
+    h+='<div class="cell '+c+(ds===TODAY?' today':'')+'" title="'+esc(nice(ds)+': '+tt)+'"><span class="d">'+parse(ds).getDate()+'</span><span class="m" role="img" aria-label="'+esc(tt)+'">'+(a?(a.state==='a'?ic('x'):'<b>'+a.y+'/'+a.n+'</b>'):'')+'</span></div>';}
+  h+='</div><div class="legend"><span><i style="background:var(--good)"></i>ҳамма дарсини топширди</span><span><i style="background:var(--warn)"></i>бир қисмини топширди</span><span><i style="background:var(--crit)"></i>топширмади ёки келмади</span><span><i style="background:var(--track)"></i>дарс йўқ</span></div></section>';
+  h+='<section class="panel"><h2>'+ic('book')+'Кундалик<small>охирги дарс кунлари</small></h2>';
+  if(!days.length) h+='<p class="empty">Ҳали ёзув йўқ. Устоз дарсни белгилаганда шу ерда кўринади.</p>';
+  days.slice(0,6).forEach(d=>{const a=d.agg, dd=parse(d.date);
+    h+='<div class="entry"><div class="dbox '+(a.state||'none')+'"><b>'+dd.getDate()+'</b><span>'+MON[dd.getMonth()].slice(0,3)+'</span></div><div class="body"><b>'+DOW[dd.getDay()]+' · '+stateText(a)+'</b>';
+    d.list.forEach(e=>{const r=e.r;
+      h+='<div class="lesson"><div class="lt"><b>'+esc(subjectOf(st.gid,e.teacher))+'</b><span>'+esc(e.teacher||'')+(e.topic?' · '+esc(e.topic):'')+'</span></div><div class="chips">'+
+        (r.a?'<span class="chip '+ATT[r.a][1]+'">'+ic(r.a==='p'?'check':r.a==='l'?'clock':'x')+ATT[r.a][0]+'</span>':'')+
+        (r.l&&r.a!=='a'?'<span class="chip '+LES[r.l][1]+'">'+ic('book')+LES[r.l][0]+'</span>':'')+
+        (r.g?'<span class="chip acc">Баҳо: '+r.g+'</span>':'')+(r.p?'<span class="chip star">'+star()+r.p+'</span>':'')+'</div>'+
+        (r.n?'<div class="say"><small>Устоз изоҳи</small>'+esc(r.n)+'</div>':'')+(e.hw&&r.a!=='a'?'<div class="hw">Уйга вазифа: '+esc(e.hw)+'</div>':'')+'</div>';});
+    h+='<div class="f"><span></span>'+(a.seen?'<span class="chip good">'+ic('eye')+'Кўрилган</span>':'<button class="btn small primary" type="button" data-act="seen" data-date="'+d.date+'">'+ic('eye')+'Кўрдим</button>')+'</div></div></div>';});
   h+='</section>';
+  h+='<section class="panel"><h2>'+ic('chart')+'Баҳолар ўзгариши<small>кунлик ўртача баҳо</small></h2>'+gradeChart(days)+'</section>';
   return h;
 }
 
+/* ---------- admin ---------- */
 function dayColumns(){
   const by={};
   for(const id in S.days){const d=S.days[id]; let a=0,n=0; for(const s in (d.rows||{})){ if(!S.students[s]) continue; const r=d.rows[s]; if(r.a){n++; if(r.a!=='a') a++;}} if(n){by[d.date]=by[d.date]||[0,0]; by[d.date][0]+=a; by[d.date][1]+=n;}}
@@ -630,73 +728,101 @@ function dayColumns(){
        '<text x="'+(xx+ww/2).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle">'+dd.getDate()+'.'+String(dd.getMonth()+1).padStart(2,'0')+'</text>';});
   return s+'</svg>';
 }
-function barRow(name,p,label,color,av){return '<div class="bar"><div class="nm">'+(av||'')+'<span>'+esc(name)+'</span></div><div class="tr"><i class="k-'+color+'" style="width:'+Math.max(0,Math.min(100,p))+'%"></i></div><div class="n">'+label+'</div></div>'}
-
 function viewAdmin(){
-  const from=addDays(TODAY,-30), gids=sortedIds(S.groups,'name'), sids=sortedIds(S.students,'name');
+  const from=addDays(TODAY,-30), gids=groupIds(), sids=sortedIds(S.students,'name');
   const per={}; sids.forEach(s=>{per[s]=stats(entriesOf(s,from));});
   const total=stats([].concat.apply([],sids.map(s=>entriesOf(s,from))));
   const aP=pct(total.att,total.attAll), lP=pct(total.done,total.lesAll);
-  let h='<section class="hero"><div><h1>Марказ бўйича <em>умумий ҳолат</em></h1><p>Қайси гуруҳ яхши ўқияпти, ким орқада қоляпти, ким энг фаол. Пастда гуруҳ ва ўқувчи қўшасиз.</p></div></section>';
+  const nb=sids.filter(s=>(S.groups[S.students[s].gid]||{}).kind==='b').length, nd=sids.filter(s=>(S.groups[S.students[s].gid]||{}).kind==='d').length;
+  let h='<section class="hero"><div><h1>Мадраса бўйича <em>умумий ҳолат</em></h1><p>Ётоқда қоладиган ва келиб кетадиган ўқувчилар алоҳида жадвалда. Ким орқада қоляпти, ким энг фаол, шу ерда кўринади.</p></div></section>';
   h+='<div class="stats">'+
-    stat('<span class="bigstar" style="background:var(--accent-soft);color:var(--accent)">'+ic('users')+'</span>','Ўқувчилар',String(sids.length),gids.length+' та гуруҳда')+
-    stat(ring(aP,aP+'%',tone(aP),'Умумий давомат'),'Давомат',total.att+' / '+total.attAll,'охирги 30 кун')+
-    stat(ring(lP,lP+'%',tone(lP),'Дарс топшириш'),'Дарс топшириш',total.done+' / '+total.lesAll,'охирги 30 кун')+
-    stat(ring(total.gn?total.avg/5*100:0,total.gn?total.avg.toFixed(1):'—','blue','Ўртача баҳо'),'Ўртача баҳо',total.gn?total.avg.toFixed(1)+' / 5':'—','барча гуруҳлар')+'</div>';
-  // attention
+    stat('<span class="bigstar" style="background:var(--accent-soft);color:var(--accent)">'+ic('users')+'</span>','Жами ўқувчилар',String(sids.length),nb+' таси ётоқда · '+nd+' таси келиб кетади')+
+    stat(ring(aP,aP+'%',tone(aP),'Умумий давомат'),'Давомат',(total.attAll-total.att)+' марта','дарс қолдирилган · 30 кун')+
+    stat(ring(lP,lP+'%',tone(lP),'Дарс топшириш'),'Дарс топшириш',(total.lesAll-total.done)+' марта','тўлиқ топширилмаган · 30 кун')+
+    stat(ring(total.gn?total.avg/5*100:0,total.gn?total.avg.toFixed(1):'—','blue','Ўртача баҳо'),'Ўртача баҳо',total.gn?total.avg.toFixed(1)+' / 5':'—','барча ўқувчилар')+'</div>';
+  // the two (or more) group tables
+  gids.forEach(gid=>{const g=S.groups[gid], st=groupStats(gid,from), a=pct(st.att,st.attAll), l=pct(st.done,st.lesAll);
+    h+='<section class="panel"><h2>'+ic(g.kind==='b'?'bed':g.kind==='d'?'walk':'users')+esc(g.name)+'<small>'+studentsOf(gid).length+' ўқувчи</small></h2>'+
+      '<div class="chips" style="margin-bottom:14px"><span class="chip '+tone(a)+'">Давомат '+a+'%</span><span class="chip '+tone(l)+'">Дарс топшириш '+l+'%</span><span class="chip acc">Ўртача баҳо '+(st.gn?st.avg.toFixed(1):'—')+'</span></div>'+groupTable(gid,true)+'</section>';});
+  // attention + top
   const warn=[];
-  sids.forEach(s=>{const l=entriesOf(s).slice(0,5); const ab=l.filter(e=>e.r.a==='a').length, ns=l.filter(e=>e.r.l==='n'&&e.r.a!=='a').length; if(ab>=2||ns>=2) warn.push({s:s,ab:ab,ns:ns});});
-  h+='<div class="two"><section class="panel"><h2>'+ic('bell')+'Эътибор талаб қилади<small>охирги 5 дарс</small></h2>';
+  sids.forEach(s=>{const dd=byDay(entriesOf(s)).slice(0,5); const ab=dd.filter(d=>dayAgg(d.list).state==='a').length; let ns=0; dd.forEach(d=>d.list.forEach(e=>{if(e.r.l==='n'&&e.r.a!=='a') ns++;})); if(ab>=2||ns>=5) warn.push({s:s,ab:ab,ns:ns});});
+  h+='<div class="two"><section class="panel"><h2>'+ic('bell')+'Эътибор талаб қилади<small>охирги 5 дарс куни</small></h2>';
   if(!warn.length) h+='<p class="empty">Ҳозирча орқада қолаётган ўқувчи йўқ.</p>';
   else{h+='<div class="people">';warn.forEach(w=>{const st=S.students[w.s];
-    h+='<div class="person">'+avatar(st.name)+'<div class="nm"><b>'+esc(st.name)+'</b><span>'+esc((S.groups[st.gid]||{}).name||'')+(st.parent?' · '+esc(st.parent):'')+'</span></div><div class="chips">'+(w.ab>=2?'<span class="chip crit">'+ic('x')+w.ab+' марта келмади</span>':'')+(w.ns>=2?'<span class="chip warn">'+ic('book')+w.ns+' марта топширмади</span>':'')+'</div></div>';});h+='</div>';}
+    h+='<div class="person">'+avatar(st.name)+'<div class="nm"><b>'+esc(st.name)+'</b><span>'+esc((S.groups[st.gid]||{}).name||'')+'</span></div><div class="chips">'+(w.ab>=2?'<span class="chip crit">'+ic('x')+w.ab+' кун келмади</span>':'')+(w.ns>=5?'<span class="chip warn">'+ic('book')+w.ns+' дарсни топширмади</span>':'')+'</div></div>';});h+='</div>';}
   h+='</section><section class="panel"><h2>'+star().replace('class="ic fill"','class="ic fill" style="color:var(--star)"')+'Энг фаол ўқувчилар<small>юлдузчалар бўйича</small></h2>';
   const top=sids.filter(s=>per[s].pts>0).sort((a,b)=>per[b].pts-per[a].pts).slice(0,5);
   if(!top.length) h+='<p class="empty">Ҳали юлдузча берилмаган.</p>';
   else{const mx=per[top[0]].pts; h+='<div class="bars">'+top.map(s=>barRow(S.students[s].name,per[s].pts/mx*100,per[s].pts+' ★','gold',avatar(S.students[s].name,'sm'))).join('')+'</div>';}
   h+='</section></div>';
-  h+='<div class="two"><section class="panel"><h2>'+ic('chart')+'Кунлик давомат<small>%, барча гуруҳлар</small></h2>'+dayColumns()+'</section>';
-  h+='<section class="panel"><h2>'+ic('users')+'Гуруҳлар<small>охирги 30 кун</small></h2>';
-  if(!gids.length) h+='<p class="empty">Ҳали гуруҳ йўқ. Пастда қўшинг.</p>';
-  else gids.forEach(gid=>{const ss=studentsOf(gid), stt=stats([].concat.apply([],ss.map(s=>entriesOf(s,from)))), a=pct(stt.att,stt.attAll), l=pct(stt.done,stt.lesAll);
-    h+='<div class="gbar"><b>'+esc(S.groups[gid].name)+'</b><small>'+esc(S.groups[gid].teacher||'')+' · '+ss.length+' ўқувчи · ўртача баҳо '+(stt.gn?stt.avg.toFixed(1):'—')+'</small>'+(S.groups[gid].teacher?'<div class="chips"><span class="chip code">Устоз кириш коди: <b>'+tCode(S.groups[gid].teacher.trim())+'</b></span></div>':'')+barRow('Давомат',a,a+'%',tone(a))+barRow('Дарс топшириш',l,l+'%',tone(l))+'</div>';});
-  h+='</section></div>';
+  h+='<div class="two"><section class="panel"><h2>'+ic('chart')+'Кунлик давомат<small>%, барча ўқувчилар</small></h2>'+dayColumns()+'</section>';
+  h+='<section class="panel"><h2>'+ic('key')+'Устозлар ва кириш кодлари</h2>';
+  const ts=teachers();
+  if(!ts.length) h+='<p class="empty">Ҳали устоз йўқ. Гуруҳ қўшганда устозларни ёзинг.</p>';
+  else{h+='<div class="people">';ts.forEach(t=>{h+='<div class="person">'+avatar(t)+'<div class="nm"><b>'+esc(t)+'</b><span>'+esc(subjectOf(teacherGroups(t)[0],t))+' · '+teacherGroups(t).map(x=>esc(S.groups[x].name)).join(' · ')+'</span></div><span class="chip code">Код: <b>'+tCode(t)+'</b></span></div>';});h+='</div>';}
+  h+='<div class="hint">Умумий ҳужра кодсиз очилади: уни ҳавола билган ҳар ким кўра олади.</div></section></div>';
   h+='<div class="two"><section class="panel"><h2>'+ic('plus')+'Ўқувчи қўшиш</h2><form data-form="student" class="stack" style="gap:12px">'+
     '<div class="field"><label for="as-n">Исм-фамилия</label><input type="text" id="as-n" name="name" required></div>'+
     '<div class="field"><label for="as-g">Гуруҳ</label><select id="as-g" name="gid" required>'+gids.map(x=>'<option value="'+x+'">'+esc(S.groups[x].name)+'</option>').join('')+'</select></div>'+
     '<div class="field"><label for="as-p">Ота-онаси</label><input type="text" id="as-p" name="parent" placeholder="Исми ва телефони"></div>'+
     '<div><button class="btn primary" type="submit"'+(gids.length?'':' disabled')+'>'+ic('plus')+'Қўшиш</button></div></form></section>'+
     '<section class="panel"><h2>'+ic('plus')+'Гуруҳ қўшиш</h2><form data-form="group" class="stack" style="gap:12px">'+
-    '<div class="field"><label for="ag-n">Гуруҳ номи</label><input type="text" id="ag-n" name="name" required placeholder="Масалан: Араб тили — 2-гуруҳ"></div>'+
-    '<div class="field"><label for="ag-t">Устоз</label><input type="text" id="ag-t" name="teacher"></div>'+
+    '<div class="field"><label for="ag-n">Гуруҳ номи</label><input type="text" id="ag-n" name="name" required></div>'+
+    '<div class="field"><label for="ag-k">Тури</label><select id="ag-k" name="kind"><option value="b">Ётоқда қоладиганлар</option><option value="d">Келиб кетадиганлар</option><option value="">Бошқа</option></select></div>'+
+    '<div class="field"><label for="ag-t">Устозлар ва фанлари (Исм: фан, вергул билан)</label><input type="text" id="ag-t" name="teachers" value="'+esc(ts.map(x=>x+': '+subjectOf(teacherGroups(x)[0],x)).join(', '))+'"></div>'+
     '<div><button class="btn primary" type="submit">'+ic('plus')+'Қўшиш</button></div></form></section></div>';
-  h+='<section class="panel"><h2>'+ic('users')+'Барча ўқувчилар<small>'+sids.length+' та</small></h2>';
-  if(!sids.length) h+='<p class="empty">Ҳали ўқувчи йўқ.</p>';
-  else{h+='<div class="people">';sids.forEach(s=>{const st=S.students[s], p=per[s], a=pct(p.att,p.attAll);
-    h+='<div class="person">'+avatar(st.name)+'<div class="nm"><b>'+esc(st.name)+'</b><span>'+esc((S.groups[st.gid]||{}).name||'')+(st.parent?' · '+esc(st.parent):'')+'</span></div>'+
-      '<div class="chips"><span class="chip code">Ота-она коди: <b>'+sCode(s)+'</b></span>'+(p.attAll?'<span class="chip '+(a>=80?'good':a>=55?'warn':'crit')+'">Давомат '+a+'%</span>':'')+(p.gn?'<span class="chip acc">Ўртача '+p.avg.toFixed(1)+'</span>':'')+'</div>'+
-      (ui.del===s?'<span class="chips"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ</button></span>':'<button class="btn small" type="button" data-act="del" data-sid="'+s+'">Ўчириш</button>')+'</div>';});h+='</div>';}
-  h+='</section>';
+  h+='<section class="panel"><h2>Намуна маълумотлар</h2><p class="empty" style="margin-bottom:12px">Синов учун 30 та ўйлаб топилган ўқувчи (10 ётоқда, 20 келиб кетади) ва 3 устоз. Тугмани боссангиз, базадаги ҳозирги ҳамма ёзувлар ўчиб, ўрнига шу намуна ёзилади ва ўзгаришлар сақланадиган бўлади.</p>'+
+    (ui.reset?'<div class="chips"><button class="btn danger" type="button" data-act="reset-yes">Ҳа, ҳаммасини ўчириб қайта юкла</button><button class="btn" type="button" data-act="reset-no">Йўқ</button></div>':'<button class="btn" type="button" data-act="reset"'+(busy?' disabled':'')+'>Намунани қайта юклаш</button>')+'</section>';
   return h;
 }
-const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Раҳбар'};
+/* ---------- common room ---------- */
+function dotTone(v){return v==null?'none':v>=0.8?'good':v>=0.55?'warn':'crit'}
+function studentDots(sid){
+  const st=S.students[sid], all=entriesOf(sid), days=byDay(all).slice(0,5);
+  let tv=null; if(days.length){let x=0;days.forEach(d=>{const a=d.list[0].r.a; x+=a==='p'?1:a==='l'?0.5:0;});tv=x/days.length;}
+  const out=[['Тартиб',dotTone(tv)]];
+  gTeachers(S.groups[st.gid]).forEach(t=>{const l=all.filter(e=>e.teacher===t).slice(0,5); let v=null; if(l.length){let x=0;l.forEach(e=>{x+=e.r.a==='a'?0:e.r.l==='y'?1:e.r.l==='h'?0.5:0;});v=x/l.length;} out.push([subjectOf(st.gid,t),dotTone(v)]);});
+  return '<div class="dots">'+out.map(o=>'<span class="dot '+o[1]+'" title="'+esc(o[0])+'"><i></i>'+esc(o[0])+'</span>').join('')+'</div>';
+}
+function viewRoom(){
+  const from=addDays(TODAY,-30);
+  let ids=Object.keys(S.students); if(!ids.length) return emptyState();
+  if(ui.rf!=='all') ids=ids.filter(s=>(S.groups[S.students[s].gid]||{}).kind===ui.rf);
+  const rows=ids.map(s=>({s:s,b:score(entriesOf(s,from))})).sort((a,b)=>b.b-a.b||S.students[a.s].name.localeCompare(S.students[b.s].name,'uz'));
+  const mine=auth&&auth.role==='ota-ona'?(auth.sids||[]):[];
+  let h='<section class="hero"><div><h1>Умумий ҳужра: <em>ким қандай ўқияпти</em></h1><p>Охирги 30 кунлик балл бўйича рейтинг. Энг яхши ўқиётган ўқувчи биринчи ўринда.</p></div></section>';
+  h+='<section class="panel"><div class="roomtop"><div class="seg2" role="group" aria-label="Гуруҳ">'+[['all','Ҳаммаси'],['b','Ётоқда қоладиганлар'],['d','Келиб кетадиганлар']].map(o=>'<button type="button" class="'+(ui.rf===o[0]?'on':'')+'" aria-pressed="'+(ui.rf===o[0])+'" data-act="rf" data-v="'+o[0]+'">'+o[1]+'</button>').join('')+'</div>'+
+    '<div class="legend" style="margin:0"><span><i style="background:var(--good);border-radius:50%"></i>яхши</span><span><i style="background:var(--warn);border-radius:50%"></i>ўртача</span><span><i style="background:var(--crit);border-radius:50%"></i>суст</span><span><i style="background:var(--track);border-radius:50%"></i>маълумот йўқ</span></div></div>'+
+    '<p class="rules"><b>Балл қандай ҳисобланади:</b> топширилган дарс +10, чала топширилган +5, ҳар бир юлдузча +3, қолдирилган дарс −5. Шарикчалар охирги 5 дарс кунини кўрсатади.</p></section>';
+  if(!rows.length) return h+'<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ.</p></section>';
+  h+='<div class="podium">';
+  rows.slice(0,3).forEach((r,i)=>{const st=S.students[r.s];
+    h+='<article class="pcard p'+(i+1)+(mine.indexOf(r.s)>=0?' mine':'')+'"><span class="medal">'+(i+1)+'</span>'+avatar(st.name,'xl')+'<b class="pn">'+esc(st.name)+'</b><span class="pb">'+r.b+' балл</span>'+studentDots(r.s)+'</article>';});
+  h+='</div>';
+  if(rows.length>3){h+='<section class="panel"><div class="rlist">';
+    rows.slice(3).forEach((r,i)=>{const st=S.students[r.s];
+      h+='<div class="rrow'+(mine.indexOf(r.s)>=0?' mine':'')+'"><span class="rk">'+(i+4)+'</span>'+avatar(st.name)+'<div class="rn"><b>'+esc(st.name)+'</b>'+studentDots(r.s)+'</div><span class="rb">'+r.b+'<small>балл</small></span></div>';});
+    h+='</div></section>';}
+  return h;
+}
 function viewLogin(){
   let h='<section class="hero"><div><h1>Хуш <em>келибсиз</em></h1><p>Электрон кундаликка кириш учун аввал кимлигингизни танланг, кейин кириш кодингизни ёзинг.</p></div></section>';
   if(!ui.lrole){
     const card=(r,icn,t,d)=>'<button type="button" class="rolecard" data-act="lrole" data-v="'+r+'"><span class="bub">'+ic(icn)+'</span><b>'+t+'</b><span>'+d+'</span></button>';
-    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат, дарс ва баҳоларни белгилайман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('rahbar','chart','Раҳбарман','Гуруҳлар, ўқувчилар ва умумий ҳолат')+'</div>';
+    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат, дарс ва баҳоларни белгилайман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('rahbar','chart','Раҳбарман','Гуруҳлар, ўқувчилар ва умумий ҳолат')+card('hujra','cup','Умумий ҳужра','Барча ўқувчилар рейтинги ва баллари. Кодсиз очилади')+'</div>';
   }
   const r=ui.lrole, ts=teachers();
-  h+='<section class="panel login"><h2>'+ic(r==='ustoz'?'book':r==='ota-ona'?'users':'chart')+RNAME[r]+' сифатида кириш</h2><form data-form="login" class="stack" style="gap:14px">';
+  h+='<section class="panel login"><h2>'+ic(r==='ustoz'?'book':r==='ota-ona'?'users':r==='hujra'?'cup':'chart')+(r==='hujra'?'Умумий ҳужрага кириш':RNAME[r]+' сифатида кириш')+'</h2><form data-form="login" class="stack" style="gap:14px">';
   if(r==='ustoz') h+='<div class="field"><label for="lg-t">Исмингизни танланг</label><select id="lg-t" name="teacher">'+ts.map(t=>'<option>'+esc(t)+'</option>').join('')+'</select></div>';
-  h+='<div class="field"><label for="lg-c">'+(r==='ota-ona'?'Фарзандингиз коди':'Кириш коди')+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="4 та рақам" required></div>';
+  h+='<div class="field"><label for="lg-c">'+(r==='ota-ona'?'Фарзандингиз коди':r==='hujra'?'Ҳужра коди':'Кириш коди')+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="4 та рақам" required></div>';
   if(ui.lerr) h+='<div class="note crit">'+esc(ui.lerr)+'</div>';
   h+='<div class="chips"><button class="btn primary" type="submit">Кириш</button><button class="btn" type="button" data-act="lback">Орқага</button></div></form>'+
-    '<div class="hint"><b>Синов нусхаси учун.</b> Раҳбар коди: '+ADMIN_CODE+'. Устоз ва ота-она кодлари «Раҳбар» бўлимида ҳар бир гуруҳ ва ўқувчи ёнида кўринади. Кодни раҳбар ўзи тарқатади.</div></section>';
+    '<div class="hint"><b>Синов нусхаси учун.</b> Раҳбар коди: '+ADMIN_CODE+'. Устоз ва ота-она кодлари «Раҳбар» бўлимида кўринади. Кодни раҳбар ўзи тарқатади.</div></section>';
   return h;
 }
 function emptyState(){
-  return '<section class="panel"><h2>Ҳали маълумот йўқ</h2><p class="empty" style="margin-bottom:14px">Ишни бошлаш учун «Раҳбар» бўлимида гуруҳ ва ўқувчиларни қўшинг ёки намуна маълумотларни юклаб, иловани синаб кўринг.</p><div class="chips"><a class="btn primary" href="#rahbar">'+ic('plus')+'Гуруҳ қўшиш</a><button class="btn" type="button" data-act="seed">Намуна маълумотларни юклаш</button></div></section>';
+  return '<section class="panel"><h2>Ҳали маълумот йўқ</h2><p class="empty" style="margin-bottom:14px">Раҳбар гуруҳ ва ўқувчиларни қўшгандан кейин бу ерда маълумот чиқади.</p>'+(auth&&auth.role==='rahbar'?'<div class="chips"><a class="btn primary" href="#rahbar">'+ic('plus')+'Гуруҳ қўшиш</a><button class="btn" type="button" data-act="reset-yes">Намуна маълумотларни юклаш</button></div>':'')+'</section>';
 }
 
 /* ---------- render ---------- */
@@ -704,26 +830,26 @@ function typing(){const a=document.activeElement;return a&&$('#app').contains(a)
 function render(force){
   if(!force&&typing()){dirty=true;return;}
   dirty=false;
-  const gids=sortedIds(S.groups,'name'), sids=sortedIds(S.students,'name');
-  const ag=allowedGroups(), as=allowedStudents();
-  if(ag.indexOf(ui.gid)<0) ui.gid=ag[0]||null;
+  const gids=groupIds(), as=allowedStudents();
   if(as.indexOf(ui.sid)<0) ui.sid=as[0]||null;
-  if(auth&&auth.role!=='rahbar') ui.role=auth.role;
-  $('#tabs').hidden=!(auth&&auth.role==='rahbar');
+  const allow=auth?ALLOW[auth.role]:[];
+  if(auth&&allow.indexOf(ui.role)<0) ui.role=auth.role;
+  document.querySelectorAll('.tabs a').forEach(a=>{a.hidden=allow.indexOf(a.dataset.role)<0;const on=a.dataset.role===ui.role;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  $('#mode').textContent=mode==='db'?'':'Намуна режими';
+  $('#tabs').hidden=allow.length<2;
   const me=$('#me'); me.hidden=!auth;
   me.innerHTML=auth?'<span class="chip">'+RNAME[auth.role]+(auth.teacher?' · '+esc(auth.teacher):'')+'</span><button class="btn small" type="button" data-act="logout">Чиқиш</button>':'';
-  document.querySelectorAll('.tabs a').forEach(a=>{const on=a.dataset.role===ui.role;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-  $('#mode').textContent=mode==='db'?'':'Намуна режими';
   let h='';
   if(mode==='local') h+='<div class="note"><b>Намуна маълумотлар.</b> Исмлар ва баҳолар ўйлаб топилган. Бу кўринишда ўзгаришлар сақланмайди.</div>';
   if(dbError) h+='<div class="note crit"><b>Маълумотлар базасига уланиб бўлмади.</b> Саҳифани кейинроқ қайта очинг.</div>';
   else if(mode==='db'&&loading) h+='<div class="note">'+(slow?'Маълумотлар ҳали етиб келмади. Интернет секин бўлиши мумкин, кутиб туринг.':'Юкланмоқда…')+'</div>';
+  if(busy) h+='<div class="note">Намуна маълумотлар ёзилмоқда, бир оз кутинг…</div>';
   if(mode==='db'&&loading&&!gids.length){ $('#app').innerHTML=h; return; }
-  if(!auth){ $('#app').innerHTML=h+viewLogin(); if(refocus){const el=$('#app').querySelector(refocus); if(el) el.focus({preventScroll:true}); refocus=null;} return; }
-  if(!gids.length&&ui.role!=='rahbar') h+=emptyState();
+  if(!auth) h+=viewLogin();
   else if(ui.role==='ustoz') h+=viewTeacher();
   else if(ui.role==='ota-ona') h+=viewParent();
-  else h+=(!gids.length&&!sids.length&&mode==='db'?emptyState():'')+viewAdmin();
+  else if(ui.role==='hujra') h+=viewRoom();
+  else h+=viewAdmin();
   $('#app').innerHTML=h;
   if(refocus){const el=$('#app').querySelector(refocus); if(el) el.focus({preventScroll:true}); refocus=null;}
 }
@@ -735,37 +861,44 @@ document.addEventListener('click',e=>{
   if(act==='mark'){
     const f=b.dataset.f; let v=b.dataset.v; if(f==='g') v=Number(v);
     refocus='[data-act="mark"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]';
-    editDay(ui.gid,ui.date,d=>{const r=Object.assign({},d.rows[sid]); if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'&&!r.l) r.l='n'; delete r.seen; d.rows[sid]=r;});
+    editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'&&!r.l) r.l='n'; delete r.seen; d.rows[sid]=r;});
   }else if(act==='star'){
     const n=Number(b.dataset.v);
     refocus='[data-act="star"][data-sid="'+sid+'"][data-v="'+n+'"]';
-    editDay(ui.gid,ui.date,d=>{const r=Object.assign({},d.rows[sid]); r.p=(r.p||0)===n?n-1:n; if(!r.p) delete r.p; d.rows[sid]=r;});
+    editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); r.p=(r.p||0)===n?n-1:n; if(!r.p) delete r.p; d.rows[sid]=r;});
   }else if(act==='day'){ui.date=addDays(ui.date,Number(b.dataset.v));refocus='[data-act="day"][data-v="'+b.dataset.v+'"]';render(true);}
   else if(act==='today'){ui.date=TODAY;render(true);}
-  else if(act==='seen'){const st=S.students[ui.sid]; editDay(st.gid,b.dataset.date,d=>{d.rows[ui.sid]=Object.assign({},d.rows[ui.sid],{seen:true});});}
+  else if(act==='seen'){const date=b.dataset.date; entriesOf(ui.sid).filter(x=>x.date===date&&!x.r.seen).forEach(x=>{const d0=S.days[x.id]; editDay(d0.gid,d0.date,dayTeacher(d0),d=>{d.rows[ui.sid]=Object.assign({},d.rows[ui.sid],{seen:true});});});}
   else if(act==='del'){ui.del=sid;render(true);}
   else if(act==='del-no'){ui.del=null;render(true);}
   else if(act==='del-yes'){ui.del=null;delDoc('students',sid);toast('Ўқувчи рўйхатдан ўчирилди.');}
-  else if(act==='seed'){seed();}
-  else if(act==='lrole'){ui.lrole=b.dataset.v;ui.lerr='';refocus='#lg-c';render(true);}
+  else if(act==='reset'){ui.reset=true;render(true);}
+  else if(act==='reset-no'){ui.reset=false;render(true);}
+  else if(act==='reset-yes'){ui.reset=false;seed();}
+  else if(act==='rf'){ui.rf=b.dataset.v;refocus='[data-act="rf"][data-v="'+ui.rf+'"]';render(true);}
+  else if(act==='lrole'){
+    if(b.dataset.v==='hujra'){auth={role:'hujra'};saveAuth();ui.role='hujra';ui.lrole=null;ui.lerr='';render(true);}
+    else{ui.lrole=b.dataset.v;ui.lerr='';refocus='#lg-c';render(true);}
+  }
   else if(act==='lback'){ui.lrole=null;ui.lerr='';render(true);}
   else if(act==='logout'){auth=null;saveAuth();ui.lrole=null;ui.lerr='';render(true);}
 });
 document.addEventListener('change',e=>{
   const t=e.target, act=t.dataset&&t.dataset.act; if(!act) return;
   if(act==='group'){ui.gid=t.value;render(true);}
+  else if(act==='teacher'){ui.teacher=t.value;render(true);}
   else if(act==='child'){ui.sid=t.value;render(true);}
   else if(act==='date'){if(t.value){ui.date=t.value;render(true);}}
-  else if(act==='dayfield'){const f=t.dataset.f,v=t.value.trim();editDay(ui.gid,ui.date,d=>{d[f]=v;});}
-  else if(act==='note'){const sid=t.dataset.sid,v=t.value.trim();editDay(ui.gid,ui.date,d=>{const r=Object.assign({},d.rows[sid]); if(v) r.n=v; else delete r.n; delete r.seen; d.rows[sid]=r;});}
+  else if(act==='dayfield'){const f=t.dataset.f,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{d[f]=v;});}
+  else if(act==='note'){const sid=t.dataset.sid,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); if(v) r.n=v; else delete r.n; delete r.seen; d.rows[sid]=r;});}
 });
 document.addEventListener('focusout',()=>{setTimeout(()=>{if(dirty) render();},0)});
 document.addEventListener('submit',e=>{
   const f=e.target.closest('[data-form]'); if(!f) return; e.preventDefault();
   const fd=new FormData(f);
+  if(document.activeElement) document.activeElement.blur();
   if(f.dataset.form==='login'||f.dataset.form==='addchild'){
     const code=String(fd.get('code')||'').trim();
-    if(document.activeElement) document.activeElement.blur();
     if(f.dataset.form==='addchild'){
       const sid=Object.keys(S.students).find(x=>sCode(x)===code);
       if(!sid) toast('Бундай кодли ўқувчи топилмади. Кодни раҳбардан сўранг.');
@@ -774,6 +907,7 @@ document.addEventListener('submit',e=>{
     }
     const r=ui.lrole; let ok=null;
     if(r==='rahbar'){ if(code===ADMIN_CODE) ok={role:r}; }
+    else if(r==='hujra'){ if(code===ROOM_CODE) ok={role:r}; }
     else if(r==='ustoz'){ const t=String(fd.get('teacher')||''); if(t&&code===tCode(t)) ok={role:r,teacher:t}; }
     else{ const sid=Object.keys(S.students).find(x=>sCode(x)===code); if(sid) ok={role:r,sids:[sid]}; }
     if(ok){auth=ok;saveAuth();ui.role=r;ui.lrole=null;ui.lerr='';}
@@ -781,40 +915,49 @@ document.addEventListener('submit',e=>{
     render(true); return;
   }
   const name=String(fd.get('name')||'').trim(); if(!name) return;
-  if(document.activeElement) document.activeElement.blur();
   if(f.dataset.form==='student'){const nid=newId('s');putDoc('students',nid,{name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim()});toast(name+' қўшилди. Ота-она коди: '+sCode(nid));}
-  else{const id=newId('g');ui.gid=id;putDoc('groups',id,{name:name,subject:'',teacher:String(fd.get('teacher')||'').trim()});toast('«'+name+'» гуруҳи қўшилди.');}
+  else{const ts=[],sub={};String(fd.get('teachers')||'').split(',').forEach(x=>{const a=x.split(':'),n=(a[0]||'').trim(); if(!n) return; ts.push(n); const sb=(a[1]||'').trim(); if(sb) sub[n]=sb;});putDoc('groups',newId('g'),{name:name,kind:String(fd.get('kind')||''),teachers:ts,subjects:sub});toast('«'+name+'» гуруҳи қўшилди.');}
 });
-function route(){const r=location.hash.replace('#','');ui.role=ROLES.indexOf(r)>=0?r:(auth?auth.role:'ustoz');ui.del=null;render(true);}
+function route(){const r=location.hash.replace('#','');ui.role=ROLES.indexOf(r)>=0?r:(auth?auth.role:'ustoz');ui.del=null;ui.reset=false;render(true);}
 window.addEventListener('hashchange',route);
 
 async function seed(){
   const d=sampleData(TODAY);
-  if(!db){S=d;render(true);return;}
-  toast('Намуна маълумотлар юкланмоқда…');
+  if(!dbReal){S=d;toast('Намуна маълумотлар юкланди.');render(true);return;}
+  if(busy) return; busy=true; render(true);
   try{
-    for(const c of ['groups','students','days']) for(const id in d[c]) await db.doc(c+'/'+id).set(d[c][id]);
-    toast('Намуна маълумотлар юкланди.');
+    for(const c of ['days','students','groups']) for(const id of Object.keys(DBS[c])) await dbReal.doc(c+'/'+id).delete();
+    for(const c of ['groups','students','days']) for(const id in d[c]) await dbReal.doc(c+'/'+id).set(d[c][id]);
+    toast('Намуна маълумотлар базага ёзилди.');
   }catch(err){writeErr(err);}
+  busy=false; render(true);
 }
 
 /* ---------- storage ---------- */
+let dbReal=null; const DBS={groups:{},students:{},days:{}};
+function applyDb(){
+  if(!(got.groups&&got.students&&got.days)){S=DBS;return;}
+  // a store that was never set up for the madrasa layout (empty, or the first 9-student sample) shows the built-in sample instead
+  const ready=Object.keys(DBS.groups).some(g=>DBS.groups[g].kind!==undefined);
+  if(ready){S=DBS;mode='db';db=dbReal;}
+  else if(mode!=='local'){S=sampleData(TODAY);mode='local';db=null;}
+}
 function connect(){
-  mode='db'; loading=true; S={groups:{},students:{},days:{}}; render(true);
+  mode='db'; loading=true; S=DBS; render(true);
   const timer=setTimeout(()=>{if(loading){slow=true;render();}},10000);
   ['groups','students','days'].forEach(name=>{
-    db.collection(name).onSnapshot(snap=>{
+    dbReal.collection(name).onSnapshot(snap=>{
       const o={}; snap.docs.forEach(d=>{o[d.id]=clone(d.data());});
       if(name==='days') Object.assign(o,pend);
-      S[name]=o;
+      DBS[name]=o;
       if(!snap.metadata.fromCache){got[name]=true; if(got.groups&&got.students&&got.days){loading=false;slow=false;clearTimeout(timer);}}
-      render();
+      applyDb(); render();
     },()=>{clearTimeout(timer);loading=false;dbError=true;render();});
   });
 }
 route();
 if(window.claude&&typeof window.claude.use==='function'){
-  window.claude.use('db').then(x=>{if(x){db=x;connect();}}).catch(()=>{});
+  window.claude.use('db').then(x=>{if(x){dbReal=x;db=x;connect();}}).catch(()=>{});
 }
 })();
 </script>
