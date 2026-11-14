@@ -549,7 +549,7 @@ const KIND={b:'Ётоқда қолади',d:'Келиб кетади'};
 const hash4=s=>{let h=7;for(let i=0;i<s.length;i++)h=(h*33+s.charCodeAt(i))>>>0;return String(1000+h%9000)};
 const ADMIN_CODE='2026', ROOM_CODE='3030', TEACHER_CODE='1111';
 const sCode=id=>hash4('s'+id), tCode=name=>hash4('t'+name);
-function codeOf(sid){const st=S.students[sid]; return (st&&st.code)||sCode(sid)}
+function codeOf(sid){const st=S.students[sid]; return (st&&st.code)||(net?'':sCode(sid))}
 function codeTaken(code,except){return Object.keys(S.students).some(x=>x!==except&&codeOf(x)===code)}
 let auth=null;
 try{const a=JSON.parse(localStorage.getItem('kundalik-auth')||'null'); if(a&&ROLES.indexOf(a.role)>=0) auth=a;}catch(e){}
@@ -559,6 +559,61 @@ let db=null, mode='local', loading=false, slow=false, dbError=false, busy=false;
 const got={}, pend={}, queues={};
 const ui={rf:'all',role:'ustoz',gid:null,date:TODAY,sid:null,teacher:null,del:null,reset:false,lrole:null,lerr:''};
 let dirty=false, refocus=null, toastTimer=null;
+/* ---------- server ---------- */
+const API='https://zgpicquoidqomtoygfuz.supabase.co/functions/v1/api';
+let net=false, tok=null, refT=null, sendQ=Promise.resolve(), pendingWrites=0, pushOn=null, swOk=false;
+const srv={students:{},groups:{}};
+try{tok=localStorage.getItem('kundalik-tok')||null;}catch(e){}
+function setTok(t){tok=t||null;try{if(tok) localStorage.setItem('kundalik-tok',tok); else localStorage.removeItem('kundalik-tok');}catch(e){}}
+async function call(b){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({t:tok},b))});return r.json();}
+function apiErr(e){toast(e==='auth'?'Бу амалга рухсатингиз йўқ. Чиқиб, қайта кириб кўринг.':e==='codeTaken'?'Бу код бошқа талабада бор ёки 4 рақамли эмас. Бошқа код танланг.':e==='wait'?'Кўп марта хато код киритилди. 15 дақиқадан кейин уриниб кўринг.':'Сақлаб бўлмади. Қайта уриниб кўринг.');}
+function send(b,after){pendingWrites++; sendQ=sendQ.then(()=>call(b)).then(r=>{if(r&&r.error) apiErr(r.error); else if(after) after(r||{});}).catch(()=>{toast('Интернет йўқ. Сақланмади, қайта уриниб кўринг.');}).then(()=>{pendingWrites--; scheduleRefresh();}); return sendQ;}
+function scheduleRefresh(){clearTimeout(refT);refT=setTimeout(refresh,700);}
+async function refresh(){
+  if(!net) return;
+  try{
+    const r=await call({a:'state'}); if(!r||r.error) return;
+    if(pendingWrites>0){scheduleRefresh();return;}
+    S={groups:r.groups||{},students:r.students||{},days:r.days||{},settings:r.settings||{}};
+    srv.students=Object.assign({},S.students); srv.groups=Object.assign({},S.groups);
+    if(auth&&auth.role!=='hujra'&&r.role!==auth.role){auth=null;setTok(null);saveAuth();ui.lrole=null;}
+    if(auth&&auth.role==='ota-ona') auth.sids=r.sids||[];
+    loading=false; dbError=false; render();
+  }catch(e){ if(loading){loading=false;dbError=true;render();} }
+}
+function b64key(k){const pad='='.repeat((4-k.length%4)%4), raw=atob((k+pad).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(raw,c=>c.charCodeAt(0));}
+async function pushCheck(){
+  try{
+    if(!swOk||!('PushManager' in window)||!('Notification' in window)){pushOn='no';render();return;}
+    const reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription();
+    pushOn=!!sub; if(sub&&tok) call({a:'push.sub',sub:sub.toJSON()}).catch(()=>{});
+  }catch(e){pushOn='no';}
+  render();
+}
+async function pushEnable(){
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){toast('Хабарномага рухсат берилмади. Телефон созламаларида «Кундалик» учун хабарномаларни ёқинг.');return;}
+    const reg=await navigator.serviceWorker.ready, k=await call({a:'push.key'});
+    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64key(k.key)});
+    const r=await call({a:'push.sub',sub:sub.toJSON()});
+    if(r&&r.ok){pushOn=true;toast('Хабарномалар ёқилди.');} else toast('Хабарномани ёқиб бўлмади. Қайта уриниб кўринг.');
+  }catch(e){toast('Хабарномани ёқиб бўлмади. Илова экранга ўрнатилганини текширинг.');}
+  render(true);
+}
+async function pushDisable(){
+  try{const reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){await call({a:'push.unsub',endpoint:sub.endpoint}); await sub.unsubscribe();} pushOn=false; toast('Хабарномалар ўчирилди.');}catch(e){}
+  render(true);
+}
+function pushPanel(){
+  if(!net||!auth||auth.role!=='ota-ona') return '';
+  let body;
+  if(pushOn===true) body='<div class="chips"><span class="chip good">'+ic('bell')+'Хабарномалар ёқилган</span><button class="btn small" type="button" data-act="push-off">Ўчириш</button></div><p class="empty" style="margin-top:8px">Фарзандингиз дарсга келмаса дарҳол, келган куни эса устоз белгилагач битта хабар келади.</p>';
+  else if(pushOn===false) body='<p class="empty" style="margin-bottom:10px">Фарзандингиз дарсга келган-келмагани ва дарсини топширгани ҳақида шу телефонга хабар келиб туради.</p><button class="btn primary" type="button" data-act="push-on">'+ic('bell')+'Хабарномаларни ёқиш</button>';
+  else if(pushOn==='no') body='<p class="empty">Бу браузерда хабарнома ишламайди. iPhone\'да аввал иловани экранга ўрнатинг («Поделиться» → «На экран Домой») ва шу белги орқали очинг.</p>';
+  else body='<p class="empty">Текширилмоқда…</p>';
+  return '<section class="panel"><h2>'+ic('bell')+'Хабарномалар</h2>'+body+'</section>';
+}
 
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},3800)}
 function writeErr(e){
@@ -646,7 +701,16 @@ function editDay(gid,date,t,fn){
   const id=dayId(gid,date,t);
   const d=clone(S.days[id]||{gid:gid,date:date,topic:'',hw:'',rows:{}});
   if(!d.rows) d.rows={};
+  const prev=S.days[id]||{rows:{}};
   fn(d); S.days[id]=d; pend[id]=d; render();
+  if(net){
+    delete pend[id];
+    ['topic','hw'].forEach(f=>{if((d[f]||'')!==(prev[f]||'')) send({a:'day.put',gid:gid,date:date,f:f,v:d[f]||''});});
+    for(const sid in d.rows){const x=d.rows[sid], y=(prev.rows||{})[sid]||{}, patch={}; let ch=false;
+      ['a','ar','qu'].forEach(f=>{if(x[f]!==y[f]){patch[f]=x[f]===undefined?null:x[f];ch=true;}});
+      if(ch) send({a:'mark',sid:sid,date:date,patch:patch}); else if(x.seen&&!y.seen) send({a:'seen',sid:sid,date:date});}
+    return;
+  }
   if(!db){delete pend[id];return;}
   enqueue('days/'+id,async()=>{
     if(pend[id]!==d) return;
@@ -656,10 +720,18 @@ function editDay(gid,date,t,fn){
 }
 function putDoc(coll,id,body){
   S[coll][id]=body; render(true);
+  if(net){
+    if(coll==='students'){const isNew=!srv.students[id], d={name:body.name,gid:body.gid,parent:body.parent||'',book:body.book||null,lesson:body.lesson||null,book2:body.book2||null,lesson2:body.lesson2||null,exam:body.exam||null}; if(body.code) d.code=body.code;
+      send(Object.assign({a:'student.put',data:d},isNew?{}:{sid:id}),r=>{if(isNew&&r.student) toast(r.student.name+' қўшилди. Ота-она коди: '+r.student.code);});}
+    else if(coll==='groups') send(Object.assign({a:'group.put',data:body},srv.groups[id]?{gid:id}:{}));
+    else if(coll==='settings') send({a:'books.put',list:body.list||[]});
+    return;
+  }
   if(db) enqueue(coll+'/'+id,()=>db.doc(coll+'/'+id).set(clone(body)));
 }
 function delDoc(coll,id){
   delete S[coll][id]; render(true);
+  if(net){ if(coll==='students') send({a:'student.del',sid:id}); return; }
   if(db) enqueue(coll+'/'+id,()=>db.doc(coll+'/'+id).delete());
 }
 const newId=p=>p+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);
@@ -755,8 +827,7 @@ function viewTeacher(){
     '<div class="field grow"><label for="th">Уйга вазифа</label><input type="text" id="th" data-act="dayfield" data-f="hw" value="'+esc(d.hw||'')+'" placeholder="Ота-она ҳам кўради"></div>'+
     '</div><div class="counts" style="margin-top:14px">'+
     count('good',ic('check'),came,'келди')+count('warn',ic('clock'),late,'кечикди')+count('crit',ic('x'),abs,'келмади')+count('acc',ic('book'),done,'араб тили топширди')+count('acc',ic('book'),done2,'Қуръон топширди')+'</div></section>';
-  if(!ids.length){h+='<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ. Раҳбар қўшиши керак.</p></section>';return h;}
-  h+='<section class="panel"><h2>'+ic('users')+'Талабалар<small>исмни босинг, белгилаш тугмалари очилади</small></h2><div class="rlist">';
+  h+='<section class="panel"><h2>'+ic('users')+'Талабалар<small>исмни босинг, белгилаш тугмалари очилади</small></h2>'+(ids.length?'':'<p class="empty">Бу гуруҳда ҳали талаба йўқ. Пастдаги «Янги талаба қўшиш» орқали қўшинг.</p>')+'<div class="rlist">';
   ids.forEach(s=>{const st=S.students[s], r=(d.rows||{})[s]||{}, state=rowState(r), open=ui.topen===s;
     const sum=(r.a||r.ar||r.qu)?((r.a?'<span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span>':'')+(r.a==='a'?'':SUBJ.map(sb=>'<span class="dot '+(r[sb[0]]==='y'?'good':r[sb[0]]==='n'?'crit':'none')+'"><i></i>'+sb[1]+'</span>').join(''))):'<span class="chip">Ҳали белгиланмаган</span>';
     h+='<div class="ritem'+(open?' open':'')+(state?' s-'+state:'')+'"><button type="button" class="rrow" data-act="topen" data-sid="'+s+'" aria-expanded="'+open+'">'+avatar(st.name)+'<span class="rn"><b>'+esc(st.name)+'</b><span class="tsum">'+sum+(st.exam&&st.exam.s==='prep'?'<span class="chip acc">Имтиҳон</span>':'')+'</span></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
@@ -808,6 +879,7 @@ function viewParent(){
       '<div class="chips">'+''+'</div></div>';}
   h+='</section>';
   h+='<section class="panel">'+booksBlock(st)+'</section>';
+  h+=pushPanel();
   if(auth&&auth.role==='ota-ona') h+='<section class="panel"><h2>'+ic('plus')+'Яна бир фарзандни қўшиш<small>бир аккаунтда ҳамма фарзандларингиз</small></h2><form data-form="addchild" class="controls"><div class="field grow"><label for="ac-c">Фарзанд коди</label><input type="text" id="ac-c" name="code" inputmode="numeric" maxlength="4" placeholder="4 та рақам" required></div><button class="btn primary" type="submit">'+ic('plus')+'Қўшиш</button></form></section>';
   if(days.length>=2&&days[0].agg.state==='a'&&days[1].agg.state==='a') h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 кун дарсга келмади.</div>';
   else if(days.length>=2&&days[0].agg.state==='n'&&days[1].agg.state==='n') h+='<div class="note crit"><b>Эътибор беринг.</b> '+esc(st.name)+' кетма-кет 2 кун бирорта дарсини топширмади.</div>';
@@ -896,7 +968,8 @@ function viewAdmin(){
     '<div class="field"><label for="ag-t">Устозлар (вергул билан ажратинг)</label><input type="text" id="ag-t" name="teachers" value="'+esc(teachers().join(', '))+'"></div>'+
     '<div><button class="btn primary" type="submit">'+ic('plus')+'Қўшиш</button></div></form></section></div>';
   h+='<section class="panel"><h2>'+ic('book')+'Китоблар<small>номи ва дарслар сони (бўш қолса, чекланмаган)</small></h2><form data-form="books" class="stack" style="gap:10px"><div class="bookgrid">'+books().map((b,i)=>'<div class="bookrow"><span class="rk">'+(i+1)+'</span><input type="text" name="bn'+i+'" id="bk-n'+i+'" value="'+esc(b.name)+'" aria-label="'+(i+1)+'-китоб номи"><input type="number" name="bl'+i+'" id="bk-l'+i+'" min="0" value="'+(b.lessons||'')+'" placeholder="дарслар" aria-label="'+(i+1)+'-китобда неча дарс" inputmode="numeric"></div>').join('')+'</div><div><button class="btn primary" type="submit">Сақлаш</button></div></form></section>';
-  h+='<section class="panel"><h2>Намуна маълумотлар</h2><p class="empty" style="margin-bottom:12px">Синов учун 30 та ўйлаб топилган ўқувчи (10 ётоқда, 20 келиб кетади) ва 3 устоз. Тугмани боссангиз, базадаги ҳозирги ҳамма ёзувлар ўчиб, ўрнига шу намуна ёзилади ва ўзгаришлар сақланадиган бўлади.</p>'+
+  if(net) h+='<section class="panel"><h2>'+ic('book')+'Маълумотларни сақлаб олиш</h2><p class="empty" style="margin-bottom:10px">Барча талабалар ва белгилар битта файл бўлиб телефон ёки компьютерга тушади. Ойда бир марта сақлаб қўйинг.</p><button class="btn" type="button" data-act="export">Файлга сақлаш</button></section>';
+  if(!net) h+='<section class="panel"><h2>Намуна маълумотлар</h2><p class="empty" style="margin-bottom:12px">Синов учун 30 та ўйлаб топилган ўқувчи (10 ётоқда, 20 келиб кетади) ва 3 устоз. Тугмани боссангиз, базадаги ҳозирги ҳамма ёзувлар ўчиб, ўрнига шу намуна ёзилади ва ўзгаришлар сақланадиган бўлади.</p>'+
     (ui.reset?'<div class="chips"><button class="btn danger" type="button" data-act="reset-yes">Ҳа, ҳаммасини ўчириб қайта юкла</button><button class="btn" type="button" data-act="reset-no">Йўқ</button></div>':'<button class="btn" type="button" data-act="reset"'+(busy?' disabled':'')+'>Намунани қайта юклаш</button>')+'</section>';
   return h;
 }
@@ -940,7 +1013,7 @@ function viewLogin(){
   h+='<div class="field"><label for="lg-c">'+(r==='ota-ona'?'Фарзандингиз коди':r==='hujra'?'Ҳужра коди':'Кириш коди')+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="4 та рақам" required></div>';
   if(ui.lerr) h+='<div class="note crit">'+esc(ui.lerr)+'</div>';
   h+='<div class="chips"><button class="btn primary" type="submit">Кириш</button><button class="btn" type="button" data-act="lback">Орқага</button></div></form>'+
-    '<div class="hint"><b>Синов нусхаси учун.</b> Раҳбар коди: '+ADMIN_CODE+', устозлар коди: '+TEACHER_CODE+' (ҳамма устозга битта). Ота-она кодлари «Раҳбар» бўлимидаги жадвалда кўринади.</div></section>';
+    (net?'':'<div class="hint"><b>Синов нусхаси учун.</b> Раҳбар коди: '+ADMIN_CODE+', устозлар коди: '+TEACHER_CODE+' (ҳамма устозга битта). Ота-она кодлари «Раҳбар» бўлимидаги жадвалда кўринади.</div>')+'</section>';
   return h;
 }
 function emptyState(){
@@ -1009,7 +1082,10 @@ document.addEventListener('click',e=>{
     else{ui.lrole=b.dataset.v;ui.lerr='';refocus='#lg-c';render(true);}
   }
   else if(act==='lback'){ui.lrole=null;ui.lerr='';render(true);}
-  else if(act==='logout'){auth=null;saveAuth();ui.lrole=null;ui.lerr='';render(true);}
+  else if(act==='logout'){auth=null;setTok(null);pushOn=null;saveAuth();ui.lrole=null;ui.lerr='';render(true);}
+  else if(act==='export'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})), l=document.createElement('a'); l.href=u; l.download='kundalik-'+TODAY+'.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); toast('Файл сақланди.');}catch(e){toast('Сақлаб бўлмади.');}}
+  else if(act==='push-on'){pushEnable();}
+  else if(act==='push-off'){pushDisable();}
 });
 document.addEventListener('change',e=>{
   const t=e.target, act=t.dataset&&t.dataset.act; if(!act) return;
@@ -1032,6 +1108,16 @@ document.addEventListener('submit',e=>{
   if(document.activeElement) document.activeElement.blur();
   if(f.dataset.form==='login'||f.dataset.form==='addchild'){
     const code=String(fd.get('code')||'').trim();
+    if(net){
+      const add=f.dataset.form==='addchild';
+      call(add?{a:'addchild',code:code}:{a:'login',role:ui.lrole,code:code}).then(r=>{
+        if(!r||r.error){const m=r&&r.error==='wait'?'Кўп марта хато код киритилди. 15 дақиқадан кейин уриниб кўринг.':'Код нотўғри. Қайта текшириб ёзинг ёки кодни раҳбардан сўранг.'; if(add) toast(m); else ui.lerr=m; render(true); return;}
+        setTok(r.token); auth={role:r.role,sids:r.sids||[]}; saveAuth(); ui.role=r.role; ui.lrole=null; ui.lerr='';
+        if(add){ui.sid=(r.sids||[]).slice(-1)[0]; toast('Фарзанд қўшилди.');}
+        render(true); refresh().then(()=>{if(r.role==='ota-ona') pushCheck();});
+      }).catch(()=>{const m='Интернет йўқ. Қайта уриниб кўринг.'; if(add) toast(m); else ui.lerr=m; render(true);});
+      return;
+    }
     if(f.dataset.form==='addchild'){
       const sid=Object.keys(S.students).find(x=>codeOf(x)===code);
       if(!sid) toast('Бундай кодли ўқувчи топилмади. Кодни раҳбардан сўранг.');
@@ -1051,7 +1137,7 @@ document.addEventListener('submit',e=>{
   const name=String(fd.get('name')||'').trim(); if(!name) return;
   if(f.dataset.form==='student'){const nid=newId('s'), cd=String(fd.get('code')||'').trim();
     if(cd&&!/^\d{4}$/.test(cd)){toast('Код 4 та рақамдан иборат бўлиши керак.');return;}
-    if(cd&&codeTaken(cd,nid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');return;}putDoc('students',nid,Object.assign({name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim(),book:Math.max(1,Math.min(NB,Number(fd.get('book'))||1)),lesson:Math.max(1,Number(fd.get('lesson'))||1)},Number(fd.get('book2'))?{book2:Math.max(1,Math.min(NB,Number(fd.get('book2')))),lesson2:Math.max(1,Number(fd.get('lesson2'))||1)}:{},cd?{code:cd}:{}));toast(name+' қўшилди. Ота-она коди: '+codeOf(nid));}
+    if(cd&&codeTaken(cd,nid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');return;}putDoc('students',nid,Object.assign({name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim(),book:Math.max(1,Math.min(NB,Number(fd.get('book'))||1)),lesson:Math.max(1,Number(fd.get('lesson'))||1)},Number(fd.get('book2'))?{book2:Math.max(1,Math.min(NB,Number(fd.get('book2')))),lesson2:Math.max(1,Number(fd.get('lesson2'))||1)}:{},cd?{code:cd}:{}));if(!net) toast(name+' қўшилди. Ота-она коди: '+codeOf(nid));}
   else{const ts=[],sub={};String(fd.get('teachers')||'').split(',').forEach(x=>{const a=x.split(':'),n=(a[0]||'').trim(); if(!n) return; ts.push(n); const sb=(a[1]||'').trim(); if(sb) sub[n]=sb;});putDoc('groups',newId('g'),{name:name,kind:String(fd.get('kind')||''),teachers:ts,subjects:sub});toast('«'+name+'» гуруҳи қўшилди.');}
 });
 function route(){const r=location.hash.replace('#','');ui.role=ROLES.indexOf(r)>=0?r:(auth?auth.role:'ustoz');ui.del=null;ui.reset=false;render(true);}
@@ -1092,7 +1178,18 @@ function connect(){
   });
 }
 route();
-if('serviceWorker' in navigator&&/github\.io$/.test(location.hostname)){try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}}
+if('serviceWorker' in navigator&&/github\.io$/.test(location.hostname)){try{navigator.serviceWorker.register('sw.js').then(()=>{swOk=true;}).catch(()=>{});swOk=true;}catch(e){}}
+if(!(window.claude&&typeof window.claude.use==='function')){
+  Promise.race([call({a:'ping'}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('slow')),8000))]).then(r=>{
+    if(!r||!r.ok) return;
+    net=true; mode='db'; loading=true; S={groups:{},students:{},days:{},settings:{}};
+    if(auth&&auth.role!=='hujra'&&!tok){auth=null;saveAuth();}
+    render(true);
+    refresh().then(()=>{if(auth&&auth.role==='ota-ona') pushCheck();});
+    setInterval(()=>{if(!document.hidden) refresh();},20000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden) refresh();});
+  }).catch(()=>{});
+}
 if(window.claude&&typeof window.claude.use==='function'){
   window.claude.use('db').then(x=>{if(x){dbReal=x;db=x;connect();}}).catch(()=>{});
 }
