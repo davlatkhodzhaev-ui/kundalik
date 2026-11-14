@@ -730,7 +730,7 @@ function editDay(gid,date,t,fn){
 function putDoc(coll,id,body){
   S[coll][id]=body; render(true);
   if(net){
-    if(coll==='students'){const isNew=!srv.students[id], d={name:body.name,gid:body.gid,parent:body.parent||'',book:body.book||null,lesson:body.lesson||null,book2:body.book2||null,lesson2:body.lesson2||null,exam:body.exam||null}; if(body.code) d.code=body.code;
+    if(coll==='students'){const isNew=!srv.students[id], d={name:body.name,gid:body.gid,parent:body.parent||'',book:body.book||null,lesson:body.lesson||null,book2:body.book2||null,lesson2:body.lesson2||null,exam:body.exam||null}; if(body.code) d.code=body.code; if((body.photo||'')!==((srv.students[id]||{}).photo||'')) d.photo=body.photo||null;
       send(Object.assign({a:'student.put',data:d},isNew?{}:{sid:id}),r=>{if(isNew&&r.student) toast(r.student.name+' қўшилди. Ота-она коди: '+r.student.code);});}
     else if(coll==='groups') send(Object.assign({a:'group.put',data:body},srv.groups[id]?{gid:id}:{}));
     else if(coll==='settings') send({a:'books.put',list:body.list||[]});
@@ -768,6 +768,11 @@ const ic=n=>'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</s
 const star=()=>'<svg class="ic fill" viewBox="0 0 24 24" aria-hidden="true">'+STAR+'</svg>';
 const HUES=[['#24337f','#5868ef'],['#0a7a50','#22b983'],['#a8641a','#e0a83e'],['#7a3fc0','#b07cf2'],['#b02a55','#ea6a8f'],['#126c8c','#3fb4d6'],['#3d4763','#7d89ab'],['#8a5a12','#c79a3e']];
 function photoOf(name){for(const k in S.students){const st=S.students[k]; if(st.name===name&&st.photo) return st.photo;} return ''}
+function shrink(file){return new Promise((res,rej)=>{const img=new Image(), u=URL.createObjectURL(file);
+  img.onload=()=>{try{const n=160,c=document.createElement('canvas');c.width=n;c.height=n;const m=Math.min(img.width,img.height);
+    c.getContext('2d').drawImage(img,(img.width-m)/2,(img.height-m)/3,m,m,0,0,n,n);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.82));}catch(e){rej(e);}};
+  img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('img'));}; img.src=u;});}
+function photoField(pre){return '<div class="field"><label for="'+pre+'-ph">Расми (ихтиёрий)</label><div class="chips" style="align-items:center"><span data-phprev>'+(ui.newPhoto?'<img class="av" src="'+ui.newPhoto+'" alt="">':'')+'</span><input type="file" accept="image/*" id="'+pre+'-ph" data-act="newphoto" style="max-width:100%"></div></div>';}
 function avatar(name,cls){
   name=String(name||'?'); const ph=photoOf(name); if(ph) return '<img class="av '+(cls||'')+'" src="'+esc(ph)+'" alt="">';
   const parts=name.trim().split(/\s+/); const ini=(parts[0][0]||'')+(parts[1]?parts[1][0]:'');
@@ -846,12 +851,13 @@ function viewTeacher(){
       '<div class="q"><span class="lab">3. Қуръон дарси</span>'+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],r.qu)+'</div>'+
       '<div class="q"><span class="lab">4. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
       '<div class="q"><span class="lab">5. Имтиҳон</span>'+examBlock(s,st)+'</div>'+
-      '<div class="q"><label class="lab" for="tc-'+s+'">6. Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div></div>';
+      '<div class="q"><label class="lab" for="tc-'+s+'">6. Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
+      '<div class="q"><label class="lab" for="tp-'+s+'">7. Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div></div>';
     h+='</div>';});
   h+='</div></section>';
   h+='<section class="panel"><h2>'+ic('plus')+'Янги талаба қўшиш<small>'+esc(g.name)+' гуруҳига</small></h2><form data-form="student" class="stack" style="gap:12px"><input type="hidden" name="gid" value="'+ui.gid+'">'+
     '<div class="field"><label for="ts-n">Исм-фамилия</label><input type="text" id="ts-n" name="name" required></div>'+bookFields('ts')+
-    '<div class="field"><label for="ts-p">Ота-онаси</label><input type="text" id="ts-p" name="parent" placeholder="Исми ва телефони"></div>'+
+    '<div class="field"><label for="ts-p">Ота-онаси</label><input type="text" id="ts-p" name="parent" placeholder="Исми ва телефони"></div>'+photoField('ts')+
     '<div><button class="btn primary" type="submit">'+ic('plus')+'Қўшиш</button></div></form></section>';
   h+='<section class="panel"><h2>'+ic('users')+esc(g.name)+': умумий маълумот<small>охирги 30 кун</small>'+kindChip(g)+'</h2>'+groupRings(ui.gid)+'<div style="height:16px"></div>'+groupTable(ui.gid,false)+'</section>';
   return h;
@@ -969,7 +975,7 @@ function viewAdmin(){
   h+='<div class="two"><section class="panel"><h2>'+ic('plus')+'Ўқувчи қўшиш</h2><form data-form="student" class="stack" style="gap:12px">'+
     '<div class="field"><label for="as-n">Исм-фамилия</label><input type="text" id="as-n" name="name" required></div>'+
     '<div class="field"><label for="as-g">Гуруҳ</label><select id="as-g" name="gid" required>'+gids.map(x=>'<option value="'+x+'">'+esc(S.groups[x].name)+'</option>').join('')+'</select></div>'+
-    bookFields('as')+'<div class="field"><label for="as-p">Ота-онаси</label><input type="text" id="as-p" name="parent" placeholder="Исми ва телефони"></div>'+
+    bookFields('as')+'<div class="field"><label for="as-p">Ота-онаси</label><input type="text" id="as-p" name="parent" placeholder="Исми ва телефони"></div>'+photoField('as')+
     '<div><button class="btn primary" type="submit"'+(gids.length?'':' disabled')+'>'+ic('plus')+'Қўшиш</button></div></form></section>'+
     '<section class="panel"><h2>'+ic('plus')+'Гуруҳ қўшиш</h2><form data-form="group" class="stack" style="gap:12px">'+
     '<div class="field"><label for="ag-n">Гуруҳ номи</label><input type="text" id="ag-n" name="name" required></div>'+
@@ -1093,6 +1099,7 @@ document.addEventListener('click',e=>{
   else if(act==='lback'){ui.lrole=null;ui.lerr='';render(true);}
   else if(act==='logout'){auth=null;setTok(null);pushOn=null;saveAuth();ui.lrole=null;ui.lerr='';render(true);}
   else if(act==='export'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})), l=document.createElement('a'); l.href=u; l.download='kundalik-'+TODAY+'.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); toast('Файл сақланди.');}catch(e){toast('Сақлаб бўлмади.');}}
+  else if(act==='sphoto-del'){const st=S.students[sid]; if(st){const c=Object.assign({},st); delete c.photo; putDoc('students',sid,c);}}
   else if(act==='push-on'){pushEnable();}
   else if(act==='push-off'){pushDisable();}
 });
@@ -1100,6 +1107,8 @@ document.addEventListener('change',e=>{
   const t=e.target, act=t.dataset&&t.dataset.act; if(!act) return;
   if(act==='group'){ui.gid=t.value;render(true);}
   else if(act==='teacher'){ui.teacher=t.value;render(true);}
+  else if(act==='newphoto'){const fl=t.files&&t.files[0]; if(!fl) return; shrink(fl).then(d=>{ui.newPhoto=d; document.querySelectorAll('[data-phprev]').forEach(x=>{x.innerHTML='<img class="av" src="'+d+'" alt="">';});}).catch(()=>toast('Расмни ўқиб бўлмади. Бошқа расм танланг.'));}
+  else if(act==='sphoto'){const fl=t.files&&t.files[0], sid=t.dataset.sid; if(!fl||!S.students[sid]) return; shrink(fl).then(d=>{const st=S.students[sid]; if(!st) return; putDoc('students',sid,Object.assign({},st,{photo:d})); toast('Расм сақланди.');}).catch(()=>toast('Расмни ўқиб бўлмади. Бошқа расм танланг.'));}
   else if(act==='scode'){const sid=t.dataset.sid, st=S.students[sid], v=t.value.trim(); if(!st) return;
     if(!/^\d{4}$/.test(v)){toast('Код 4 та рақамдан иборат бўлиши керак.');t.value=codeOf(sid);return;}
     if(codeTaken(v,sid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');t.value=codeOf(sid);return;}
@@ -1146,7 +1155,7 @@ document.addEventListener('submit',e=>{
   const name=String(fd.get('name')||'').trim(); if(!name) return;
   if(f.dataset.form==='student'){const nid=newId('s'), cd=String(fd.get('code')||'').trim();
     if(cd&&!/^\d{4}$/.test(cd)){toast('Код 4 та рақамдан иборат бўлиши керак.');return;}
-    if(cd&&codeTaken(cd,nid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');return;}putDoc('students',nid,Object.assign({name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim(),book:Math.max(1,Math.min(NB,Number(fd.get('book'))||1)),lesson:Math.max(1,Number(fd.get('lesson'))||1)},Number(fd.get('book2'))?{book2:Math.max(1,Math.min(NB,Number(fd.get('book2')))),lesson2:Math.max(1,Number(fd.get('lesson2'))||1)}:{},cd?{code:cd}:{}));if(!net) toast(name+' қўшилди. Ота-она коди: '+codeOf(nid));}
+    if(cd&&codeTaken(cd,nid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');return;}putDoc('students',nid,Object.assign({name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim(),book:Math.max(1,Math.min(NB,Number(fd.get('book'))||1)),lesson:Math.max(1,Number(fd.get('lesson'))||1)},Number(fd.get('book2'))?{book2:Math.max(1,Math.min(NB,Number(fd.get('book2')))),lesson2:Math.max(1,Number(fd.get('lesson2'))||1)}:{},cd?{code:cd}:{},ui.newPhoto?{photo:ui.newPhoto}:{}));ui.newPhoto=null;if(!net) toast(name+' қўшилди. Ота-она коди: '+codeOf(nid));}
   else{const ts=[],sub={};String(fd.get('teachers')||'').split(',').forEach(x=>{const a=x.split(':'),n=(a[0]||'').trim(); if(!n) return; ts.push(n); const sb=(a[1]||'').trim(); if(sb) sub[n]=sb;});putDoc('groups',newId('g'),{name:name,kind:String(fd.get('kind')||''),teachers:ts,subjects:sub});toast('«'+name+'» гуруҳи қўшилди.');}
 });
 function route(){const r=location.hash.replace('#','');ui.role=ROLES.indexOf(r)>=0?r:(auth?auth.role:'ustoz');ui.del=null;ui.reset=false;render(true);}
