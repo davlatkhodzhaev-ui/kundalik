@@ -443,7 +443,7 @@ function sampleData(todayIso){
           const Lv=level[sid], A=Math.min(0.98,Lv+(gid==='gb'?0.22:0.1));
           const r1=rnd(sid+ds+'a'), r2=rnd(sid+ds+ti+'l'), r3=rnd(sid+ds+ti+'g'), r4=rnd(sid+ds+ti+'n');
           const row={};
-          row.a = r1 < A ? 'p' : 'a';
+          row.a = r1 < A ? (r1 > A-0.06 && gid==='gd' ? 'l' : 'p') : 'a';
           if(row.a==='a'){ row.l='n'; }
           else{
             row.l = r2 < Lv+0.1 ? 'y' : 'n';
@@ -650,12 +650,12 @@ function viewTeacher(){
     '<div class="field grow"><label for="tt">Бугун нима ўтилди</label><input type="text" id="tt" data-act="dayfield" data-f="topic" value="'+esc(d.topic||'')+'" placeholder="Дарс мавзуси"></div>'+
     '<div class="field grow"><label for="th">Уйга вазифа</label><input type="text" id="th" data-act="dayfield" data-f="hw" value="'+esc(d.hw||'')+'" placeholder="Ота-она ҳам кўради"></div>'+
     '</div><div class="counts" style="margin-top:14px">'+
-    count('good',ic('check'),came,'келди')+count('crit',ic('x'),abs,'келмади')+count('acc',ic('book'),done,'дарс топширди')+'</div></section>';
+    count('good',ic('check'),came,'келди')+count('warn',ic('clock'),late,'кечикди')+count('crit',ic('x'),abs,'келмади')+count('acc',ic('book'),done,'дарс топширди')+'</div></section>';
   if(!ids.length){h+='<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ. Раҳбар қўшиши керак.</p></section>';return h;}
   h+='<div class="cards">';
   ids.forEach(s=>{const st=S.students[s], r=(d.rows||{})[s]||{}, state=rowState(r);
     h+='<article class="scard'+(state?' s-'+state:'')+'"><div class="head">'+avatar(st.name)+'<div><b>'+esc(st.name)+'</b><span>'+(state?esc(state==='a'?'Келмади':LES[state][0]):'Ҳали белгиланмаган')+'</span></div></div>'+
-      '<div class="q"><span class="lab">1. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['a','Келмади','c',ic('x')]],r.a)+'</div>'+
+      '<div class="q"><span class="lab">1. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],r.a)+'</div>'+
       '<div class="q"><span class="lab">2. Дарсини топширдими?</span>'+opts(s,'l',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],r.l)+'</div>'+
       '</article>';
   });
