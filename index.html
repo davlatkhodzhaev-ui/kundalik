@@ -434,6 +434,12 @@ input[type=number]{height:44px;padding:0 12px;border:1.5px solid var(--line);bor
 .bk .tr i{display:block;height:100%;border-radius:6px;background:var(--grad-gold)}
 .panel>.bk{background:transparent;padding:0}
 .bookgrid .bookrow .rk{font-size:13px}
+.wm{font-size:8.5px;line-height:1.15;padding:4px 0;white-space:normal;overflow-wrap:normal;letter-spacing:-.02em;min-height:28px;display:grid;place-items:center}
+.cells{display:grid;grid-template-columns:repeat(auto-fill,minmax(13px,1fr));gap:3px}
+.cells i{aspect-ratio:1;border-radius:3px;background:var(--track);display:block}
+.cells i.done{background:var(--blue)}
+.cells i.cur{background:var(--star);outline:2px solid var(--star);outline-offset:1px}
+@media (max-width:620px){.rmore2{padding:2px 0 16px}.wk{padding:10px 7px}.wkgrid{gap:3px}.wd{padding:7px 2px}.wm{font-size:8px}}
 </style>
 </head>
 <body>
@@ -580,13 +586,13 @@ function examBlock(s,st){ const e=st.exam&&EX[st.exam.s]?st.exam.s:''; const bt=
   else h+=bt('prep','Янги имтиҳон','');
   return h+bt('clear','Бекор қилиш','')+'</div>'; }
 function booksBlock(st){ const rows=[[st.book,st.lesson],[st.book2,st.lesson2]].filter(x=>x[0]); const bs=books();
-  return '<div class="bk"><b class="bkh">Китоблари</b>'+(rows.length?rows.map(x=>{const b=bs[x[0]-1]||bs[0], ls=x[1]||1, pc=b.lessons?Math.min(100,Math.round(ls/b.lessons*100)):null; return '<div class="bkrow"><div class="bkt"><span>'+esc(b.name)+'</span><b>'+ls+'-дарс'+(b.lessons?' / '+b.lessons:'')+'</b></div>'+(pc!=null?'<div class="tr"><i style="width:'+pc+'%"></i></div>':'')+'</div>';}).join(''):'<p class="empty">Китоб белгиланмаган.</p>')+(examChip(st)?'<div class="chips">'+examChip(st)+'</div>':'')+'</div>' }
+  return '<div class="bk"><b class="bkh">Китоблари</b>'+(rows.length?rows.map(x=>{const b=bs[x[0]-1]||bs[0], ls=x[1]||1, pc=b.lessons?Math.min(100,Math.round(ls/b.lessons*100)):null; return '<div class="bkrow"><div class="bkt"><span>'+esc(b.name)+'</span><b>'+(b.lessons?ls+' / '+b.lessons+' дарс':ls+'-дарс')+'</b></div>'+(b.lessons?'<div class="cells" role="img" aria-label="'+b.lessons+' дарсдан '+ls+'-дарсда">'+Array.from({length:b.lessons},(_,k)=>'<i class="'+(k+1<ls?'done':k+1===ls?'cur':'')+'"></i>').join('')+'</div>':'')+'</div>';}).join(''):'<p class="empty">Китоб белгиланмаган.</p>')+(examChip(st)?'<div class="chips">'+examChip(st)+'</div>':'')+'</div>' }
 const DOW3=['Якш','Душ','Сеш','Чор','Пай','Жум','Шан'];
-function weekCal(sid){ const st=S.students[sid]; let h='<div class="wk"><div class="wkh"><b>1 ҳафталик давомат</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади · Ар — араб тили, Қу — Қуръон</span></div><div class="wkgrid">';
+function weekCal(sid){ const st=S.students[sid]; let h='<div class="wk"><div class="wkh"><b>1 ҳафталик давомат</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади</span></div><div class="wkgrid">';
   for(let i=6;i>=0;i--){const ds=addDays(TODAY,-i), d=dayOf(st.gid,ds), r=d&&!d.teacher&&d.rows&&d.rows[sid], dd=parse(ds); let inner;
     if(!r||!(r.a||r.ar||r.qu)) inner='<span class="wm none">—</span>';
     else if(r.a==='a') inner='<span class="wm bad" title="Дарсга келмади">йўқ</span>';
-    else inner=SUBJ.map(sb=>{const v=r[sb[0]]; return '<span class="wm '+(v==='y'?'ok':v==='n'?'bad':'none')+'" title="'+sb[1]+': '+(v==='y'?'топширди':v==='n'?'топширмади':'белгиланмаган')+'">'+sb[1].slice(0,2)+'</span>';}).join('');
+    else inner=SUBJ.map(sb=>{const v=r[sb[0]]; return '<span class="wm '+(v==='y'?'ok':v==='n'?'bad':'none')+'" title="'+sb[1]+': '+(v==='y'?'топширди':v==='n'?'топширмади':'белгиланмаган')+'">'+sb[1]+'</span>';}).join('');
     h+='<div class="wd'+(ds===TODAY?' today':'')+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</div>';}
   return h+'</div></div>'; }
 function progBlock(s,st,slot){ const bk=slot===2?st.book2:(st.book||1), ls=slot===2?(st.lesson2||1):(st.lesson||1);
