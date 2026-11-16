@@ -562,7 +562,7 @@ let dirty=false, refocus=null, toastTimer=null;
 /* ---------- server ---------- */
 const API='https://zgpicquoidqomtoygfuz.supabase.co/functions/v1/api';
 let net=false, tok=null, refT=null, sendQ=Promise.resolve(), pendingWrites=0, pushOn=null, swOk=false;
-const srv={students:{},groups:{}};
+const srv={students:{},groups:{}}; let lastSig='';
 try{tok=localStorage.getItem('kundalik-tok')||null;}catch(e){}
 function setTok(t){tok=t||null;try{if(tok) localStorage.setItem('kundalik-tok',tok); else localStorage.removeItem('kundalik-tok');}catch(e){}}
 async function call(b){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({t:tok},b))});return r.json();}
@@ -574,11 +574,12 @@ async function refresh(){
   try{
     const r=await call({a:'state'}); if(!r||r.error) return;
     if(pendingWrites>0){scheduleRefresh();return;}
-    S={groups:r.groups||{},students:r.students||{},days:r.days||{},settings:r.settings||{}};
+    const nS={groups:r.groups||{},students:r.students||{},days:r.days||{},settings:r.settings||{}}, sig=JSON.stringify(nS)+'|'+r.role+'|'+(r.sids||[]).join();
+    const same=!loading&&!dbError&&sig===lastSig; lastSig=sig; S=nS;
     srv.students=Object.assign({},S.students); srv.groups=Object.assign({},S.groups);
     if(auth&&auth.role!=='hujra'&&r.role!==auth.role){auth=null;setTok(null);saveAuth();ui.lrole=null;}
     if(auth&&auth.role==='ota-ona') auth.sids=r.sids||[];
-    loading=false; dbError=false; render();
+    loading=false; dbError=false; if(!same) render();
   }catch(e){ if(loading){loading=false;dbError=true;render();} }
 }
 function b64key(k){const pad='='.repeat((4-k.length%4)%4), raw=atob((k+pad).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(raw,c=>c.charCodeAt(0));}
@@ -1037,6 +1038,7 @@ function emptyState(){
 
 /* ---------- render ---------- */
 function typing(){const a=document.activeElement;return a&&$('#app').contains(a)&&(a.tagName==='INPUT'&&a.type!=='date'||a.tagName==='TEXTAREA')}
+let skipKeep=false;
 function render(force){
   if(!force&&typing()){dirty=true;return;}
   dirty=false;
@@ -1060,7 +1062,12 @@ function render(force){
   else if(ui.role==='ota-ona') h+=viewParent();
   else if(ui.role==='hujra') h+=viewRoom();
   else h+=viewAdmin();
+  const keep={}; let foc=null;
+  if(!skipKeep) $('#app').querySelectorAll('form[data-form] input[id],form[data-form] select[id],form[data-form] textarea[id]').forEach(x=>{if(x.type!=='file'&&x.type!=='hidden') keep[x.id]=x.value;});
+  const ae=document.activeElement; if(ae&&ae.id&&keep[ae.id]!==undefined) foc=ae.id;
   $('#app').innerHTML=h;
+  for(const id in keep){const x=document.getElementById(id); if(x&&x.value!==keep[id]) x.value=keep[id];}
+  if(foc&&!refocus){const x=document.getElementById(foc); if(x) x.focus({preventScroll:true});}
   if(refocus){const el=$('#app').querySelector(refocus); if(el) el.focus({preventScroll:true}); refocus=null;}
 }
 
@@ -1120,7 +1127,7 @@ document.addEventListener('change',e=>{
   else if(act==='note'){const sid=t.dataset.sid,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); if(v) r.n=v; else delete r.n; delete r.seen; d.rows[sid]=r;});}
 });
 document.addEventListener('focusout',()=>{setTimeout(()=>{if(dirty) render();},0)});
-document.addEventListener('submit',e=>{
+function submitForm(e){
   const f=e.target.closest('[data-form]'); if(!f) return; e.preventDefault();
   const fd=new FormData(f);
   if(document.activeElement) document.activeElement.blur();
@@ -1132,7 +1139,7 @@ document.addEventListener('submit',e=>{
         if(!r||r.error){const m=r&&r.error==='wait'?'Кўп марта хато код киритилди. 15 дақиқадан кейин уриниб кўринг.':'Код нотўғри. Қайта текшириб ёзинг ёки кодни раҳбардан сўранг.'; if(add) toast(m); else ui.lerr=m; render(true); return;}
         setTok(r.token); auth={role:r.role,sids:r.sids||[]}; saveAuth(); ui.role=r.role; ui.lrole=null; ui.lerr='';
         if(add){ui.sid=(r.sids||[]).slice(-1)[0]; toast('Фарзанд қўшилди.');}
-        render(true); refresh().then(()=>{if(r.role==='ota-ona') pushCheck();});
+        skipKeep=true; render(true); skipKeep=false; refresh().then(()=>{if(r.role==='ota-ona') pushCheck();});
       }).catch(()=>{const m='Интернет йўқ. Қайта уриниб кўринг.'; if(add) toast(m); else ui.lerr=m; render(true);});
       return;
     }
@@ -1157,7 +1164,8 @@ document.addEventListener('submit',e=>{
     if(cd&&!/^\d{4}$/.test(cd)){toast('Код 4 та рақамдан иборат бўлиши керак.');return;}
     if(cd&&codeTaken(cd,nid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');return;}putDoc('students',nid,Object.assign({name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim(),book:Math.max(1,Math.min(NB,Number(fd.get('book'))||1)),lesson:Math.max(1,Number(fd.get('lesson'))||1)},Number(fd.get('book2'))?{book2:Math.max(1,Math.min(NB,Number(fd.get('book2')))),lesson2:Math.max(1,Number(fd.get('lesson2'))||1)}:{},cd?{code:cd}:{},ui.newPhoto?{photo:ui.newPhoto}:{}));ui.newPhoto=null;if(!net) toast(name+' қўшилди. Ота-она коди: '+codeOf(nid));}
   else{const ts=[],sub={};String(fd.get('teachers')||'').split(',').forEach(x=>{const a=x.split(':'),n=(a[0]||'').trim(); if(!n) return; ts.push(n); const sb=(a[1]||'').trim(); if(sb) sub[n]=sb;});putDoc('groups',newId('g'),{name:name,kind:String(fd.get('kind')||''),teachers:ts,subjects:sub});toast('«'+name+'» гуруҳи қўшилди.');}
-});
+}
+document.addEventListener('submit',e=>{skipKeep=true; try{submitForm(e);}finally{skipKeep=false;}});
 function route(){const r=location.hash.replace('#','');ui.role=ROLES.indexOf(r)>=0?r:(auth?auth.role:'ustoz');ui.del=null;ui.reset=false;render(true);}
 window.addEventListener('hashchange',route);
 
