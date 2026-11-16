@@ -583,7 +583,9 @@ function scheduleRefresh(){clearTimeout(refT);refT=setTimeout(refresh,700);}
 async function refresh(){
   if(!net) return;
   try{
-    const r=await call({a:'state'}); if(!r||r.error) return;
+    let r=await call({a:'state'});
+    if(r&&r.error==='auth'&&tok){setTok(null); if(auth&&auth.role!=='hujra'){auth=null;saveAuth();ui.lrole=null;} r=await call({a:'state'});}
+    if(!r||r.error) throw new Error('state');
     if(pendingWrites>0){scheduleRefresh();return;}
     const nS={groups:r.groups||{},students:r.students||{},days:r.days||{},settings:r.settings||{}}, sig=JSON.stringify(nS)+'|'+r.role+'|'+(r.sids||[]).join();
     const same=!loading&&!dbError&&sig===lastSig; lastSig=sig; S=nS;
@@ -591,7 +593,7 @@ async function refresh(){
     if(auth&&auth.role!=='hujra'&&r.role!==auth.role){auth=null;setTok(null);saveAuth();ui.lrole=null;}
     if(auth&&auth.role==='ota-ona') auth.sids=r.sids||[];
     loading=false; dbError=false; if(!same) render();
-  }catch(e){ if(loading){loading=false;dbError=true;render();} }
+  }catch(e){ if(!dbError){dbError=true;render();} clearTimeout(refT); refT=setTimeout(refresh,5000); }
 }
 function b64key(k){const pad='='.repeat((4-k.length%4)%4), raw=atob((k+pad).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(raw,c=>c.charCodeAt(0));}
 async function pushCheck(){
@@ -1065,7 +1067,7 @@ function render(force){
   me.innerHTML=auth?'<span class="chip">'+RNAME[auth.role]+(auth.teacher?' · '+esc(auth.teacher):'')+'</span>'+OUTBTN:'';
   let h='';
   if(mode==='local') h+='<div class="note"><b>Намуна маълумотлар.</b> Исмлар ва баҳолар ўйлаб топилган. Бу кўринишда ўзгаришлар сақланмайди.</div>';
-  if(dbError) h+='<div class="note crit"><b>Маълумотлар базасига уланиб бўлмади.</b> Саҳифани кейинроқ қайта очинг.</div>';
+  if(dbError) h+='<div class="note crit"><b>Интернетга уланиб бўлмади.</b> '+(net?'Ҳозир белгилаб бўлмайди. Интернет қайтиши билан илова ўзи уланади.':'Саҳифани кейинроқ қайта очинг.')+'</div>';
   else if(mode==='db'&&loading) h+='<div class="note">'+(slow?'Маълумотлар ҳали етиб келмади. Интернет секин бўлиши мумкин, кутиб туринг.':'Юкланмоқда…')+'</div>';
   if(busy) h+='<div class="note">Намуна маълумотлар ёзилмоқда, бир оз кутинг…</div>';
   if(mode==='db'&&loading&&!gids.length){ $('#app').innerHTML=h; return; }
@@ -1237,15 +1239,14 @@ function connect(){
 route();
 if('serviceWorker' in navigator&&/github\.io$/.test(location.hostname)){try{navigator.serviceWorker.register('sw.js').then(()=>{swOk=true;}).catch(()=>{});swOk=true;}catch(e){}}
 if(!(window.claude&&typeof window.claude.use==='function')){
-  Promise.race([call({a:'ping'}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('slow')),8000))]).then(r=>{
-    if(!r||!r.ok) return;
-    net=true; mode='db'; loading=true; S={groups:{},students:{},days:{},settings:{}};
-    if(auth&&auth.role!=='hujra'&&!tok){auth=null;saveAuth();}
-    render(true);
-    refresh().then(()=>{if(auth&&auth.role==='ota-ona') pushCheck();});
-    setInterval(()=>{if(!document.hidden) refresh();},20000);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden) refresh();});
-  }).catch(()=>{});
+  /* Outside Claude the app always works with the real database: sample data is never shown here. */
+  net=true; mode='db'; loading=true; S={groups:{},students:{},days:{},settings:{}};
+  if(auth&&auth.role!=='hujra'&&!tok){auth=null;saveAuth();}
+  render(true);
+  refresh().then(()=>{if(auth&&auth.role==='ota-ona') pushCheck();});
+  setInterval(()=>{if(!document.hidden) refresh();},20000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden) refresh();});
+  window.addEventListener('online',()=>refresh());
 }
 if(window.claude&&typeof window.claude.use==='function'){
   window.claude.use('db').then(x=>{if(x){dbReal=x;db=x;connect();}}).catch(()=>{});
