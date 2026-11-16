@@ -449,6 +449,17 @@ input[type=number]{height:44px;padding:0 12px;border:1.5px solid var(--line);bor
 @media (max-width:620px){.rmore2{padding:2px 0 16px}.wk{padding:10px 7px}.wkgrid{gap:3px}.wd{padding:7px 2px}.wm{font-size:8px}}
 input.codein{font-family:var(--font-display);letter-spacing:.18em;text-align:center;max-width:150px;font-size:15px}
 .tbl input.codein{height:36px;width:96px;font-size:13px;padding:0 6px}
+.top .wrap>.brand{order:0}.top .wrap>.mode{order:1}.top .wrap>.me{order:2;margin-left:auto}.top .wrap>.tabs{order:3;flex-basis:100%;margin-left:0;overflow-x:auto}
+.tabs a{flex:1;justify-content:center}
+.btn.out{height:38px;padding:0 14px;border-radius:999px;border:1.5px solid var(--crit);color:#fff;background:var(--crit);font-weight:700;gap:6px}
+.btn.out svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.outbar{display:flex;justify-content:center;padding:6px 0 18px}
+.outbar .btn.out{height:46px;padding:0 26px}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(8,12,32,.62);display:grid;place-items:center;padding:20px}
+.modal .box{background:var(--surface);border-radius:20px;padding:22px;max-width:360px;width:100%;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
+.modal h2{margin:0 0 6px;font-size:19px}.modal p{margin:0 0 16px;color:var(--muted)}
+.modal .row{display:flex;gap:10px}.modal .row .btn{flex:1;justify-content:center}
+#app{touch-action:pan-y}
 </style>
 </head>
 <body>
@@ -1039,6 +1050,7 @@ function emptyState(){
 /* ---------- render ---------- */
 function typing(){const a=document.activeElement;return a&&$('#app').contains(a)&&(a.tagName==='INPUT'&&a.type!=='date'||a.tagName==='TEXTAREA')}
 let skipKeep=false;
+const OUTBTN='<button class="btn out" type="button" data-act="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></svg>Чиқиш</button>';
 function render(force){
   if(!force&&typing()){dirty=true;return;}
   dirty=false;
@@ -1050,7 +1062,7 @@ function render(force){
   $('#mode').textContent=mode==='db'?'':'Намуна режими';
   $('#tabs').hidden=allow.length<2;
   const me=$('#me'); me.hidden=!auth;
-  me.innerHTML=auth?'<span class="chip">'+RNAME[auth.role]+(auth.teacher?' · '+esc(auth.teacher):'')+'</span><button class="btn small" type="button" data-act="logout">Чиқиш</button>':'';
+  me.innerHTML=auth?'<span class="chip">'+RNAME[auth.role]+(auth.teacher?' · '+esc(auth.teacher):'')+'</span>'+OUTBTN:'';
   let h='';
   if(mode==='local') h+='<div class="note"><b>Намуна маълумотлар.</b> Исмлар ва баҳолар ўйлаб топилган. Бу кўринишда ўзгаришлар сақланмайди.</div>';
   if(dbError) h+='<div class="note crit"><b>Маълумотлар базасига уланиб бўлмади.</b> Саҳифани кейинроқ қайта очинг.</div>';
@@ -1062,6 +1074,8 @@ function render(force){
   else if(ui.role==='ota-ona') h+=viewParent();
   else if(ui.role==='hujra') h+=viewRoom();
   else h+=viewAdmin();
+  if(auth) h+='<div class="outbar">'+OUTBTN+'</div>';
+  if(auth&&ui.out) h+='<div class="modal" role="dialog" aria-modal="true" aria-labelledby="out-h"><div class="box"><h2 id="out-h">Чиқишни хоҳлайсизми?</h2><p>'+(auth.role==='ota-ona'?'Чиқсангиз, қайта кириш учун фарзандингиз кодини яна ёзасиз ва хабарномалар келмай қолади.':'Чиқсангиз, қайта кириш учун кодни яна ёзасиз.')+'</p><div class="row"><button class="btn" type="button" data-act="out-no">Йўқ, қоламан</button><button class="btn out" style="height:44px" type="button" data-act="out-yes">Ҳа, чиқаман</button></div></div></div>';
   const keep={}; let foc=null;
   if(!skipKeep) $('#app').querySelectorAll('form[data-form] input[id],form[data-form] select[id],form[data-form] textarea[id]').forEach(x=>{if(x.type!=='file'&&x.type!=='hidden') keep[x.id]=x.value;});
   const ae=document.activeElement; if(ae&&ae.id&&keep[ae.id]!==undefined) foc=ae.id;
@@ -1104,7 +1118,9 @@ document.addEventListener('click',e=>{
     else{ui.lrole=b.dataset.v;ui.lerr='';refocus='#lg-c';render(true);}
   }
   else if(act==='lback'){ui.lrole=null;ui.lerr='';render(true);}
-  else if(act==='logout'){auth=null;setTok(null);pushOn=null;saveAuth();ui.lrole=null;ui.lerr='';render(true);}
+  else if(act==='logout'){ if(auth&&auth.role==='hujra') doLogout(); else {ui.out=true;render(true);} }
+  else if(act==='out-no'){ui.out=false;render(true);}
+  else if(act==='out-yes'){doLogout();}
   else if(act==='export'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})), l=document.createElement('a'); l.href=u; l.download='kundalik-'+TODAY+'.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); toast('Файл сақланди.');}catch(e){toast('Сақлаб бўлмади.');}}
   else if(act==='sphoto-del'){const st=S.students[sid]; if(st){const c=Object.assign({},st); delete c.photo; putDoc('students',sid,c);}}
   else if(act==='push-on'){pushEnable();}
@@ -1126,6 +1142,21 @@ document.addEventListener('change',e=>{
   else if(act==='dayfield'){const f=t.dataset.f,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{d[f]=v;});}
   else if(act==='note'){const sid=t.dataset.sid,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); if(v) r.n=v; else delete r.n; delete r.seen; d.rows[sid]=r;});}
 });
+function doLogout(){
+  const fin=()=>{auth=null;setTok(null);pushOn=null;saveAuth();ui.out=false;ui.lrole=null;ui.lerr='';render(true);};
+  if(net&&auth&&auth.role==='ota-ona'&&swOk){ Promise.race([(async()=>{const reg=await navigator.serviceWorker.getRegistration(), sub=reg&&await reg.pushManager.getSubscription(); if(sub){await call({a:'push.unsub',endpoint:sub.endpoint}); await sub.unsubscribe();}})(),new Promise(r=>setTimeout(r,3000))]).catch(()=>{}).then(fin); }
+  else fin();
+}
+/* swipe left / right to move between sections */
+let sw=null;
+document.addEventListener('touchstart',e=>{ if(e.touches.length!==1||ui.out){sw=null;return;} const t=e.touches[0]; let n=e.target, blocked=false;
+  while(n&&n!==document.body){ if(n.tagName==='INPUT'||n.tagName==='SELECT'||n.tagName==='TEXTAREA'||(n.scrollWidth>n.clientWidth+4&&/(auto|scroll)/.test(getComputedStyle(n).overflowX))){blocked=true;break;} n=n.parentNode; }
+  sw=blocked?null:{x:t.clientX,y:t.clientY,t:Date.now()}; },{passive:true});
+document.addEventListener('touchend',e=>{ if(!sw) return; const t=e.changedTouches[0], dx=t.clientX-sw.x, dy=t.clientY-sw.y, dt=Date.now()-sw.t; sw=null;
+  if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2||dt>700) return;
+  if(!auth){ if(dx>0&&ui.lrole){ui.lrole=null;ui.lerr='';render(true);} return; }
+  const al=ROLES.filter(r=>ALLOW[auth.role].indexOf(r)>=0), i=al.indexOf(ui.role), j=i+(dx<0?1:-1);
+  if(i<0||j<0||j>=al.length) return; location.hash=al[j]; window.scrollTo(0,0); },{passive:true});
 document.addEventListener('focusout',()=>{setTimeout(()=>{if(dirty) render();},0)});
 function submitForm(e){
   const f=e.target.closest('[data-form]'); if(!f) return; e.preventDefault();
