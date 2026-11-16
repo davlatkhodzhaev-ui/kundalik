@@ -866,7 +866,9 @@ function viewTeacher(){
       '<div class="q"><span class="lab">4. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
       '<div class="q"><span class="lab">5. Имтиҳон</span>'+examBlock(s,st)+'</div>'+
       '<div class="q"><label class="lab" for="tc-'+s+'">6. Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
-      '<div class="q"><label class="lab" for="tp-'+s+'">7. Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div></div>';
+      '<div class="q"><label class="lab" for="tp-'+s+'">7. Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div>'+
+      '<div class="q"><label class="lab" for="tn-'+s+'">8. Исм-фамилияни ўзгартириш</label><div class="chips" style="align-items:center"><input type="text" id="tn-'+s+'" value="'+esc(st.name)+'" style="flex:1;min-width:160px"><button type="button" class="btn small" data-act="sname" data-sid="'+s+'">'+ic('check')+'Сақлаш</button></div></div>'+
+      '<div class="q"><span class="lab">9. Талабани ўчириш</span>'+(ui.del===s?'<div class="note crit" style="margin:0 0 8px">'+esc(st.name)+' рўйхатдан бутунлай ўчирилади. Уни қайтариб бўлмайди.</div><div class="chips"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ, қолсин</button></div>':'<div><button class="btn small danger" type="button" data-act="del" data-sid="'+s+'">'+ic('x')+'Талабани ўчириш</button></div>')+'</div></div>';
     h+='</div>';});
   h+='</div></section>';
   h+='<section class="panel"><h2>'+ic('plus')+'Янги талаба қўшиш<small>'+esc(g.name)+' гуруҳига</small></h2><form data-form="student" class="stack" style="gap:12px"><input type="hidden" name="gid" value="'+ui.gid+'">'+
@@ -1097,6 +1099,9 @@ document.addEventListener('click',e=>{
   }else if(act==='day'){ui.date=addDays(ui.date,Number(b.dataset.v));refocus='[data-act="day"][data-v="'+b.dataset.v+'"]';render(true);}
   else if(act==='today'){ui.date=TODAY;render(true);}
   else if(act==='seen'){const date=b.dataset.date; entriesOf(ui.sid).filter(x=>x.date===date&&!x.r.seen).forEach(x=>{const d0=S.days[x.id]; editDay(d0.gid,d0.date,dayTeacher(d0),d=>{d.rows[ui.sid]=Object.assign({},d.rows[ui.sid],{seen:true});});});}
+  else if(act==='sname'){const st=S.students[sid], inp=document.getElementById('tn-'+sid), v=inp?inp.value.trim().replace(/\s+/g,' '):''; if(!st) return;
+    if(v.length<2){toast('Исм-фамилияни ёзинг.');return;}
+    if(v!==st.name){putDoc('students',sid,Object.assign({},st,{name:v}));toast('Исм ўзгартирилди: '+v);} else toast('Исм ўзгармаган.');}
   else if(act==='del'){ui.del=sid;render(true);}
   else if(act==='del-no'){ui.del=null;render(true);}
   else if(act==='del-yes'){ui.del=null;delDoc('students',sid);toast('Ўқувчи рўйхатдан ўчирилди.');}
