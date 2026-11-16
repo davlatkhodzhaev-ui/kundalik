@@ -551,7 +551,7 @@ const MON=['январь','февраль','март','апрель','май','�
 const nice=s=>{const d=parse(s);return d.getDate()+'-'+MON[d.getMonth()]+', '+DOW[d.getDay()].toLowerCase()};
 const TODAY=iso(new Date());
 const ROLES=['ustoz','ota-ona','rahbar','hujra'];
-const ALLOW={'rahbar':['ustoz','ota-ona','rahbar','hujra'],'ustoz':['ustoz','ota-ona','rahbar','hujra'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra']};
+const ALLOW={'rahbar':['ustoz','ota-ona','hujra'],'ustoz':['ustoz','ota-ona','hujra'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra']};
 const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Устоз','hujra':'Умумий ҳужра'};
 const ATT={p:['Келди','good'],l:['Кечикди','warn'],a:['Келмади','crit']};
 const LES={y:['Топширди','good'],h:['Чала топширди','warn'],n:['Топширмади','crit']};
@@ -873,7 +873,6 @@ function viewTeacher(){
     '<div class="field"><label for="ts-n">Исм-фамилия</label><input type="text" id="ts-n" name="name" required></div>'+bookFields('ts')+
     '<div class="field"><label for="ts-p">Ота-онаси</label><input type="text" id="ts-p" name="parent" placeholder="Исми ва телефони"></div>'+photoField('ts')+
     '<div><button class="btn primary" type="submit">'+ic('plus')+'Қўшиш</button></div></form></section>';
-  h+='<section class="panel"><h2>'+ic('users')+esc(g.name)+': умумий маълумот<small>охирги 30 кун</small>'+kindChip(g)+'</h2>'+groupRings(ui.gid)+'<div style="height:16px"></div>'+groupTable(ui.gid,false)+'</section>';
   return h;
 }
 
@@ -986,11 +985,7 @@ function viewAdmin(){
     '<div class="person"><div class="nm"><b>Устозлар</b><span>ҳамма устозга битта код</span></div><span class="chip code"><b>'+TEACHER_CODE+'</b></span></div>'+
     '<div class="person"><div class="nm"><b>Ота-оналар</b><span>ҳар бир талабанинг ўз коди, юқоридаги жадвалларда</span></div></div>'+
     '<div class="person"><div class="nm"><b>Умумий ҳужра</b><span>кодсиз очилади</span></div></div></div></section></div>';
-  h+='<div class="two"><section class="panel"><h2>'+ic('plus')+'Ўқувчи қўшиш</h2><form data-form="student" class="stack" style="gap:12px">'+
-    '<div class="field"><label for="as-n">Исм-фамилия</label><input type="text" id="as-n" name="name" required></div>'+
-    '<div class="field"><label for="as-g">Гуруҳ</label><select id="as-g" name="gid" required>'+gids.map(x=>'<option value="'+x+'">'+esc(S.groups[x].name)+'</option>').join('')+'</select></div>'+
-    bookFields('as')+'<div class="field"><label for="as-p">Ота-онаси</label><input type="text" id="as-p" name="parent" placeholder="Исми ва телефони"></div>'+photoField('as')+
-    '<div><button class="btn primary" type="submit"'+(gids.length?'':' disabled')+'>'+ic('plus')+'Қўшиш</button></div></form></section>'+
+  h+='<div class="two">'+
     '<section class="panel"><h2>'+ic('plus')+'Гуруҳ қўшиш</h2><form data-form="group" class="stack" style="gap:12px">'+
     '<div class="field"><label for="ag-n">Гуруҳ номи</label><input type="text" id="ag-n" name="name" required></div>'+
     '<div class="field"><label for="ag-k">Тури</label><select id="ag-k" name="kind"><option value="b">Ётоқда қоладиганлар</option><option value="d">Келиб кетадиганлар</option><option value="">Бошқа</option></select></div>'+
@@ -1042,7 +1037,7 @@ function viewLogin(){
   h+='<div class="field"><label for="lg-c">'+(r==='ota-ona'?'Фарзандингиз коди':r==='hujra'?'Ҳужра коди':'Кириш коди')+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="4 та рақам" required></div>';
   if(ui.lerr) h+='<div class="note crit">'+esc(ui.lerr)+'</div>';
   h+='<div class="chips"><button class="btn primary" type="submit">Кириш</button><button class="btn" type="button" data-act="lback">Орқага</button></div></form>'+
-    (net?'':'<div class="hint"><b>Синов нусхаси учун.</b> Устозлар коди: '+TEACHER_CODE+' (ҳамма устозга битта). Ота-она кодлари «Бошқарув» бўлимидаги жадвалда кўринади.</div>')+'</section>';
+    (net?'':'<div class="hint"><b>Синов нусхаси учун.</b> Устозлар коди: '+TEACHER_CODE+' (ҳамма устозга битта). Ота-она кодлари «Устоз» бўлимидаги жадвалда кўринади.</div>')+'</section>';
   return h;
 }
 function emptyState(){
@@ -1059,7 +1054,7 @@ function render(force){
   const gids=groupIds(), as=allowedStudents();
   if(as.indexOf(ui.sid)<0) ui.sid=as[0]||null;
   const allow=auth?ALLOW[auth.role]:[];
-  if(auth&&allow.indexOf(ui.role)<0) ui.role=auth.role;
+  if(auth&&allow.indexOf(ui.role)<0) ui.role=allow.indexOf(auth.role)>=0?auth.role:allow[0];
   document.querySelectorAll('.tabs a').forEach(a=>{a.hidden=allow.indexOf(a.dataset.role)<0;const on=a.dataset.role===ui.role;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   $('#mode').textContent=mode==='db'?'':'Намуна режими';
   $('#tabs').hidden=allow.length<2;
@@ -1072,7 +1067,7 @@ function render(force){
   if(busy) h+='<div class="note">Намуна маълумотлар ёзилмоқда, бир оз кутинг…</div>';
   if(mode==='db'&&loading&&!gids.length){ $('#app').innerHTML=h; return; }
   if(!auth) h+=viewLogin();
-  else if(ui.role==='ustoz') h+=viewTeacher();
+  else if(ui.role==='ustoz') h+=viewTeacher()+viewAdmin();
   else if(ui.role==='ota-ona') h+=viewParent();
   else if(ui.role==='hujra') h+=viewRoom();
   else h+=viewAdmin();
