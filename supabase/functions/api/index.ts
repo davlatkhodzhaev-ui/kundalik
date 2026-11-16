@@ -225,7 +225,7 @@ async function handle(b: any, ip: string) {
     await put("students", sid, st);
     return { ok: true, sid, student: st };
   }
-  if (p.r !== "rahbar") return { error: "auth" };
+  // Teachers and the admin have the same rights.
   if (a === "student.del") { if (isId(b.sid)) await del("students", b.sid); return { ok: true }; }
   if (a === "group.put") {
     const gid = b.gid && isId(b.gid) ? b.gid : rid("g"); const d = b.data || {};

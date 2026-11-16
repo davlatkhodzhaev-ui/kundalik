@@ -540,7 +540,7 @@ const MON=['январь','февраль','март','апрель','май','�
 const nice=s=>{const d=parse(s);return d.getDate()+'-'+MON[d.getMonth()]+', '+DOW[d.getDay()].toLowerCase()};
 const TODAY=iso(new Date());
 const ROLES=['ustoz','ota-ona','rahbar','hujra'];
-const ALLOW={'rahbar':['ustoz','ota-ona','rahbar','hujra'],'ustoz':['ustoz','hujra'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra']};
+const ALLOW={'rahbar':['ustoz','ota-ona','rahbar','hujra'],'ustoz':['ustoz','ota-ona','rahbar','hujra'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra']};
 const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Раҳбар','hujra':'Умумий ҳужра'};
 const ATT={p:['Келди','good'],l:['Кечикди','warn'],a:['Келмади','crit']};
 const LES={y:['Топширди','good'],h:['Чала топширди','warn'],n:['Топширмади','crit']};
