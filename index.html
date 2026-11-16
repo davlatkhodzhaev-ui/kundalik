@@ -653,17 +653,22 @@ function gTeachers(g){if(!g) return [];return Array.isArray(g.teachers)?g.teache
 function subjectOf(gid,t){const g=S.groups[gid]; return (g&&g.subjects&&g.subjects[t])||t||'Дарс'}
 function score(list){let b=0;list.forEach(e=>{const r=e.r; if(r.l==='y'&&r.a!=='a') b+=10;});return b}
 const BOOKS=[['Бароим',48],['Бидоя',21],['Мабдаул қироат 1',52],['Жаноҳ',35],['Мабдаул қироат 2',60],['Мабдаун наҳв',35],['Мабдаул қироат 3',57],['Мабдаул қироат 1 (таркиб)',52],['Тавҳид лин-нашиа',0],['Қуръон',0]];
-const NB=BOOKS.length;
+const NB=BOOKS.length, QB=NB;
+const SURAS='Фотиҳа,Бақара,Оли Имрон,Нисо,Моида,Анъом,Аъроф,Анфол,Тавба,Юнус,Ҳуд,Юсуф,Раъд,Иброҳим,Ҳижр,Наҳл,Исро,Каҳф,Марям,Тоҳа,Анбиё,Ҳаж,Муъминун,Нур,Фурқон,Шуаро,Намл,Қасас,Анкабут,Рум,Луқмон,Сажда,Аҳзоб,Сабаъ,Фотир,Ёсин,Соффот,Сод,Зумар,Ғофир,Фуссилат,Шўро,Зухруф,Духон,Жосия,Аҳқоф,Муҳаммад,Фатҳ,Ҳужурот,Қоф,Зориёт,Тур,Нажм,Қамар,Ар-Роҳман,Воқеа,Ҳадид,Мужодала,Ҳашр,Мумтаҳана,Соф,Жумъа,Мунофиқун,Тағобун,Талоқ,Таҳрим,Мулк,Қалам,Ҳоққа,Маориж,Нуҳ,Жин,Муззаммил,Муддассир,Қиёмат,Инсон,Мурсалот,Набаъ,Нозиот,Абаса,Таквир,Инфитор,Мутоффифун,Иншиқоқ,Буруж,Ториқ,Аъло,Ғошия,Фажр,Балад,Шамс,Лайл,Зуҳо,Шарҳ,Тин,Алақ,Қадр,Баййина,Залзала,Одиёт,Қориа,Такосур,Аср,Ҳумаза,Фил,Қурайш,Моъун,Кавсар,Кофирун,Наср,Масад,Ихлос,Фалақ,Нос'.split(',');
+function sura(n){return (SURAS[Math.max(1,Math.min(114,Number(n)||1))-1])+' сураси'}
+function suraOpts(sel){return SURAS.map((x,i)=>'<option value="'+(i+1)+'"'+(i+1===sel?' selected':'')+'>'+(i+1)+'. '+x+'</option>').join('')}
 function books(){const l=S.settings&&S.settings.books&&S.settings.books.list; return BOOKS.map((d,i)=>{const b=(l&&l[i])||{}; return {name:String(b.name||'').trim()||d[0],lessons:(b.lessons!==undefined&&b.lessons!==null&&b.lessons!=='')?(Number(b.lessons)||0):d[1]};})}
 const SUBJ=[['ar','Араб тили'],['qu','Қуръон']];
-function progOne(book,lesson){const b=books()[book-1]||books()[0]; return b.name+' · '+(lesson||1)+'-дарс'+(b.lessons?' / '+b.lessons:'')}
+function progOne(book,lesson){const b=books()[book-1]||books()[0]; if(book===QB) return b.name+' · '+sura(lesson); return b.name+' · '+(lesson||1)+'-дарс'+(b.lessons?' / '+b.lessons:'')}
 function progText(st){ if(!st||!st.book) return 'Китоб белгиланмаган'; return progOne(st.book,st.lesson)+(st.book2?' ва '+progOne(st.book2,st.lesson2):'') }
 function bookBar(st){ const b1=(st&&st.book)||0, b2=(st&&st.book2)||0, lo=b2?Math.min(b1,b2):b1; return '<div class="bookbar" role="img" aria-label="'+esc(progText(st))+'">'+books().map((b,i)=>'<i class="'+((i+1===b1||i+1===b2)?'cur':i+1<lo?'done':'')+'" title="'+esc(b.name)+'"></i>').join('')+'</div>' }
 function bookFields(pre){ const bs=books(), o=bs.map((b,i)=>'<option value="'+(i+1)+'">'+esc(b.name)+'</option>').join('');
-  return '<div class="controls"><div class="field grow"><label for="'+pre+'-b">Биринчи китоб</label><select id="'+pre+'-b" name="book">'+o+'</select></div><div class="field" style="flex:0 1 120px"><label for="'+pre+'-l">Дарс</label><input type="number" id="'+pre+'-l" name="lesson" min="1" value="1" inputmode="numeric"></div></div>'+
-    '<div class="controls"><div class="field grow"><label for="'+pre+'-b2">Иккинчи китоб (бўлса)</label><select id="'+pre+'-b2" name="book2"><option value="">— йўқ —</option>'+o+'</select></div><div class="field" style="flex:0 1 120px"><label for="'+pre+'-l2">Дарс</label><input type="number" id="'+pre+'-l2" name="lesson2" min="1" value="1" inputmode="numeric"></div></div>'+
+  return '<div class="controls"><div class="field grow"><label for="'+pre+'-b">Биринчи китоб</label><select id="'+pre+'-b" name="book">'+o+'</select></div><div class="field" style="flex:0 1 120px"><label for="'+pre+'-l">Дарс</label><input type="number" id="'+pre+'-l" name="lesson" min="1" value="1" inputmode="numeric"></div><div class="field" style="flex:1 1 150px" hidden><label for="'+pre+'-s">Сура</label><select id="'+pre+'-s" name="sura">'+suraOpts(1)+'</select></div></div>'+
+    '<div class="controls"><div class="field grow"><label for="'+pre+'-b2">Иккинчи китоб (бўлса)</label><select id="'+pre+'-b2" name="book2"><option value="">— йўқ —</option>'+o+'</select></div><div class="field" style="flex:0 1 120px"><label for="'+pre+'-l2">Дарс</label><input type="number" id="'+pre+'-l2" name="lesson2" min="1" value="1" inputmode="numeric"></div><div class="field" style="flex:1 1 150px" hidden><label for="'+pre+'-s2">Сура</label><select id="'+pre+'-s2" name="sura2">'+suraOpts(1)+'</select></div></div>'+
     '<div class="field"><label for="'+pre+'-c">Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" id="'+pre+'-c" name="code" inputmode="numeric" maxlength="4" placeholder="бўш қолса, ўзи берилади"></div>' }
-function setProg(sid,slot,book,lesson){ const st=S.students[sid]; if(!st) return; book=Math.max(1,Math.min(NB,book)); const max=books()[book-1].lessons;
+function syncSura(){document.querySelectorAll('form[data-form="student"]').forEach(f=>{[['book','lesson','sura'],['book2','lesson2','sura2']].forEach(x=>{const b=f.querySelector('[name="'+x[0]+'"]'), l=f.querySelector('[name="'+x[1]+'"]'), su=f.querySelector('[name="'+x[2]+'"]'); if(!b||!l||!su) return; const q=Number(b.value)===QB; l.closest('.field').hidden=q; su.closest('.field').hidden=!q;});});}
+document.addEventListener('change',e=>{if(e.target&&(e.target.name==='book'||e.target.name==='book2')) syncSura();});
+function setProg(sid,slot,book,lesson){ const st=S.students[sid]; if(!st) return; book=Math.max(1,Math.min(NB,book)); const max=book===QB?114:books()[book-1].lessons;
   lesson=Math.max(1,max?Math.min(max,lesson):lesson);
   putDoc('students',sid,Object.assign({},st,slot===2?{book2:book,lesson2:lesson}:{book:book,lesson:lesson})); }
 const EX={prep:['Имтиҳонга тайёрланяпти','acc'],pass:['Имтиҳондан ўтди','good'],fail:['Имтиҳондан ўтмади','crit'],repass:['Қайта топширди','good'],refail:['Қайта топшира олмади','crit']};
@@ -676,7 +681,7 @@ function examBlock(s,st){ const e=st.exam&&EX[st.exam.s]?st.exam.s:''; const bt=
   else h+=bt('prep','Янги имтиҳон','');
   return h+bt('clear','Бекор қилиш','')+'</div>'; }
 function booksBlock(st){ const rows=[[st.book,st.lesson],[st.book2,st.lesson2]].filter(x=>x[0]); const bs=books();
-  return '<div class="bk"><b class="bkh">Китоблари</b>'+(rows.length?rows.map(x=>{const b=bs[x[0]-1]||bs[0], ls=x[1]||1, pc=b.lessons?Math.min(100,Math.round(ls/b.lessons*100)):null; return '<div class="bkrow"><div class="bkt"><span>'+esc(b.name)+'</span><b>'+(b.lessons?ls+' / '+b.lessons+' дарс':ls+'-дарс')+'</b></div>'+(b.lessons?'<div class="cells" role="img" aria-label="'+b.lessons+' дарсдан '+ls+'-дарсда">'+Array.from({length:b.lessons},(_,k)=>'<i class="'+(k+1<ls?'done':k+1===ls?'cur':'')+'"></i>').join('')+'</div>':'')+'</div>';}).join(''):'<p class="empty">Китоб белгиланмаган.</p>')+(examChip(st)?'<div class="chips">'+examChip(st)+'</div>':'')+'</div>' }
+  return '<div class="bk"><b class="bkh">Китоблари</b>'+(rows.length?rows.map(x=>{const b=bs[x[0]-1]||bs[0], ls=x[1]||1, pc=b.lessons?Math.min(100,Math.round(ls/b.lessons*100)):null; return '<div class="bkrow"><div class="bkt"><span>'+esc(b.name)+'</span><b>'+(x[0]===QB?sura(ls):b.lessons?ls+' / '+b.lessons+' дарс':ls+'-дарс')+'</b></div>'+(b.lessons&&x[0]!==QB?'<div class="cells" role="img" aria-label="'+b.lessons+' дарсдан '+ls+'-дарсда">'+Array.from({length:b.lessons},(_,k)=>'<i class="'+(k+1<ls?'done':k+1===ls?'cur':'')+'"></i>').join('')+'</div>':'')+'</div>';}).join(''):'<p class="empty">Китоб белгиланмаган.</p>')+(examChip(st)?'<div class="chips">'+examChip(st)+'</div>':'')+'</div>' }
 const DOW3=['Якш','Душ','Сеш','Чор','Пай','Жум','Шан'];
 function weekCal(sid){ const st=S.students[sid]; let h='<div class="wk"><div class="wkh"><b>1 ҳафталик давомат</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади</span></div><div class="wkgrid">';
   for(let i=6;i>=0;i--){const ds=addDays(TODAY,-i), d=dayOf(st.gid,ds), r=d&&!d.teacher&&d.rows&&d.rows[sid], dd=parse(ds); let inner;
@@ -686,7 +691,7 @@ function weekCal(sid){ const st=S.students[sid]; let h='<div class="wk"><div cla
     h+='<div class="wd'+(ds===TODAY?' today':'')+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</div>';}
   return h+'</div></div>'; }
 function progBlock(s,st,slot){ const bk=slot===2?st.book2:(st.book||1), ls=slot===2?(st.lesson2||1):(st.lesson||1);
-  return '<div class="prog"><select data-act="sbook" data-slot="'+slot+'" data-sid="'+s+'" aria-label="'+esc(st.name)+': '+slot+'-китоб">'+books().map((b,i)=>'<option value="'+(i+1)+'"'+(i+1===bk?' selected':'')+'>'+esc(b.name)+'</option>').join('')+'</select><div class="step"><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="-1" aria-label="Олдинги дарс">−</button><b>'+ls+'-дарс</b><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="1" aria-label="Кейинги дарс">+</button></div>'+(slot===2?'<button type="button" class="xbtn" data-act="sbook2-del" data-sid="'+s+'" aria-label="Иккинчи китобни олиб ташлаш">×</button>':'')+'</div>' }
+  return '<div class="prog"><select data-act="sbook" data-slot="'+slot+'" data-sid="'+s+'" aria-label="'+esc(st.name)+': '+slot+'-китоб">'+books().map((b,i)=>'<option value="'+(i+1)+'"'+(i+1===bk?' selected':'')+'>'+esc(b.name)+'</option>').join('')+'</select>'+(bk===QB?'<select data-act="ssura" data-slot="'+slot+'" data-sid="'+s+'" aria-label="Сура">'+suraOpts(ls)+'</select>':'<div class="step"><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="-1" aria-label="Олдинги дарс">−</button><b>'+ls+'-дарс</b><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="1" aria-label="Кейинги дарс">+</button></div>')+(slot===2?'<button type="button" class="xbtn" data-act="sbook2-del" data-sid="'+s+'" aria-label="Иккинчи китобни олиб ташлаш">×</button>':'')+'</div>' }
 function dayTeacher(d){return d.teacher||gTeachers(S.groups[d.gid])[0]||''}
 function teachers(){const o={};for(const g in S.groups) gTeachers(S.groups[g]).forEach(t=>{o[t]=1});return Object.keys(o).sort((a,b)=>a.localeCompare(b,'uz'))}
 function teacherGroups(t){return groupIds().filter(g=>gTeachers(S.groups[g]).indexOf(t)>=0)}
@@ -1080,6 +1085,7 @@ function render(force){
   const ae=document.activeElement; if(ae&&ae.id&&keep[ae.id]!==undefined) foc=ae.id;
   $('#app').innerHTML=h;
   for(const id in keep){const x=document.getElementById(id); if(x&&x.value!==keep[id]) x.value=keep[id];}
+  syncSura();
   if(foc&&!refocus){const x=document.getElementById(foc); if(x) x.focus({preventScroll:true});}
   if(refocus){const el=$('#app').querySelector(refocus); if(el) el.focus({preventScroll:true}); refocus=null;}
 }
@@ -1139,6 +1145,7 @@ document.addEventListener('change',e=>{
     if(codeTaken(v,sid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');t.value=codeOf(sid);return;}
     if(v!==codeOf(sid)){putDoc('students',sid,Object.assign({},st,{code:v}));toast(st.name+': янги код '+v);}}
   else if(act==='sbook'){setProg(t.dataset.sid,Number(t.dataset.slot)||1,Number(t.value),1);}
+  else if(act==='ssura'){setProg(t.dataset.sid,Number(t.dataset.slot)||1,QB,Number(t.value)||1);}
   else if(act==='child'){ui.sid=t.value;render(true);}
   else if(act==='date'){if(t.value){ui.date=t.value;render(true);}}
   else if(act==='dayfield'){const f=t.dataset.f,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{d[f]=v;});}
@@ -1195,7 +1202,7 @@ function submitForm(e){
   const name=String(fd.get('name')||'').trim(); if(!name) return;
   if(f.dataset.form==='student'){const nid=newId('s'), cd=String(fd.get('code')||'').trim();
     if(cd&&!/^\d{4}$/.test(cd)){toast('Код 4 та рақамдан иборат бўлиши керак.');return;}
-    if(cd&&codeTaken(cd,nid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');return;}putDoc('students',nid,Object.assign({name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim(),book:Math.max(1,Math.min(NB,Number(fd.get('book'))||1)),lesson:Math.max(1,Number(fd.get('lesson'))||1)},Number(fd.get('book2'))?{book2:Math.max(1,Math.min(NB,Number(fd.get('book2')))),lesson2:Math.max(1,Number(fd.get('lesson2'))||1)}:{},cd?{code:cd}:{},ui.newPhoto?{photo:ui.newPhoto}:{}));ui.newPhoto=null;if(!net) toast(name+' қўшилди. Ота-она коди: '+codeOf(nid));}
+    if(cd&&codeTaken(cd,nid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');return;}putDoc('students',nid,Object.assign({name:name,gid:String(fd.get('gid')),parent:String(fd.get('parent')||'').trim(),book:Math.max(1,Math.min(NB,Number(fd.get('book'))||1)),lesson:Math.max(1,Number(fd.get(Number(fd.get('book'))===QB?'sura':'lesson'))||1)},Number(fd.get('book2'))?{book2:Math.max(1,Math.min(NB,Number(fd.get('book2')))),lesson2:Math.max(1,Number(fd.get(Number(fd.get('book2'))===QB?'sura2':'lesson2'))||1)}:{},cd?{code:cd}:{},ui.newPhoto?{photo:ui.newPhoto}:{}));ui.newPhoto=null;if(!net) toast(name+' қўшилди. Ота-она коди: '+codeOf(nid));}
   else{const ts=[],sub={};String(fd.get('teachers')||'').split(',').forEach(x=>{const a=x.split(':'),n=(a[0]||'').trim(); if(!n) return; ts.push(n); const sb=(a[1]||'').trim(); if(sb) sub[n]=sb;});putDoc('groups',newId('g'),{name:name,kind:String(fd.get('kind')||''),teachers:ts,subjects:sub});toast('«'+name+'» гуруҳи қўшилди.');}
 }
 document.addEventListener('submit',e=>{skipKeep=true; try{submitForm(e);}finally{skipKeep=false;}});
