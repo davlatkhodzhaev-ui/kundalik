@@ -689,7 +689,7 @@ function examBlock(s,st){ const e=st.exam&&EX[st.exam.s]?st.exam.s:''; const bt=
   if(!e) return '<div>'+bt('prep','Имтиҳонга тайёрланяпти','primary')+'</div>';
   let h='<div class="chips">'+examChip(st)+'</div><div class="chips">';
   if(e==='prep') h+=bt('pass','Ўтди','okb')+bt('fail','Ўтмади','danger');
-  else if(e==='fail') h+=bt('repass','Қайта топширди','okb')+bt('refail','Қайта топшира олмади','danger');
+  else if(e==='fail'||e==='refail'){ let n=0; exList(s).forEach(x=>{if(x[1]==='start') n=0; else if(x[1]==='fail'||x[1]==='refail') n++;}); if(n>1) h='<div class="chips">'+examChip(st)+'<span class="chip crit">'+n+' марта ўта олмади</span></div><div class="chips">'; h+=bt('repass','Қайта топширди','okb')+bt('refail','Яна ўта олмади','danger'); }
   else h+=bt('prep','Янги имтиҳон','');
   return h+bt('clear','Бекор қилиш','')+'</div>'; }
 function booksBlock(st){ const rows=[[st.book,st.lesson],[st.book2,st.lesson2]].filter(x=>x[0]); const bs=books();
@@ -699,7 +699,7 @@ const EXD={start:['Бошланди','ex'],prep:['Тайёрланди','ex'],pa
 const cnt=(r,k)=>r?(r[k+'n']||(r[k]==='y'?1:0)):0, mis=(r,k)=>r?(r[k+'x']||(r[k]==='n'?1:0)):0;
 function rowOf(sid,date){const st=S.students[sid], d=st&&dayOf(st.gid,date); return (d&&!d.teacher&&d.rows&&d.rows[sid])||null}
 function exList(sid){const st=S.students[sid], o=[]; if(!st) return o; for(const id in S.days){const d=S.days[id]; if(d.gid!==st.gid||d.teacher) continue; const r=d.rows&&d.rows[sid]; if(r&&r.ex) o.push([d.date,r.ex]);} return o.sort((a,b)=>a[0]<b[0]?-1:1)}
-function exOn(list,date){let last=null; for(const x of list){if(x[0]<=date) last=x; else break;} if(!last) return ''; if(last[0]===date) return EXD[last[1]]?last[1]:''; return (last[1]==='start'||last[1]==='fail')&&date<=TODAY?'prep':''}
+function exOn(list,date){let last=null; for(const x of list){if(x[0]<=date) last=x; else break;} if(!last) return ''; if(last[0]===date) return EXD[last[1]]?last[1]:''; return (last[1]==='start'||last[1]==='fail'||last[1]==='refail')&&date<=TODAY?'prep':''}
 function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),ds), dd=parse(ds); let h='<div class="cdet"><b>'+dd.getDate()+'-'+MON[dd.getMonth()]+', '+DOW[dd.getDay()].toLowerCase()+'</b>';
   if(ex) h+='<div class="chips"><span class="chip acc">'+ic('book')+'Имтиҳон: '+EXD[ex][0].toLowerCase()+'</span></div>';
   if(mode==='t'){ const at=(v,t)=>'<button type="button" class="btn small'+(r.a===v?' primary':'')+'" aria-pressed="'+(r.a===v)+'" data-act="cmark" data-sid="'+sid+'" data-date="'+ds+'" data-v="'+v+'">'+t+'</button>';
@@ -1203,6 +1203,7 @@ function doLogout(){
 let sw=null;
 document.addEventListener('touchstart',e=>{ if(e.touches.length!==1||ui.out){sw=null;return;} const t=e.touches[0]; let n=e.target, blocked=false;
   while(n&&n!==document.body){ if(n.tagName==='INPUT'||n.tagName==='SELECT'||n.tagName==='TEXTAREA'||(n.scrollWidth>n.clientWidth+4&&/(auto|scroll)/.test(getComputedStyle(n).overflowX))){blocked=true;break;} n=n.parentNode; }
+  const EDGE=36, w=window.innerWidth; if(t.clientX>EDGE&&t.clientX<w-EDGE) blocked=true;
   sw=blocked?null:{x:t.clientX,y:t.clientY,t:Date.now()}; },{passive:true});
 document.addEventListener('touchend',e=>{ if(!sw) return; const t=e.changedTouches[0], dx=t.clientX-sw.x, dy=t.clientY-sw.y, dt=Date.now()-sw.t; sw=null;
   if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2||dt>700) return;
