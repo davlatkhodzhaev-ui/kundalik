@@ -472,6 +472,8 @@ button.wd{border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlig
 .cdet .ln>span{font-weight:600}
 .cdet .step b{min-width:34px}.cdet .step button{width:40px;height:40px}
 .cdet .sub{font-size:12px;color:var(--muted);font-weight:600}
+.wkgrid.row{display:flex;overflow-x:auto;gap:5px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:thin}
+.wkgrid.row>.wd{flex:0 0 calc((100% - 30px)/7);scroll-snap-align:start}
 </style>
 </head>
 <body>
@@ -713,14 +715,14 @@ function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),
   if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+(c?'<span class="chip good">'+c+' та дарс топширди</span>':'')+(m?'<span class="chip crit">'+m+' та топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
   return h+'</div>'; }
 function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+mode+'|'; let sel='';
-  let h='<div class="wk"><div class="wkh"><b>'+weeks+' ҳафталик календарь</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади <i class="ex"></i>имтиҳон</span></div><div class="wkgrid">';
+  let h='<div class="wk"><div class="wkh"><b>'+weeks+' ҳафталик календарь</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади <i class="ex"></i>имтиҳон</span></div><div class="wkgrid'+(weeks>1?' row" data-ck="'+sid+'|'+mode:'')+'">';
   for(let i=n-1;i>=0;i--){const ds=addDays(TODAY,-i), r=rowOf(sid,ds), ex=exOn(xl,ds), dd=parse(ds), on=ui.cal===key+ds; let inner; if(on) sel=ds;
     if(ex) inner='<span class="wm tall '+EXD[ex][1]+'">'+EXD[ex][0]+'</span>';
     else if(!r||!(r.a||r.ar||r.qu)) inner='<span class="wm none">—</span>';
     else if(r.a==='a') inner='<span class="wm bad">йўқ</span>';
     else inner=SUBJ.map(sb=>{const v=r[sb[0]], c=cnt(r,sb[0]); return '<span class="wm '+(v==='y'?'ok':v==='n'?'bad':'none')+'">'+sb[1]+(v==='y'&&c>1?'<b class="wn">'+c+'</b>':'')+'</span>';}).join('');
     h+='<button type="button" class="wd'+(ds===TODAY?' today':'')+(on?' sel':'')+'" aria-pressed="'+on+'" aria-label="'+dd.getDate()+'-'+MON[dd.getMonth()]+'" data-act="cday" data-sid="'+sid+'" data-date="'+ds+'" data-m="'+mode+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</button>';}
-  h+='</div>'+(sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'Кунни босинг: ўша куни нечта дарс топширганини ўзгартирасиз.':'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
+  h+='</div>'+(sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'Олдинги кунларни кўриш учун календарни ўнгга суринг. Кунни босинг: ўша куни нечта дарс топширганини ўзгартирасиз.':(weeks>1?'Олдинги кунларни кўриш учун календарни ўнгга суринг. ':'')+'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
   return h+'</div>'; }
 function workDate(sid){const k=sid+'|t|'; return ui.cal&&ui.cal.indexOf(k)===0?ui.cal.slice(k.length):(ui.date||TODAY)}
 function bump(sid,book,dv){ const st=S.students[sid]; if(!st||!dv) return; const k=book===QB?'qu':'ar';
@@ -1114,10 +1116,12 @@ function render(force){
   else h+=viewAdmin();
   if(auth) h+='<div class="outbar">'+OUTBTN+'</div>';
   if(auth&&ui.out) h+='<div class="modal" role="dialog" aria-modal="true" aria-labelledby="out-h"><div class="box"><h2 id="out-h">Чиқишни хоҳлайсизми?</h2><p>'+(auth.role==='ota-ona'?'Чиқсангиз, қайта кириш учун фарзандингиз кодини яна ёзасиз ва хабарномалар келмай қолади.':'Чиқсангиз, қайта кириш учун кодни яна ёзасиз.')+'</p><div class="row"><button class="btn" type="button" data-act="out-no">Йўқ, қоламан</button><button class="btn out" style="height:44px" type="button" data-act="out-yes">Ҳа, чиқаман</button></div></div></div>';
+  const cs={}; $('#app').querySelectorAll('.wkgrid.row').forEach(x=>{cs[x.dataset.ck]=x.scrollLeft;});
   const keep={}; let foc=null;
   if(!skipKeep) $('#app').querySelectorAll('form[data-form] input[id],form[data-form] select[id],form[data-form] textarea[id]').forEach(x=>{if(x.type!=='file'&&x.type!=='hidden') keep[x.id]=x.value;});
   const ae=document.activeElement; if(ae&&ae.id&&keep[ae.id]!==undefined) foc=ae.id;
   $('#app').innerHTML=h;
+  $('#app').querySelectorAll('.wkgrid.row').forEach(x=>{x.scrollLeft=cs[x.dataset.ck]!==undefined?cs[x.dataset.ck]:x.scrollWidth;});
   for(const id in keep){const x=document.getElementById(id); if(x&&x.value!==keep[id]) x.value=keep[id];}
   syncSura();
   if(foc&&!refocus){const x=document.getElementById(foc); if(x) x.focus({preventScroll:true});}
