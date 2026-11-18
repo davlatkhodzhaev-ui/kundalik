@@ -704,6 +704,7 @@ function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),
   if(ex) h+='<div class="chips"><span class="chip acc">'+ic('book')+'Имтиҳон: '+EXD[ex][0].toLowerCase()+'</span></div>';
   if(mode==='t'){ const at=(v,t)=>'<button type="button" class="btn small'+(r.a===v?' primary':'')+'" aria-pressed="'+(r.a===v)+'" data-act="cmark" data-sid="'+sid+'" data-date="'+ds+'" data-v="'+v+'">'+t+'</button>';
     const stp=(f,val,lab)=>'<div class="ln"><span class="sub">'+lab+'</span><div class="step"><button type="button" data-act="cnum" data-sid="'+sid+'" data-date="'+ds+'" data-f="'+f+'" data-v="-1" aria-label="'+lab+': камайтириш">−</button><b>'+val+'</b><button type="button" data-act="cnum" data-sid="'+sid+'" data-date="'+ds+'" data-f="'+f+'" data-v="1" aria-label="'+lab+': кўпайтириш">+</button></div></div>';
+    if(r.ex) h+='<div><button type="button" class="btn small" data-act="cex" data-sid="'+sid+'" data-date="'+ds+'">'+ic('x')+'Шу кундаги имтиҳон белгисини олиб ташлаш</button></div>';
     h+='<div class="chips">'+at('p','Келди')+at('l','Кечикди')+at('a','Келмади')+'</div>';
     SUBJ.forEach(sb=>{h+='<div><span style="font-weight:700">'+sb[1]+'</span>'+stp(sb[0]+'n',cnt(r,sb[0]),'Нечта дарс топширди')+stp(sb[0]+'x',mis(r,sb[0]),'Нечта дарс топширмади')+'</div>';});
     return h+'</div>'; }
@@ -721,8 +722,9 @@ function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+
     h+='<button type="button" class="wd'+(ds===TODAY?' today':'')+(on?' sel':'')+'" aria-pressed="'+on+'" aria-label="'+dd.getDate()+'-'+MON[dd.getMonth()]+'" data-act="cday" data-sid="'+sid+'" data-date="'+ds+'" data-m="'+mode+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</button>';}
   h+='</div>'+(sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'Кунни босинг: ўша куни нечта дарс топширганини ўзгартирасиз.':'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
   return h+'</div>'; }
+function workDate(sid){const k=sid+'|t|'; return ui.cal&&ui.cal.indexOf(k)===0?ui.cal.slice(k.length):(ui.date||TODAY)}
 function bump(sid,book,dv){ const st=S.students[sid]; if(!st||!dv) return; const k=book===QB?'qu':'ar';
-  editDay(st.gid,ui.date||TODAY,'',d=>{const r=Object.assign({},d.rows[sid]); const c=cnt(r,k)+dv; if(c>0){r[k+'n']=Math.min(99,c);r[k]='y';} else {delete r[k+'n']; if(r[k]==='y') delete r[k];} delete r.seen; d.rows[sid]=r;}); }
+  editDay(st.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]); const c=cnt(r,k)+dv; if(c>0){r[k+'n']=Math.min(99,c);r[k]='y';} else {delete r[k+'n']; if(r[k]==='y') delete r[k];} delete r.seen; d.rows[sid]=r;}); }
 function progBlock(s,st,slot){ const bk=slot===2?st.book2:(st.book||1), ls=slot===2?(st.lesson2||1):(st.lesson||1);
   return '<div class="prog"><select data-act="sbook" data-slot="'+slot+'" data-sid="'+s+'" aria-label="'+esc(st.name)+': '+slot+'-китоб">'+books().map((b,i)=>'<option value="'+(i+1)+'"'+(i+1===bk?' selected':'')+'>'+esc(b.name)+'</option>').join('')+'</select>'+(bk===QB?'<select data-act="ssura" data-slot="'+slot+'" data-sid="'+s+'" aria-label="Сура">'+suraOpts(ls)+'</select>':'<div class="step"><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="-1" aria-label="Олдинги дарс">−</button><b>'+ls+'-дарс</b><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="1" aria-label="Кейинги дарс">+</button></div>')+(slot===2?'<button type="button" class="xbtn" data-act="sbook2-del" data-sid="'+s+'" aria-label="Иккинчи китобни олиб ташлаш">×</button>':'')+'</div>' }
 function dayTeacher(d){return d.teacher||gTeachers(S.groups[d.gid])[0]||''}
@@ -904,7 +906,7 @@ function viewTeacher(){
       '<div class="q"><span class="lab">3. Қуръон дарси</span>'+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],r.qu)+'</div>'+
       '<div class="q"><span class="lab">4. Календарь: кунни босиб ўзгартиринг</span>'+calBlock(s,3,'t')+'</div>'+
       '<div class="q"><span class="lab">5. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
-      '<div class="q"><span class="lab">6. Имтиҳон</span>'+examBlock(s,st)+'</div>'+
+      '<div class="q"><span class="lab">6. Имтиҳон<small style="font-weight:500;color:var(--muted)"> · '+(d=>{const x=parse(d);return x.getDate()+'-'+MON[x.getMonth()]})(workDate(s))+' кунига ёзилади</small></span>'+examBlock(s,st)+'</div>'+
       '<div class="q"><label class="lab" for="tc-'+s+'">7. Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
       '<div class="q"><label class="lab" for="tp-'+s+'">8. Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div>'+
       '<div class="q"><label class="lab" for="tn-'+s+'">9. Исм-фамилияни ўзгартириш</label><div class="chips" style="align-items:center"><input type="text" id="tn-'+s+'" value="'+esc(st.name)+'" style="flex:1;min-width:160px"><button type="button" class="btn small" data-act="sname" data-sid="'+s+'">'+ic('check')+'Сақлаш</button></div></div>'+
@@ -1154,11 +1156,12 @@ document.addEventListener('click',e=>{
   else if(act==='cday'){const k=sid+'|'+b.dataset.m+'|'+b.dataset.date; ui.cal=ui.cal===k?null:k; refocus='[data-act="cday"][data-sid="'+sid+'"][data-m="'+b.dataset.m+'"][data-date="'+b.dataset.date+'"]'; render(true);}
   else if(act==='cmark'){const st=S.students[sid], v=b.dataset.v, ds=b.dataset.date; if(!st) return; refocus='[data-act="cmark"][data-sid="'+sid+'"][data-v="'+v+'"]';
     editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(r.a===v) delete r.a; else r.a=v; if(r.a==='a'){ if(!r.ar){r.ar='n';} if(!r.qu){r.qu='n';} } delete r.seen; d.rows[sid]=r;});}
+  else if(act==='cex'){const st=S.students[sid], ds=b.dataset.date; if(st) editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); delete r.ex; d.rows[sid]=r;});}
   else if(act==='cnum'){const st=S.students[sid], f=b.dataset.f, k=f.slice(0,2), ds=b.dataset.date, dv=Number(b.dataset.v); if(!st||!/^(ar|qu)[nx]$/.test(f)) return; refocus='[data-act="cnum"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]';
     editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); let n=cnt(r,k), x=mis(r,k); if(f.slice(2)==='n') n=Math.max(0,Math.min(99,n+dv)); else x=Math.max(0,Math.min(99,x+dv));
       if(n) r[k+'n']=n; else delete r[k+'n']; if(x) r[k+'x']=x; else delete r[k+'x']; if(n) r[k]='y'; else if(x) r[k]='n'; else delete r[k]; delete r.seen; d.rows[sid]=r;});}
   else if(act==='topen'){ui.topen=ui.topen===sid?null:sid;refocus='[data-act="topen"][data-sid="'+sid+'"]';render(true);}
-  else if(act==='exam'){const st=S.students[sid], v=b.dataset.v; if(st){const c=Object.assign({},st); if(v==='clear') delete c.exam; else c.exam={s:v,b:v==='prep'?(st.book||1):((st.exam&&st.exam.b)||st.book||1)}; refocus='[data-act="topen"][data-sid="'+sid+'"]'; putDoc('students',sid,c); const xv=v==='prep'?'start':v==='clear'?'cancel':v; editDay(st.gid,TODAY,'',d=>{const r=Object.assign({},d.rows[sid]); r.ex=xv; d.rows[sid]=r;});}}
+  else if(act==='exam'){const st=S.students[sid], v=b.dataset.v; if(st){const c=Object.assign({},st); if(v==='clear') delete c.exam; else c.exam={s:v,b:v==='prep'?(st.book||1):((st.exam&&st.exam.b)||st.book||1)}; refocus='[data-act="topen"][data-sid="'+sid+'"]'; putDoc('students',sid,c); const xv=v==='prep'?'start':v==='clear'?'cancel':v; editDay(st.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]); r.ex=xv; d.rows[sid]=r;});}}
   else if(act==='ropen'){ui.open=ui.open===sid?null:sid;refocus='[data-act="ropen"][data-sid="'+sid+'"]';render(true);}
   else if(act==='rf'){ui.rf=b.dataset.v;refocus='[data-act="rf"][data-v="'+ui.rf+'"]';render(true);}
   else if(act==='lrole'){
