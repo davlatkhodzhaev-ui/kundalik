@@ -460,6 +460,18 @@ input.codein{font-family:var(--font-display);letter-spacing:.18em;text-align:cen
 .modal h2{margin:0 0 6px;font-size:19px}.modal p{margin:0 0 16px;color:var(--muted)}
 .modal .row{display:flex;gap:10px}.modal .row .btn{flex:1;justify-content:center}
 #app{touch-action:pan-y}
+.wkl i.ex,.wm.ex{background:var(--grad-gold,linear-gradient(135deg,#f5c451,#d99a1c));color:#1b1f3a}
+button.wd{border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wd.sel{box-shadow:0 0 0 2px var(--ink) inset}
+.wm.tall{min-height:59px;overflow-wrap:anywhere;font-size:8px;padding:4px 1px}
+.wm .wn{display:block;font-size:11px;line-height:1}
+.wkhint{margin:8px 0 0;font-size:12px;color:var(--muted)}
+.cdet{margin-top:10px;background:var(--surface);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.cdet>b{font-family:var(--font-display);font-size:14px}
+.cdet .ln{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between}
+.cdet .ln>span{font-weight:600}
+.cdet .step b{min-width:34px}.cdet .step button{width:40px;height:40px}
+.cdet .sub{font-size:12px;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
@@ -471,7 +483,7 @@ input.codein{font-family:var(--font-display);letter-spacing:.18em;text-align:cen
       <a href="#ustoz" data-role="ustoz"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h11a3 3 0 0 1 3 3V19H7a3 3 0 0 1-3-3z"/><path d="M8 10h6M8 13.5h4"/></svg>Устоз</a>
       <a href="#ota-ona" data-role="ota-ona"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.7-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17.5" cy="10" r="2.3"/><path d="M16 14.6c2.400-.3 4 1.200 4.500 3.900"/></svg>Ота-она</a>
       <a href="#rahbar" data-role="rahbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Бошқарув</a>
-      <a href="#hujra" data-role="hujra"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.500 20h7"/></svg>Ҳужра</a>
+      <a href="#hujra" data-role="hujra"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.500 20h7"/></svg>Ҳолат</a>
     </nav>
     <div class="me" id="me" hidden></div>
   </div>
@@ -552,7 +564,7 @@ const nice=s=>{const d=parse(s);return d.getDate()+'-'+MON[d.getMonth()]+', '+DO
 const TODAY=iso(new Date());
 const ROLES=['ustoz','ota-ona','rahbar','hujra'];
 const ALLOW={'rahbar':['ustoz','ota-ona','hujra'],'ustoz':['ustoz','ota-ona','hujra'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra']};
-const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Устоз','hujra':'Умумий ҳужра'};
+const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Устоз','hujra':'Умумий ҳолат'};
 const ATT={p:['Келди','good'],l:['Кечикди','warn'],a:['Келмади','crit']};
 const LES={y:['Топширди','good'],h:['Чала топширди','warn'],n:['Топширмади','crit']};
 const KIND={b:'Ётоқда қолади',d:'Келиб кетади'};
@@ -683,13 +695,34 @@ function examBlock(s,st){ const e=st.exam&&EX[st.exam.s]?st.exam.s:''; const bt=
 function booksBlock(st){ const rows=[[st.book,st.lesson],[st.book2,st.lesson2]].filter(x=>x[0]); const bs=books();
   return '<div class="bk"><b class="bkh">Китоблари</b>'+(rows.length?rows.map(x=>{const b=bs[x[0]-1]||bs[0], ls=x[1]||1, pc=b.lessons?Math.min(100,Math.round(ls/b.lessons*100)):null; return '<div class="bkrow"><div class="bkt"><span>'+esc(b.name)+'</span><b>'+(x[0]===QB?sura(ls):b.lessons?ls+' / '+b.lessons+' дарс':ls+'-дарс')+'</b></div>'+(b.lessons&&x[0]!==QB?'<div class="cells" role="img" aria-label="'+b.lessons+' дарсдан '+ls+'-дарсда">'+Array.from({length:b.lessons},(_,k)=>'<i class="'+(k+1<ls?'done':k+1===ls?'cur':'')+'"></i>').join('')+'</div>':'')+'</div>';}).join(''):'<p class="empty">Китоб белгиланмаган.</p>')+(examChip(st)?'<div class="chips">'+examChip(st)+'</div>':'')+'</div>' }
 const DOW3=['Якш','Душ','Сеш','Чор','Пай','Жум','Шан'];
-function weekCal(sid){ const st=S.students[sid]; let h='<div class="wk"><div class="wkh"><b>1 ҳафталик давомат</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади</span></div><div class="wkgrid">';
-  for(let i=6;i>=0;i--){const ds=addDays(TODAY,-i), d=dayOf(st.gid,ds), r=d&&!d.teacher&&d.rows&&d.rows[sid], dd=parse(ds); let inner;
-    if(!r||!(r.a||r.ar||r.qu)) inner='<span class="wm none">—</span>';
-    else if(r.a==='a') inner='<span class="wm bad" title="Дарсга келмади">йўқ</span>';
-    else inner=SUBJ.map(sb=>{const v=r[sb[0]]; return '<span class="wm '+(v==='y'?'ok':v==='n'?'bad':'none')+'" title="'+sb[1]+': '+(v==='y'?'топширди':v==='n'?'топширмади':'белгиланмаган')+'">'+sb[1]+'</span>';}).join('');
-    h+='<div class="wd'+(ds===TODAY?' today':'')+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</div>';}
-  return h+'</div></div>'; }
+const EXD={start:['Бошланди','ex'],prep:['Тайёрланди','ex'],pass:['Ўтди','ok'],fail:['Ўтолмади','bad'],repass:['Қайта ўтди','ok'],refail:['Қайта ўтолмади','bad']};
+const cnt=(r,k)=>r?(r[k+'n']||(r[k]==='y'?1:0)):0, mis=(r,k)=>r?(r[k+'x']||(r[k]==='n'?1:0)):0;
+function rowOf(sid,date){const st=S.students[sid], d=st&&dayOf(st.gid,date); return (d&&!d.teacher&&d.rows&&d.rows[sid])||null}
+function exList(sid){const st=S.students[sid], o=[]; if(!st) return o; for(const id in S.days){const d=S.days[id]; if(d.gid!==st.gid||d.teacher) continue; const r=d.rows&&d.rows[sid]; if(r&&r.ex) o.push([d.date,r.ex]);} return o.sort((a,b)=>a[0]<b[0]?-1:1)}
+function exOn(list,date){let last=null; for(const x of list){if(x[0]<=date) last=x; else break;} if(!last) return ''; if(last[0]===date) return EXD[last[1]]?last[1]:''; return (last[1]==='start'||last[1]==='fail')&&date<=TODAY?'prep':''}
+function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),ds), dd=parse(ds); let h='<div class="cdet"><b>'+dd.getDate()+'-'+MON[dd.getMonth()]+', '+DOW[dd.getDay()].toLowerCase()+'</b>';
+  if(ex) h+='<div class="chips"><span class="chip acc">'+ic('book')+'Имтиҳон: '+EXD[ex][0].toLowerCase()+'</span></div>';
+  if(mode==='t'){ const at=(v,t)=>'<button type="button" class="btn small'+(r.a===v?' primary':'')+'" aria-pressed="'+(r.a===v)+'" data-act="cmark" data-sid="'+sid+'" data-date="'+ds+'" data-v="'+v+'">'+t+'</button>';
+    const stp=(f,val,lab)=>'<div class="ln"><span class="sub">'+lab+'</span><div class="step"><button type="button" data-act="cnum" data-sid="'+sid+'" data-date="'+ds+'" data-f="'+f+'" data-v="-1" aria-label="'+lab+': камайтириш">−</button><b>'+val+'</b><button type="button" data-act="cnum" data-sid="'+sid+'" data-date="'+ds+'" data-f="'+f+'" data-v="1" aria-label="'+lab+': кўпайтириш">+</button></div></div>';
+    h+='<div class="chips">'+at('p','Келди')+at('l','Кечикди')+at('a','Келмади')+'</div>';
+    SUBJ.forEach(sb=>{h+='<div><span style="font-weight:700">'+sb[1]+'</span>'+stp(sb[0]+'n',cnt(r,sb[0]),'Нечта дарс топширди')+stp(sb[0]+'x',mis(r,sb[0]),'Нечта дарс топширмади')+'</div>';});
+    return h+'</div>'; }
+  if(!(r.a||r.ar||r.qu)){ if(!ex) h+='<span class="sub">Бу куни белги қўйилмаган.</span>'; return h+'</div>'; }
+  if(r.a) h+='<div class="chips"><span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span></div>';
+  if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+(c?'<span class="chip good">'+c+' та дарс топширди</span>':'')+(m?'<span class="chip crit">'+m+' та топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
+  return h+'</div>'; }
+function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+mode+'|'; let sel='';
+  let h='<div class="wk"><div class="wkh"><b>'+weeks+' ҳафталик календарь</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади <i class="ex"></i>имтиҳон</span></div><div class="wkgrid">';
+  for(let i=n-1;i>=0;i--){const ds=addDays(TODAY,-i), r=rowOf(sid,ds), ex=exOn(xl,ds), dd=parse(ds), on=ui.cal===key+ds; let inner; if(on) sel=ds;
+    if(ex) inner='<span class="wm tall '+EXD[ex][1]+'">'+EXD[ex][0]+'</span>';
+    else if(!r||!(r.a||r.ar||r.qu)) inner='<span class="wm none">—</span>';
+    else if(r.a==='a') inner='<span class="wm bad">йўқ</span>';
+    else inner=SUBJ.map(sb=>{const v=r[sb[0]], c=cnt(r,sb[0]); return '<span class="wm '+(v==='y'?'ok':v==='n'?'bad':'none')+'">'+sb[1]+(v==='y'&&c>1?'<b class="wn">'+c+'</b>':'')+'</span>';}).join('');
+    h+='<button type="button" class="wd'+(ds===TODAY?' today':'')+(on?' sel':'')+'" aria-pressed="'+on+'" aria-label="'+dd.getDate()+'-'+MON[dd.getMonth()]+'" data-act="cday" data-sid="'+sid+'" data-date="'+ds+'" data-m="'+mode+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</button>';}
+  h+='</div>'+(sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'Кунни босинг: ўша куни нечта дарс топширганини ўзгартирасиз.':'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
+  return h+'</div>'; }
+function bump(sid,book,dv){ const st=S.students[sid]; if(!st||!dv) return; const k=book===QB?'qu':'ar';
+  editDay(st.gid,ui.date||TODAY,'',d=>{const r=Object.assign({},d.rows[sid]); const c=cnt(r,k)+dv; if(c>0){r[k+'n']=Math.min(99,c);r[k]='y';} else {delete r[k+'n']; if(r[k]==='y') delete r[k];} delete r.seen; d.rows[sid]=r;}); }
 function progBlock(s,st,slot){ const bk=slot===2?st.book2:(st.book||1), ls=slot===2?(st.lesson2||1):(st.lesson||1);
   return '<div class="prog"><select data-act="sbook" data-slot="'+slot+'" data-sid="'+s+'" aria-label="'+esc(st.name)+': '+slot+'-китоб">'+books().map((b,i)=>'<option value="'+(i+1)+'"'+(i+1===bk?' selected':'')+'>'+esc(b.name)+'</option>').join('')+'</select>'+(bk===QB?'<select data-act="ssura" data-slot="'+slot+'" data-sid="'+s+'" aria-label="Сура">'+suraOpts(ls)+'</select>':'<div class="step"><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="-1" aria-label="Олдинги дарс">−</button><b>'+ls+'-дарс</b><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="1" aria-label="Кейинги дарс">+</button></div>')+(slot===2?'<button type="button" class="xbtn" data-act="sbook2-del" data-sid="'+s+'" aria-label="Иккинчи китобни олиб ташлаш">×</button>':'')+'</div>' }
 function dayTeacher(d){return d.teacher||gTeachers(S.groups[d.gid])[0]||''}
@@ -701,9 +734,10 @@ function dayId(gid,date){return gid+'_'+date}
 function dayOf(gid,date){return S.days[gid+'_'+date]}
 function entriesOf(sid,from){
   const st=S.students[sid]; if(!st) return [];
-  const out=[];
+  const out=[], xl=exList(sid);
   for(const id in S.days){const d=S.days[id]; if(d.gid!==st.gid||d.teacher) continue; if(from&&d.date<from) continue; const r=d.rows&&d.rows[sid]; if(!r||!(r.a||r.ar||r.qu)) continue;
-    SUBJ.forEach((sb,i)=>{out.push({id:id,date:d.date,subj:sb[0],teacher:sb[1],ord:i,topic:d.topic,hw:d.hw,r:{a:r.a,l:r[sb[0]]||(r.a==='a'?'n':''),seen:r.seen}});});}
+    const ex=exOn(xl,d.date), free=ex==='start'||ex==='prep';
+    SUBJ.forEach((sb,i)=>{const l0=r[sb[0]]||(r.a==='a'?'n':''); out.push({id:id,date:d.date,subj:sb[0],teacher:sb[1],ord:i,topic:d.topic,hw:d.hw,r:{a:r.a,l:free&&l0!=='y'?'':l0,seen:r.seen}});});}
   return out.sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:a.ord-b.ord);
 }
 function byDay(list){const out=[];let cur=null;list.forEach(e=>{if(!cur||cur.date!==e.date){cur={date:e.date,list:[]};out.push(cur);}cur.list.push(e);});return out}
@@ -735,7 +769,7 @@ function editDay(gid,date,t,fn){
     delete pend[id];
     ['topic','hw'].forEach(f=>{if((d[f]||'')!==(prev[f]||'')) send({a:'day.put',gid:gid,date:date,f:f,v:d[f]||''});});
     for(const sid in d.rows){const x=d.rows[sid], y=(prev.rows||{})[sid]||{}, patch={}; let ch=false;
-      ['a','ar','qu'].forEach(f=>{if(x[f]!==y[f]){patch[f]=x[f]===undefined?null:x[f];ch=true;}});
+      ['a','ar','qu','arn','qun','arx','qux','ex'].forEach(f=>{if(x[f]!==y[f]){patch[f]=x[f]===undefined?null:x[f];ch=true;}});
       if(ch) send({a:'mark',sid:sid,date:date,patch:patch}); else if(x.seen&&!y.seen) send({a:'seen',sid:sid,date:date});}
     return;
   }
@@ -868,12 +902,13 @@ function viewTeacher(){
       '<div class="q"><span class="lab">1. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],r.a)+'</div>'+
       '<div class="q"><span class="lab">2. Араб тили дарси</span>'+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],r.ar)+'</div>'+
       '<div class="q"><span class="lab">3. Қуръон дарси</span>'+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],r.qu)+'</div>'+
-      '<div class="q"><span class="lab">4. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
-      '<div class="q"><span class="lab">5. Имтиҳон</span>'+examBlock(s,st)+'</div>'+
-      '<div class="q"><label class="lab" for="tc-'+s+'">6. Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
-      '<div class="q"><label class="lab" for="tp-'+s+'">7. Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div>'+
-      '<div class="q"><label class="lab" for="tn-'+s+'">8. Исм-фамилияни ўзгартириш</label><div class="chips" style="align-items:center"><input type="text" id="tn-'+s+'" value="'+esc(st.name)+'" style="flex:1;min-width:160px"><button type="button" class="btn small" data-act="sname" data-sid="'+s+'">'+ic('check')+'Сақлаш</button></div></div>'+
-      '<div class="q"><span class="lab">9. Талабани ўчириш</span>'+(ui.del===s?'<div class="note crit" style="margin:0 0 8px">'+esc(st.name)+' рўйхатдан бутунлай ўчирилади. Уни қайтариб бўлмайди.</div><div class="chips"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ, қолсин</button></div>':'<div><button class="btn small danger" type="button" data-act="del" data-sid="'+s+'">'+ic('x')+'Талабани ўчириш</button></div>')+'</div></div>';
+      '<div class="q"><span class="lab">4. Календарь: кунни босиб ўзгартиринг</span>'+calBlock(s,3,'t')+'</div>'+
+      '<div class="q"><span class="lab">5. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
+      '<div class="q"><span class="lab">6. Имтиҳон</span>'+examBlock(s,st)+'</div>'+
+      '<div class="q"><label class="lab" for="tc-'+s+'">7. Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
+      '<div class="q"><label class="lab" for="tp-'+s+'">8. Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div>'+
+      '<div class="q"><label class="lab" for="tn-'+s+'">9. Исм-фамилияни ўзгартириш</label><div class="chips" style="align-items:center"><input type="text" id="tn-'+s+'" value="'+esc(st.name)+'" style="flex:1;min-width:160px"><button type="button" class="btn small" data-act="sname" data-sid="'+s+'">'+ic('check')+'Сақлаш</button></div></div>'+
+      '<div class="q"><span class="lab">10. Талабани ўчириш</span>'+(ui.del===s?'<div class="note crit" style="margin:0 0 8px">'+esc(st.name)+' рўйхатдан бутунлай ўчирилади. Уни қайтариб бўлмайди.</div><div class="chips"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ, қолсин</button></div>':'<div><button class="btn small danger" type="button" data-act="del" data-sid="'+s+'">'+ic('x')+'Талабани ўчириш</button></div>')+'</div></div>';
     h+='</div>';});
   h+='</div></section>';
   h+='<section class="panel"><h2>'+ic('plus')+'Янги талаба қўшиш<small>'+esc(g.name)+' гуруҳига</small></h2><form data-form="student" class="stack" style="gap:12px"><input type="hidden" name="gid" value="'+ui.gid+'">'+
@@ -925,10 +960,7 @@ function viewParent(){
     stat('<span class="bigstar">'+ic('cup')+'</span>','Рейтинг балли',String(score(entriesOf(ui.sid,addDays(TODAY,-30)))),'ҳар топширилган дарс +10')+'</div>';
   const map={}; days.forEach(d=>{map[d.date]=d.agg;});
   const dow=(parse(TODAY).getDay()+6)%7, wkStart=addDays(TODAY,-dow), start=addDays(wkStart,-21);
-  h+='<section class="panel"><h2>'+ic('cal')+'Охирги 4 ҳафта<small>катакдаги сон: нечта дарсдан нечтасини топширгани</small></h2><div class="cal">'+DOW2.map(x=>'<div class="dow">'+x+'</div>').join('');
-  for(let i=0;i<28;i++){const ds=addDays(start,i), a=map[ds], c=a?a.state:''; const tt=a?stateText(a):'Дарс белгиланмаган';
-    h+='<div class="cell '+c+(ds===TODAY?' today':'')+'" title="'+esc(nice(ds)+': '+tt)+'"><span class="d">'+parse(ds).getDate()+'</span><span class="m" role="img" aria-label="'+esc(tt)+'">'+(a?(a.state==='a'?ic('x'):a.n?'<b>'+a.y+'/'+a.n+'</b>':'<b>·</b>'):'')+'</span></div>';}
-  h+='</div><div class="legend"><span><i style="background:var(--good)"></i>ҳамма дарсини топширди</span><span><i style="background:var(--warn)"></i>бир қисмини топширди</span><span><i style="background:var(--crit)"></i>топширмади ёки келмади</span><span><i style="background:var(--track)"></i>дарс йўқ</span></div></section>';
+  h+='<section class="panel"><h2>'+ic('cal')+'Охирги 4 ҳафта<small>кунни боссангиз, ўша куни нечта дарс топширгани чиқади</small></h2>'+calBlock(ui.sid,4,'p')+'</section>';
   h+='<section class="panel"><h2>'+ic('book')+'Кундалик<small>охирги дарс кунлари</small></h2>';
   if(!days.length) h+='<p class="empty">Ҳали ёзув йўқ. Устоз дарсни белгилаганда шу ерда кўринади.</p>';
   days.slice(0,6).forEach(d=>{const a=d.agg, dd=parse(d.date);
@@ -991,7 +1023,7 @@ function viewAdmin(){
   h+='<section class="panel"><h2>'+ic('key')+'Кириш кодлари</h2><div class="people">'+
     '<div class="person"><div class="nm"><b>Устозлар</b><span>ҳамма устозга битта код</span></div><span class="chip code"><b>'+TEACHER_CODE+'</b></span></div>'+
     '<div class="person"><div class="nm"><b>Ота-оналар</b><span>ҳар бир талабанинг ўз коди, юқоридаги жадвалларда</span></div></div>'+
-    '<div class="person"><div class="nm"><b>Умумий ҳужра</b><span>кодсиз очилади</span></div></div></div></section></div>';
+    '<div class="person"><div class="nm"><b>Умумий ҳолат</b><span>кодсиз очилади</span></div></div></div></section></div>';
   h+='<div class="two">'+
     '<section class="panel"><h2>'+ic('plus')+'Гуруҳ қўшиш</h2><form data-form="group" class="stack" style="gap:12px">'+
     '<div class="field"><label for="ag-n">Гуруҳ номи</label><input type="text" id="ag-n" name="name" required></div>'+
@@ -1019,7 +1051,7 @@ function viewRoom(){
   if(ui.rf!=='all') ids=ids.filter(s=>(S.groups[S.students[s].gid]||{}).kind===ui.rf);
   const rows=ids.map(s=>{const l=entriesOf(s,from);const x=stats(l);return {s:s,b:score(l),g:x.attAll?x.att/x.attAll:0};}).sort((a,b)=>b.b-a.b||b.g-a.g||S.students[a.s].name.localeCompare(S.students[b.s].name,'uz'));
   const mine=auth&&auth.role==='ota-ona'?(auth.sids||[]):[];
-  let h='<section class="hero"><div><h1>Умумий ҳужра: <em>ким қандай ўқияпти</em></h1><p>Охирги 30 кунлик балл бўйича рейтинг. Энг яхши ўқиётган ўқувчи биринчи ўринда.</p></div></section>';
+  let h='<section class="hero"><div><h1>Умумий ҳолат: <em>ким қандай ўқияпти</em></h1><p>Охирги 30 кунлик балл бўйича рейтинг. Энг яхши ўқиётган ўқувчи биринчи ўринда.</p></div></section>';
   h+='<section class="panel"><div class="roomtop"><div class="seg2" role="group" aria-label="Гуруҳ">'+[['all','Ҳаммаси'],['b','Ётоқда қоладиганлар'],['d','Келиб кетадиганлар']].map(o=>'<button type="button" class="'+(ui.rf===o[0]?'on':'')+'" aria-pressed="'+(ui.rf===o[0])+'" data-act="rf" data-v="'+o[0]+'">'+o[1]+'</button>').join('')+'</div>'+
     '<div class="legend" style="margin:0"><span><i style="background:var(--good);border-radius:50%"></i>яхши</span><span><i style="background:var(--warn);border-radius:50%"></i>ўртача</span><span><i style="background:var(--crit);border-radius:50%"></i>суст</span><span><i style="background:var(--track);border-radius:50%"></i>маълумот йўқ</span></div></div>'+
     '<p class="rules"><b>Рейтинг қандай ҳисобланади:</b> ҳар бир топширилган дарс учун 10 балл. Топширилмаган ёки қолдирилган дарсга балл берилмайди. Баллар тенг бўлса, давомати яхши ўқувчи олдинда туради. Шарикчалар охирги 5 дарс кунини кўрсатади. Батафсил кўрсаткичларни кўриш учун исмни босинг.</p></section>';
@@ -1028,7 +1060,7 @@ function viewRoom(){
   rows.forEach((r,i)=>{const st=S.students[r.s], open=ui.open===r.s, top=i<3?' top t'+(i+1):'';
     h+='<div class="ritem'+(mine.indexOf(r.s)>=0?' mine':'')+(open?' open':'')+'"><button type="button" class="rrow" data-act="ropen" data-sid="'+r.s+'" aria-expanded="'+open+'"><span class="rk'+top+'">'+(i+1)+'</span>'+avatar(st.name,'',st)+'<span class="rn"><b>'+esc(st.name)+'</b><small class="pg">'+esc(progText(st))+'</small>'+studentDots(r.s)+'</span><span class="rb">'+r.b+'<small>балл</small></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
     if(open){const p=stats(entriesOf(r.s,from)), g=S.groups[st.gid]||{};
-      h+='<div class="rmore2">'+weekCal(r.s)+booksBlock(st)+'<div class="rmore"><div class="mini"><span>Давомат (30 кун)</span>'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</div><div class="mini"><span>Дарс топшириш (30 кун)</span>'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</div><div class="mini wide"><span>Гуруҳ</span><b>'+esc(g.name||'')+'</b></div></div></div>';}
+      h+='<div class="rmore2">'+calBlock(r.s,1,'r')+booksBlock(st)+'<div class="rmore"><div class="mini"><span>Давомат (30 кун)</span>'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</div><div class="mini"><span>Дарс топшириш (30 кун)</span>'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</div><div class="mini wide"><span>Гуруҳ</span><b>'+esc(g.name||'')+'</b></div></div></div>';}
     h+='</div>';});
   h+='</div></section>';
   return h;
@@ -1037,11 +1069,11 @@ function viewLogin(){
   let h='<section class="hero"><div><h1>Хуш <em>келибсиз</em></h1><p>Электрон кундаликка кириш учун аввал кимлигингизни танланг, кейин кириш кодингизни ёзинг.</p></div></section>';
   if(!ui.lrole){
     const card=(r,icn,t,d)=>'<button type="button" class="rolecard" data-act="lrole" data-v="'+r+'"><span class="bub">'+ic(icn)+'</span><b>'+t+'</b><span>'+d+'</span></button>';
-    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат ва дарсларни белгилайман, талабаларни бошқараман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('hujra','cup','Умумий ҳужра','Барча ўқувчилар рейтинги ва баллари. Кодсиз очилади')+'</div>';
+    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат ва дарсларни белгилайман, талабаларни бошқараман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('hujra','cup','Умумий ҳолат','Барча ўқувчилар рейтинги ва баллари. Кодсиз очилади')+'</div>';
   }
   const r=ui.lrole, ts=teachers();
-  h+='<section class="panel login"><h2>'+ic(r==='ustoz'?'book':r==='ota-ona'?'users':r==='hujra'?'cup':'chart')+(r==='hujra'?'Умумий ҳужрага кириш':RNAME[r]+' сифатида кириш')+'</h2><form data-form="login" class="stack" style="gap:14px">';
-  h+='<div class="field"><label for="lg-c">'+(r==='ota-ona'?'Фарзандингиз коди':r==='hujra'?'Ҳужра коди':'Кириш коди')+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="4 та рақам" required></div>';
+  h+='<section class="panel login"><h2>'+ic(r==='ustoz'?'book':r==='ota-ona'?'users':r==='hujra'?'cup':'chart')+(r==='hujra'?'Умумий ҳолатга кириш':RNAME[r]+' сифатида кириш')+'</h2><form data-form="login" class="stack" style="gap:14px">';
+  h+='<div class="field"><label for="lg-c">'+(r==='ota-ona'?'Фарзандингиз коди':r==='hujra'?'Ҳолат коди':'Кириш коди')+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="4 та рақам" required></div>';
   if(ui.lerr) h+='<div class="note crit">'+esc(ui.lerr)+'</div>';
   h+='<div class="chips"><button class="btn primary" type="submit">Кириш</button><button class="btn" type="button" data-act="lback">Орқага</button></div></form>'+
     (net?'':'<div class="hint"><b>Синов нусхаси учун.</b> Устозлар коди: '+TEACHER_CODE+' (ҳамма устозга битта). Ота-она кодлари «Устоз» бўлимидаги жадвалда кўринади.</div>')+'</section>';
@@ -1097,7 +1129,9 @@ document.addEventListener('click',e=>{
   if(act==='mark'){
     const f=b.dataset.f; let v=b.dataset.v; if(f==='g') v=Number(v);
     refocus='[data-act="mark"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]';
-    editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'){ if(!r.ar) r.ar='n'; if(!r.qu) r.qu='n'; } delete r.seen; d.rows[sid]=r;});
+    editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'){ if(!r.ar) r.ar='n'; if(!r.qu) r.qu='n'; }
+      if(f==='ar'||f==='qu'){ if(r[f]==='y'){ if(!r[f+'n']) r[f+'n']=1; } else if(r[f]==='n'){ delete r[f+'n']; if(!r[f+'x']) r[f+'x']=1; } else { delete r[f+'n']; delete r[f+'x']; } }
+      delete r.seen; d.rows[sid]=r;});
   }else if(act==='star'){
     const n=Number(b.dataset.v);
     refocus='[data-act="star"][data-sid="'+sid+'"][data-v="'+n+'"]';
@@ -1114,11 +1148,17 @@ document.addEventListener('click',e=>{
   else if(act==='reset'){ui.reset=true;render(true);}
   else if(act==='reset-no'){ui.reset=false;render(true);}
   else if(act==='reset-yes'){ui.reset=false;seed();}
-  else if(act==='sles'){const st=S.students[sid], sl=Number(b.dataset.slot)||1; refocus='[data-act="sles"][data-sid="'+sid+'"][data-slot="'+sl+'"][data-v="'+b.dataset.v+'"]'; if(st) setProg(sid,sl,sl===2?st.book2:(st.book||1),(sl===2?(st.lesson2||1):(st.lesson||1))+Number(b.dataset.v));}
+  else if(act==='sles'){const st=S.students[sid], sl=Number(b.dataset.slot)||1; refocus='[data-act="sles"][data-sid="'+sid+'"][data-slot="'+sl+'"][data-v="'+b.dataset.v+'"]'; if(st){const bk=sl===2?st.book2:(st.book||1), old=sl===2?(st.lesson2||1):(st.lesson||1), rf=refocus; setProg(sid,sl,bk,old+Number(b.dataset.v)); const st2=S.students[sid], nw=st2?(sl===2?(st2.lesson2||1):(st2.lesson||1)):old; if(nw!==old){refocus=rf; bump(sid,bk,nw-old);}}}
   else if(act==='sbook2-add'){const st=S.students[sid]; if(st) putDoc('students',sid,Object.assign({},st,{book2:Math.min(NB,(st.book||1)+1),lesson2:1}));}
   else if(act==='sbook2-del'){const st=S.students[sid]; if(st){const c=Object.assign({},st); delete c.book2; delete c.lesson2; putDoc('students',sid,c);}}
+  else if(act==='cday'){const k=sid+'|'+b.dataset.m+'|'+b.dataset.date; ui.cal=ui.cal===k?null:k; refocus='[data-act="cday"][data-sid="'+sid+'"][data-m="'+b.dataset.m+'"][data-date="'+b.dataset.date+'"]'; render(true);}
+  else if(act==='cmark'){const st=S.students[sid], v=b.dataset.v, ds=b.dataset.date; if(!st) return; refocus='[data-act="cmark"][data-sid="'+sid+'"][data-v="'+v+'"]';
+    editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(r.a===v) delete r.a; else r.a=v; if(r.a==='a'){ if(!r.ar){r.ar='n';} if(!r.qu){r.qu='n';} } delete r.seen; d.rows[sid]=r;});}
+  else if(act==='cnum'){const st=S.students[sid], f=b.dataset.f, k=f.slice(0,2), ds=b.dataset.date, dv=Number(b.dataset.v); if(!st||!/^(ar|qu)[nx]$/.test(f)) return; refocus='[data-act="cnum"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]';
+    editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); let n=cnt(r,k), x=mis(r,k); if(f.slice(2)==='n') n=Math.max(0,Math.min(99,n+dv)); else x=Math.max(0,Math.min(99,x+dv));
+      if(n) r[k+'n']=n; else delete r[k+'n']; if(x) r[k+'x']=x; else delete r[k+'x']; if(n) r[k]='y'; else if(x) r[k]='n'; else delete r[k]; delete r.seen; d.rows[sid]=r;});}
   else if(act==='topen'){ui.topen=ui.topen===sid?null:sid;refocus='[data-act="topen"][data-sid="'+sid+'"]';render(true);}
-  else if(act==='exam'){const st=S.students[sid], v=b.dataset.v; if(st){const c=Object.assign({},st); if(v==='clear') delete c.exam; else c.exam={s:v,b:v==='prep'?(st.book||1):((st.exam&&st.exam.b)||st.book||1)}; refocus='[data-act="topen"][data-sid="'+sid+'"]'; putDoc('students',sid,c);}}
+  else if(act==='exam'){const st=S.students[sid], v=b.dataset.v; if(st){const c=Object.assign({},st); if(v==='clear') delete c.exam; else c.exam={s:v,b:v==='prep'?(st.book||1):((st.exam&&st.exam.b)||st.book||1)}; refocus='[data-act="topen"][data-sid="'+sid+'"]'; putDoc('students',sid,c); const xv=v==='prep'?'start':v==='clear'?'cancel':v; editDay(st.gid,TODAY,'',d=>{const r=Object.assign({},d.rows[sid]); r.ex=xv; d.rows[sid]=r;});}}
   else if(act==='ropen'){ui.open=ui.open===sid?null:sid;refocus='[data-act="ropen"][data-sid="'+sid+'"]';render(true);}
   else if(act==='rf'){ui.rf=b.dataset.v;refocus='[data-act="rf"][data-v="'+ui.rf+'"]';render(true);}
   else if(act==='lrole'){
@@ -1145,7 +1185,7 @@ document.addEventListener('change',e=>{
     if(codeTaken(v,sid)){toast('Бу код бошқа талабада бор. Бошқа код танланг.');t.value=codeOf(sid);return;}
     if(v!==codeOf(sid)){putDoc('students',sid,Object.assign({},st,{code:v}));toast(st.name+': янги код '+v);}}
   else if(act==='sbook'){setProg(t.dataset.sid,Number(t.dataset.slot)||1,Number(t.value),1);}
-  else if(act==='ssura'){setProg(t.dataset.sid,Number(t.dataset.slot)||1,QB,Number(t.value)||1);}
+  else if(act==='ssura'){const sd=t.dataset.sid, sl=Number(t.dataset.slot)||1, st=S.students[sd], old=st?(sl===2?st.lesson2:st.lesson):0; setProg(sd,sl,QB,Number(t.value)||1); if(st&&(Number(t.value)||1)!==old) bump(sd,QB,1);}
   else if(act==='child'){ui.sid=t.value;render(true);}
   else if(act==='date'){if(t.value){ui.date=t.value;render(true);}}
   else if(act==='dayfield'){const f=t.dataset.f,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{d[f]=v;});}

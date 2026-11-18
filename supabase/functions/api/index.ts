@@ -191,6 +191,10 @@ async function handle(b: any, ip: string) {
     const r: any = { ...((await get("marks", id)) || {}), sid: b.sid, date: b.date };
     const ok: Record<string, string[]> = { a: ["p", "l", "a"], ar: ["y", "n"], qu: ["y", "n"] };
     for (const f of Object.keys(ok)) if (f in b.patch) { if (ok[f].includes(b.patch[f])) r[f] = b.patch[f]; else delete r[f]; }
+    // how many lessons were handed in / not handed in that day, per subject
+    for (const f of ["arn", "qun", "arx", "qux"]) if (f in b.patch) { const n = Math.floor(Number(b.patch[f])); if (n >= 1 && n <= 99) r[f] = n; else delete r[f]; }
+    // exam step recorded on the day it happened
+    if ("ex" in b.patch) { if (["start", "pass", "fail", "repass", "refail", "cancel"].includes(b.patch.ex)) r.ex = b.patch.ex; else delete r.ex; }
     if (r.a === "a") { r.ar = r.ar || "n"; r.qu = r.qu || "n"; }
     delete r.seen;
     const sig = r.a === "a" ? "a" : (r.a && r.ar && r.qu ? r.a + r.ar + r.qu : "");
