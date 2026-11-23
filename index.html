@@ -510,6 +510,9 @@ button.wd{border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlig
 .morebtn{display:flex;align-items:center;gap:8px;width:100%;min-height:48px;padding:0 14px;border-radius:14px;border:1.5px dashed var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-align:left}
 .morebtn>span{margin-left:auto;color:var(--muted)}
 .morebtn .ic{width:16px;height:16px;flex:none}
+.q>.ln{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
+.q>.ln .sub{font-size:13px;color:var(--muted);font-weight:600}
+.q>.ln .step b{min-width:34px}
 </style>
 </head>
 <body>
@@ -760,7 +763,7 @@ function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+
     else if(r.a==='a') inner='<span class="wm bad">йўқ</span>';
     else inner=SUBJ.map(sb=>{const v=r[sb[0]], c=cnt(r,sb[0]); return '<span class="wm '+(v==='y'?'ok':v==='n'?'bad':'none')+'">'+sb[1]+(v==='y'&&c>1?'<b class="wn">'+c+'</b>':'')+'</span>';}).join('');
     h+='<button type="button" class="wd'+(ds===TODAY?' today':'')+(on?' sel':'')+'" aria-pressed="'+on+'" aria-label="'+dd.getDate()+'-'+MON[dd.getMonth()]+'" data-act="cday" data-sid="'+sid+'" data-date="'+ds+'" data-m="'+mode+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</button>';}
-  h+='</div>'+(sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'Олдинги кунларни кўриш учун календарни ўнгга суринг. Кунни босинг: ўша куни нечта дарс топширганини ўзгартирасиз.':(weeks>1?'Олдинги кунларни кўриш учун календарни ўнгга суринг. ':'')+'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
+  h+='</div>'+(mode==='t'?'<p class="wkhint">Олдинги кунлар учун календарни ўнгга суринг. Кунни боссангиз, пастдаги белгилар ўша кунга ёзилади.</p>':sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'':(weeks>1?'Олдинги кунларни кўриш учун календарни ўнгга суринг. ':'')+'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
   return h+'</div>'; }
 function workDate(sid){const k=sid+'|t|'; return ui.cal&&ui.cal.indexOf(k)===0?ui.cal.slice(k.length):(ui.date||TODAY)}
 function bump(sid,book,dv){ const st=S.students[sid]; if(!st||!dv) return; const k=book===QB?'qu':'ar';
@@ -929,12 +932,14 @@ function viewTeacher(){
     const sum=(r.a||r.ar||r.qu)?((r.a?'<span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span>':'')+(r.a==='a'?'':SUBJ.map(sb=>'<span class="dot '+(r[sb[0]]==='y'?'good':r[sb[0]]==='n'?'crit':'none')+'"><i></i>'+sb[1]+'</span>').join(''))):'<span class="chip">Ҳали белгиланмаган</span>';
     h+='<div class="ritem'+(open?' open':'')+(state?' s-'+state:'')+'"><button type="button" class="rrow" data-act="topen" data-sid="'+s+'" aria-expanded="'+open+'">'+avatar(st.name,'',st)+'<span class="rn"><b>'+esc(st.name)+'</b><span class="tsum">'+sum+(st.exam&&st.exam.s==='prep'?'<span class="chip acc">Имтиҳон</span>':'')+'</span></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
     const wdt=workDate(s), rw=open?(rowOf(s,wdt)||{}):r, wdd=parse(wdt);
+    const cst=(k)=>{const v=rw[k]; if(v!=='y'&&v!=='n') return ''; const f=k+(v==='y'?'n':'x'), val=v==='y'?cnt(rw,k):mis(rw,k), lab=v==='y'?'Нечта дарс топширди':'Нечта дарс топширмади';
+      return '<div class="ln"><span class="sub">'+lab+'</span><div class="step"><button type="button" data-act="cnum" data-sid="'+s+'" data-date="'+wdt+'" data-f="'+f+'" data-v="-1" aria-label="'+lab+': камайтириш">−</button><b>'+val+'</b><button type="button" data-act="cnum" data-sid="'+s+'" data-date="'+wdt+'" data-f="'+f+'" data-v="1" aria-label="'+lab+': кўпайтириш">+</button></div></div>';};
     if(open) h+='<div class="tbody">'+
-      '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'</b></div>'+
-      '<div class="q"><span class="lab">1. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],rw.a)+'</div>'+
-      '<div class="q"><span class="lab">2. Араб тили дарси</span>'+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.ar)+'</div>'+
-      '<div class="q"><span class="lab">3. Қуръон дарси</span>'+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu)+'</div>'+
-      '<div class="q"><span class="lab">4. Календарь: кунни босиб ўзгартиринг</span>'+calBlock(s,3,'t')+'</div>'+
+      '<div class="q"><span class="lab">1. Кунни танланг</span>'+calBlock(s,3,'t')+'</div>'+
+      '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'</b>'+(rw.ex?' <button type="button" class="cexb" style="margin-left:6px" data-act="cex" data-sid="'+s+'" data-date="'+wdt+'">× Имтиҳон белгисини ўчириш</button>':'')+'</div>'+
+      '<div class="q"><span class="lab">2. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],rw.a)+'</div>'+
+      '<div class="q"><span class="lab">3. Араб тили дарси</span>'+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.ar)+cst('ar')+'</div>'+
+      '<div class="q"><span class="lab">4. Қуръон дарси</span>'+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu)+cst('qu')+'</div>'+
       '<button type="button" class="morebtn" data-act="tmore" data-sid="'+s+'" aria-expanded="'+(ui.more===s)+'">'+ic('plus')+'Қўшимча: китоб, имтиҳон, код, расм, исм<span aria-hidden="true">'+(ui.more===s?'▴':'▾')+'</span></button>'+(ui.more!==s?'':
       '<div class="q"><span class="lab">5. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
       '<div class="q"><span class="lab">6. Имтиҳон<small style="font-weight:500;color:var(--muted)"> · '+(d=>{const x=parse(d);return x.getDate()+'-'+MON[x.getMonth()]})(workDate(s))+' кунига ёзилади</small></span>'+examBlock(s,st)+'</div>'+
