@@ -221,6 +221,9 @@ async function handle(b: any, ip: string) {
     if ("gid" in d && isId(d.gid)) st.gid = d.gid;
     if ("parent" in d) st.parent = str(d.parent, 120);
     for (const f of ["book", "lesson", "book2", "lesson2"]) if (f in d) { const n = Math.floor(Number(d[f])); if (n >= 1 && n <= 999) st[f] = n; else delete st[f]; }
+    // Quran: lines done inside the current sura, and which way the next sura lies
+    if ("qline" in d) { const n = Math.floor(Number(d.qline)); if (n >= 1 && n <= 999) st.qline = n; else delete st.qline; }
+    if ("qdir" in d) { if (d.qdir === "rev") st.qdir = "rev"; else delete st.qdir; }
     if ("exam" in d) { if (d.exam && ["prep", "pass", "fail", "repass", "refail"].includes(d.exam.s)) st.exam = { s: d.exam.s, b: Math.floor(Number(d.exam.b)) || 1 }; else delete st.exam; }
     if ("photo" in d) { if (typeof d.photo === "string" && d.photo.startsWith("data:image/") && d.photo.length < 60000) st.photo = d.photo; else delete st.photo; }
     if ("code" in d && str(d.code)) { const c = await freeCode(students, str(d.code, 4), sid); if (!c) return { error: "codeTaken" }; st.code = c; }
