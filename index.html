@@ -766,6 +766,9 @@ function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+
   h+='</div>'+(mode==='t'?'<p class="wkhint">Олдинги кунлар учун календарни ўнгга суринг. Кунни боссангиз, пастдаги белгилар ўша кунга ёзилади.</p>':sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'':(weeks>1?'Олдинги кунларни кўриш учун календарни ўнгга суринг. ':'')+'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
   return h+'</div>'; }
 function workDate(sid){const k=sid+'|t|'; return ui.cal&&ui.cal.indexOf(k)===0?ui.cal.slice(k.length):(ui.date||TODAY)}
+function pcount(sid,ds,k){return (ui.pc&&ui.pc[sid+'|'+ds+'|'+k])||1}
+/* lessons handed in move the student's book forward (the Quran book is chosen by sura, so it is left alone) */
+function advBook(sid,k,dl){ const st=S.students[sid]; if(!st||k!=='ar'||!dl) return; const slot=(st.book||1)!==QB?1:(st.book2&&st.book2!==QB?2:0); if(!slot) return; setProg(sid,slot,slot===2?st.book2:(st.book||1),(slot===2?(st.lesson2||1):(st.lesson||1))+dl); }
 function bump(sid,book,dv){ const st=S.students[sid]; if(!st||!dv) return; const k=book===QB?'qu':'ar';
   editDay(st.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]); const c=cnt(r,k)+dv; if(c>0){r[k+'n']=Math.min(99,c);r[k]='y';} else {delete r[k+'n']; if(r[k]==='y') delete r[k];} delete r.seen; d.rows[sid]=r;}); }
 function progBlock(s,st,slot){ const bk=slot===2?st.book2:(st.book||1), ls=slot===2?(st.lesson2||1):(st.lesson||1);
@@ -932,14 +935,14 @@ function viewTeacher(){
     const sum=(r.a||r.ar||r.qu)?((r.a?'<span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span>':'')+(r.a==='a'?'':SUBJ.map(sb=>'<span class="dot '+(r[sb[0]]==='y'?'good':r[sb[0]]==='n'?'crit':'none')+'"><i></i>'+sb[1]+'</span>').join(''))):'<span class="chip">Ҳали белгиланмаган</span>';
     h+='<div class="ritem'+(open?' open':'')+(state?' s-'+state:'')+'"><button type="button" class="rrow" data-act="topen" data-sid="'+s+'" aria-expanded="'+open+'">'+avatar(st.name,'',st)+'<span class="rn"><b>'+esc(st.name)+'</b><span class="tsum">'+sum+(st.exam&&st.exam.s==='prep'?'<span class="chip acc">Имтиҳон</span>':'')+'</span></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
     const wdt=workDate(s), rw=open?(rowOf(s,wdt)||{}):r, wdd=parse(wdt);
-    const cst=(k)=>{const v=rw[k]; if(v!=='y'&&v!=='n') return ''; const f=k+(v==='y'?'n':'x'), val=v==='y'?cnt(rw,k):mis(rw,k), lab=v==='y'?'Нечта дарс топширди':'Нечта дарс топширмади';
-      return '<div class="ln"><span class="sub">'+lab+'</span><div class="step"><button type="button" data-act="cnum" data-sid="'+s+'" data-date="'+wdt+'" data-f="'+f+'" data-v="-1" aria-label="'+lab+': камайтириш">−</button><b>'+val+'</b><button type="button" data-act="cnum" data-sid="'+s+'" data-date="'+wdt+'" data-f="'+f+'" data-v="1" aria-label="'+lab+': кўпайтириш">+</button></div></div>';};
+    const cst=(k)=>{const v=rw[k], set=v==='y'||v==='n', f=k+(v==='n'?'x':'n'), val=v==='y'?cnt(rw,k):v==='n'?mis(rw,k):pcount(s,wdt,k), at=set?'data-act="cnum" data-f="'+f+'"':'data-act="pnum" data-k="'+k+'"';
+      return '<div class="ln"><span class="sub">Нечта дарс</span><div class="step"><button type="button" '+at+' data-sid="'+s+'" data-date="'+wdt+'" data-v="-1" aria-label="Дарс сонини камайтириш">−</button><b>'+val+'</b><button type="button" '+at+' data-sid="'+s+'" data-date="'+wdt+'" data-v="1" aria-label="Дарс сонини кўпайтириш">+</button></div></div>';};
     if(open) h+='<div class="tbody">'+
       '<div class="q"><span class="lab">1. Кунни танланг</span>'+calBlock(s,3,'t')+'</div>'+
       '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'</b>'+(rw.ex?' <button type="button" class="cexb" style="margin-left:6px" data-act="cex" data-sid="'+s+'" data-date="'+wdt+'">× Имтиҳон белгисини ўчириш</button>':'')+'</div>'+
       '<div class="q"><span class="lab">2. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],rw.a)+'</div>'+
-      '<div class="q"><span class="lab">3. Араб тили дарси</span>'+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.ar)+cst('ar')+'</div>'+
-      '<div class="q"><span class="lab">4. Қуръон дарси</span>'+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu)+cst('qu')+'</div>'+
+      '<div class="q"><span class="lab">3. Араб тили дарси</span>'+cst('ar')+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.ar)+'</div>'+
+      '<div class="q"><span class="lab">4. Қуръон дарси</span>'+cst('qu')+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu)+'</div>'+
       '<button type="button" class="morebtn" data-act="tmore" data-sid="'+s+'" aria-expanded="'+(ui.more===s)+'">'+ic('plus')+'Қўшимча: китоб, имтиҳон, код, расм, исм<span aria-hidden="true">'+(ui.more===s?'▴':'▾')+'</span></button>'+(ui.more!==s?'':
       '<div class="q"><span class="lab">5. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
       '<div class="q"><span class="lab">6. Имтиҳон<small style="font-weight:500;color:var(--muted)"> · '+(d=>{const x=parse(d);return x.getDate()+'-'+MON[x.getMonth()]})(workDate(s))+' кунига ёзилади</small></span>'+examBlock(s,st)+'</div>'+
@@ -1187,9 +1190,12 @@ document.addEventListener('click',e=>{
     const f=b.dataset.f; let v=b.dataset.v; if(f==='g') v=Number(v);
     refocus='[data-act="mark"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]';
     const mst=S.students[sid]; if(!mst) return;
-    editDay(mst.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]); if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'){ if(!r.ar) r.ar='n'; if(!r.qu) r.qu='n'; }
-      if(f==='ar'||f==='qu'){ if(r[f]==='y'){ if(!r[f+'n']) r[f+'n']=1; } else if(r[f]==='n'){ delete r[f+'n']; if(!r[f+'x']) r[f+'x']=1; } else { delete r[f+'n']; delete r[f+'x']; } }
+    const wdm=workDate(sid); let dl=0;
+    editDay(mst.gid,wdm,'',d=>{const r=Object.assign({},d.rows[sid]); const old=r[f], oldN=old==='y'?cnt(r,f):0, n0=old==='y'?cnt(r,f):old==='n'?mis(r,f):pcount(sid,wdm,f);
+      if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'){ if(!r.ar) r.ar='n'; if(!r.qu) r.qu='n'; }
+      if(f==='ar'||f==='qu'){ if(r[f]==='y'){ r[f+'n']=n0; delete r[f+'x']; dl=n0-oldN; } else if(r[f]==='n'){ delete r[f+'n']; r[f+'x']=n0; dl=-oldN; } else { delete r[f+'n']; delete r[f+'x']; dl=-oldN; } }
       delete r.seen; d.rows[sid]=r;});
+    if(dl){ const rf=refocus; advBook(sid,f,dl); refocus=rf; render(true); }
   }else if(act==='star'){
     const n=Number(b.dataset.v);
     refocus='[data-act="star"][data-sid="'+sid+'"][data-v="'+n+'"]';
@@ -1213,9 +1219,10 @@ document.addEventListener('click',e=>{
   else if(act==='cmark'){const st=S.students[sid], v=b.dataset.v, ds=b.dataset.date; if(!st) return; refocus='[data-act="cmark"][data-sid="'+sid+'"][data-v="'+v+'"]';
     editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(r.a===v) delete r.a; else r.a=v; if(r.a==='a'){ if(!r.ar){r.ar='n';} if(!r.qu){r.qu='n';} } delete r.seen; d.rows[sid]=r;});}
   else if(act==='cex'){const st=S.students[sid], ds=b.dataset.date; if(st) editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); delete r.ex; d.rows[sid]=r;});}
-  else if(act==='cnum'){const st=S.students[sid], f=b.dataset.f, k=f.slice(0,2), ds=b.dataset.date, dv=Number(b.dataset.v); if(!st||!/^(ar|qu)[nx]$/.test(f)) return; refocus='[data-act="cnum"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]';
-    editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); let n=cnt(r,k), x=mis(r,k); if(f.slice(2)==='n') n=Math.max(0,Math.min(99,n+dv)); else x=Math.max(0,Math.min(99,x+dv));
-      if(n) r[k+'n']=n; else delete r[k+'n']; if(x) r[k+'x']=x; else delete r[k+'x']; if(n) r[k]='y'; else if(x) r[k]='n'; else delete r[k]; delete r.seen; d.rows[sid]=r;});}
+  else if(act==='cnum'){const st=S.students[sid], f=b.dataset.f, k=f.slice(0,2), ds=b.dataset.date, dv=Number(b.dataset.v); if(!st||!/^(ar|qu)[nx]$/.test(f)) return; const rf='[data-act="cnum"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]'; refocus=rf; let dl=0;
+    editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(f.slice(2)==='n'){const n=cnt(r,k), nn=Math.max(1,Math.min(99,n+dv)); dl=nn-(r[k]==='y'?n:0); r[k+'n']=nn; delete r[k+'x']; r[k]='y';} else {const x=mis(r,k), nx=Math.max(1,Math.min(99,x+dv)); r[k+'x']=nx; delete r[k+'n']; r[k]='n';} delete r.seen; d.rows[sid]=r;});
+    if(dl){ advBook(sid,k,dl); refocus=rf; render(true); }}
+  else if(act==='pnum'){const k=b.dataset.k, ds=b.dataset.date, key=sid+'|'+ds+'|'+k; ui.pc=ui.pc||{}; ui.pc[key]=Math.max(1,Math.min(99,pcount(sid,ds,k)+Number(b.dataset.v))); refocus='[data-act="pnum"][data-sid="'+sid+'"][data-k="'+k+'"][data-v="'+b.dataset.v+'"]'; render(true);}
   else if(act==='tmore'){ui.more=ui.more===sid?null:sid;refocus='[data-act="tmore"][data-sid="'+sid+'"]';render(true);}
   else if(act==='topen'){ui.topen=ui.topen===sid?null:sid;refocus='[data-act="topen"][data-sid="'+sid+'"]';render(true);}
   else if(act==='exam'){const st=S.students[sid], v=b.dataset.v; if(st){const c=Object.assign({},st); if(v==='clear') delete c.exam; else c.exam={s:v,b:v==='prep'?(st.book||1):((st.exam&&st.exam.b)||st.book||1)}; refocus='[data-act="topen"][data-sid="'+sid+'"]'; putDoc('students',sid,c); const xv=v==='prep'?'start':v==='clear'?'cancel':v; editDay(st.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]); r.ex=xv; d.rows[sid]=r;});}}
