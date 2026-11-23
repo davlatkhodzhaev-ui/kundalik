@@ -514,6 +514,8 @@ button.wd{border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlig
 .q>.ln .sub{font-size:13px;color:var(--muted);font-weight:600}
 .q>.ln .step b{min-width:34px}
 .prog{flex-wrap:wrap}.prog .step b{min-width:96px}
+.morerow{display:flex;gap:8px;flex-wrap:wrap}
+.morebtn.shut{border-style:solid;background:var(--track)}
 </style>
 </head>
 <body>
@@ -953,13 +955,13 @@ function viewTeacher(){
       '<div class="q"><span class="lab">2. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],rw.a)+'</div>'+
       '<div class="q"><span class="lab">3. Араб тили дарси</span>'+cst('ar')+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.ar)+'</div>'+
       '<div class="q"><span class="lab">4. Қуръон дарси</span>'+cst('qu')+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu)+'</div>'+
-      '<button type="button" class="morebtn" data-act="tmore" data-sid="'+s+'" aria-expanded="'+(ui.more===s)+'"><i class="arr" aria-hidden="true">'+(ui.more===s?'▾':'▸')+'</i>Қўшимча</button>'+(ui.more!==s?'':
+      '<div class="morerow"><button type="button" class="morebtn shut" data-act="topen" data-sid="'+s+'"><i class="arr" aria-hidden="true">▴</i>Ёпиш</button><button type="button" class="morebtn" data-act="tmore" data-sid="'+s+'" aria-expanded="'+(ui.more===s)+'"><i class="arr" aria-hidden="true">'+(ui.more===s?'▾':'▸')+'</i>Қўшимча</button></div>'+(ui.more!==s?'':
       '<div class="q"><span class="lab">5. Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
       '<div class="q"><span class="lab">6. Имтиҳон<small style="font-weight:500;color:var(--muted)"> · '+(d=>{const x=parse(d);return x.getDate()+'-'+MON[x.getMonth()]})(workDate(s))+' кунига ёзилади</small></span>'+examBlock(s,st)+'</div>'+
       '<div class="q"><label class="lab" for="tc-'+s+'">7. Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
       '<div class="q"><label class="lab" for="tp-'+s+'">8. Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div>'+
       '<div class="q"><label class="lab" for="tn-'+s+'">9. Исм-фамилияни ўзгартириш</label><div class="chips" style="align-items:center"><input type="text" id="tn-'+s+'" value="'+esc(st.name)+'" style="flex:1;min-width:160px"><button type="button" class="btn small" data-act="sname" data-sid="'+s+'">'+ic('check')+'Сақлаш</button></div></div>'+
-      '<div class="q"><span class="lab">10. Талабани ўчириш</span>'+(ui.del===s?'<div class="note crit" style="margin:0 0 8px">'+esc(st.name)+' рўйхатдан бутунлай ўчирилади. Уни қайтариб бўлмайди.</div><div class="chips"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ, қолсин</button></div>':'<div><button class="btn small danger" type="button" data-act="del" data-sid="'+s+'">'+ic('x')+'Талабани ўчириш</button></div>')+'</div>'+'<button type="button" class="morebtn" data-act="tmore" data-sid="'+s+'"><i class="arr" aria-hidden="true">▴</i>Қўшимчани ёпиш</button>')+'</div>';
+      '<div class="q"><span class="lab">10. Талабани ўчириш</span>'+(ui.del===s?'<div class="note crit" style="margin:0 0 8px">'+esc(st.name)+' рўйхатдан бутунлай ўчирилади. Уни қайтариб бўлмайди.</div><div class="chips"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ, қолсин</button></div>':'<div><button class="btn small danger" type="button" data-act="del" data-sid="'+s+'">'+ic('x')+'Талабани ўчириш</button></div>')+'</div>'+'<div class="morerow"><button type="button" class="morebtn shut" data-act="topen" data-sid="'+s+'"><i class="arr" aria-hidden="true">▴</i>Ёпиш</button><button type="button" class="morebtn" data-act="tmore" data-sid="'+s+'"><i class="arr" aria-hidden="true">▾</i>Қўшимчани йиғиш</button></div>')+'</div>';
     h+='</div>';});
   h+='</div></section>';
   });
