@@ -475,6 +475,38 @@ button.wd{border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlig
 .wkgrid.row{display:flex;overflow-x:auto;gap:5px;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:thin}
 .wkgrid.row>.wd{flex:0 0 calc((100% - 30px)/7)}
 .cexb{border:1px solid var(--line,#d8dbe8);background:transparent;color:var(--muted);font:inherit;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;cursor:pointer}
+
+/* ---- proposal: wider, simpler phone layout ---- */
+@media (max-width:620px){
+  .wrap{padding:0 6px}
+  main{padding:10px 0 50px;gap:10px}
+  .panel{padding:14px 10px;border-radius:16px}
+  .panel>h2{font-size:17px}
+  .panel>h2 small{display:block;margin:2px 0 0}
+  .hero{padding:18px 14px;border-radius:18px}
+  .rrow{padding:12px 2px;gap:10px}
+  .rrow .rn b{font-size:17px}
+  .tbody{padding:4px 0 18px;gap:16px}
+  .q .lab{font-size:15px;font-weight:700;color:var(--ink)}
+  .opt{height:50px;font-size:15px;border-radius:14px}
+  .opt .ic{display:none}
+  .wk{background:transparent;padding:0}
+  .wkh{margin-bottom:8px}
+  .wkgrid,.wkgrid.row{display:flex;overflow-x:auto;gap:6px;padding-bottom:6px}
+  .wkgrid>.wd,.wkgrid.row>.wd{flex:0 0 calc((100% - 24px)/5);padding:9px 4px;border-radius:14px;background:var(--bg)}
+  .wd>b{font-size:20px}.wd>small{font-size:12.5px}
+  .wm{font-size:11.5px;min-height:34px;border-radius:9px;letter-spacing:0}
+  .wm.tall{font-size:8.5px;letter-spacing:-.03em;min-height:71px;overflow-wrap:normal;white-space:nowrap;overflow:hidden}
+  .tbody>.note{padding:9px 12px}
+  .wm .wn{font-size:13px}
+  .cdet{background:var(--bg);padding:12px 10px}
+  .cdet .ln{flex-wrap:nowrap;margin-top:6px}
+  .cdet .step button{width:48px;height:44px}
+  .prog{flex-wrap:wrap}.prog select{flex:1 1 100%}
+  .step button{width:52px}
+  .rmore2{padding:2px 0 16px}
+  .note{font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -718,7 +750,7 @@ function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),
   if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+(c?'<span class="chip good">'+c+' та дарс топширди</span>':'')+(m?'<span class="chip crit">'+m+' та топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
   return h+'</div>'; }
 function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+mode+'|'; let sel='';
-  let h='<div class="wk"><div class="wkh"><b>'+weeks+' ҳафталик календарь</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади <i class="ex"></i>имтиҳон</span></div><div class="wkgrid'+(weeks>1?' row" data-ck="'+sid+'|'+mode:'')+'">';
+  let h='<div class="wk"><div class="wkh"><b>'+weeks+' ҳафталик календарь</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади <i class="ex"></i>имтиҳон</span></div><div class="wkgrid row" data-ck="'+sid+'|'+mode+'">';
   for(let i=n-1;i>=0;i--){const ds=addDays(TODAY,-i), r=rowOf(sid,ds), ex=exOn(xl,ds), dd=parse(ds), on=ui.cal===key+ds; let inner; if(on) sel=ds;
     if(ex) inner='<span class="wm tall '+EXD[ex][1]+'">'+EXD[ex][0]+'</span>';
     else if(!r||!(r.a||r.ar||r.qu)) inner='<span class="wm none">—</span>';
@@ -895,7 +927,7 @@ function viewTeacher(){
     h+='<div class="ritem'+(open?' open':'')+(state?' s-'+state:'')+'"><button type="button" class="rrow" data-act="topen" data-sid="'+s+'" aria-expanded="'+open+'">'+avatar(st.name,'',st)+'<span class="rn"><b>'+esc(st.name)+'</b><span class="tsum">'+sum+(st.exam&&st.exam.s==='prep'?'<span class="chip acc">Имтиҳон</span>':'')+'</span></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
     const wdt=workDate(s), rw=open?(rowOf(s,wdt)||{}):r, wdd=parse(wdt);
     if(open) h+='<div class="tbody">'+
-      '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'.</b> Бошқа кунни ўзгартириш учун пастдаги календардан кунни босинг.</div>'+
+      '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'</b></div>'+
       '<div class="q"><span class="lab">1. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],rw.a)+'</div>'+
       '<div class="q"><span class="lab">2. Араб тили дарси</span>'+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.ar)+'</div>'+
       '<div class="q"><span class="lab">3. Қуръон дарси</span>'+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu)+'</div>'+
