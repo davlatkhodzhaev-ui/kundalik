@@ -527,6 +527,7 @@ button.wd{border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlig
 .wm.bkn{display:flex;flex-direction:column;justify-content:center;gap:1px;padding-left:2px;padding-right:2px}
 .wm.bkn i{display:flex;justify-content:center;gap:1px;font-style:normal;font-size:8.6px;line-height:1.2;letter-spacing:-.03em;white-space:nowrap;max-width:100%}
 .wm.bkn i u{text-decoration:none;overflow:hidden;text-overflow:ellipsis;min-width:0}.wm.bkn i b{flex:none}
+.note .dl{margin-top:4px;font-weight:600}
 </style>
 </head>
 <body>
@@ -729,7 +730,7 @@ const SURAS='الفاتحة|البقرة|آل عمران|النساء|المائ
 const QL=[7,711,402,439,323,343,388,148,313,200,210,200,90,101,79,217,172,169,107,144,147,148,118,144,107,148,126,163,120,94,57,43,149,95,84,84,103,77,132,146,88,92,99,42,50,66,59,64,37,39,39,35,38,38,45,47,63,49,51,35,22,19,21,28,29,28,33,32,27,24,24,28,20,26,17,25,22,20,20,15,12,9,19,12,12,7,8,11,16,9,7,8,5,3,4,8,3,10,4,5,5,3,2,4,3,3,4,2,3,3,3,2,3,4];
 function qslot(st){return !st?0:(st.book||1)===QB?1:st.book2===QB?2:0}
 function qpos(st){const sl=qslot(st); if(!sl) return null; const su=Math.max(1,Math.min(114,(sl===2?st.lesson2:st.lesson)||1)); return {slot:sl,sura:su,line:Math.max(0,Math.min(QL[su-1],st.qline||0)),total:QL[su-1]}}
-function sura(n){n=Math.max(1,Math.min(114,Number(n)||1)); return n+'-сура: '+SURAS[n-1]}
+function sura(n){n=Math.max(1,Math.min(114,Number(n)||1)); return n+'-сура: \u2068'+SURAS[n-1]+'\u2069'}
 function suraOpts(sel){return SURAS.map((x,i)=>'<option value="'+(i+1)+'"'+(i+1===sel?' selected':'')+'>'+(i+1)+'. '+x+'</option>').join('')}
 function books(){const l=S.settings&&S.settings.books&&S.settings.books.list; return BOOKS.map((d,i)=>{const b=(l&&l[i])||{}; return {name:String(b.name||'').trim()||d[0],lessons:(b.lessons!==undefined&&b.lessons!==null&&b.lessons!=='')?(Number(b.lessons)||0):d[1]};})}
 const SUBJ=[['ar','Араб тили'],['qu','Қуръон']];
@@ -763,6 +764,13 @@ const cnt=(r,k)=>r?(r[k+'n']||(r[k]==='y'?1:0)):0, mis=(r,k)=>r?(r[k+'x']||(r[k]
 function rowOf(sid,date){const st=S.students[sid], d=st&&dayOf(st.gid,date); return (d&&!d.teacher&&d.rows&&d.rows[sid])||null}
 function exList(sid){const st=S.students[sid], o=[]; if(!st) return o; for(const id in S.days){const d=S.days[id]; if(d.gid!==st.gid||d.teacher) continue; const r=d.rows&&d.rows[sid]; if(r&&r.ex) o.push([d.date,r.ex]);} return o.sort((a,b)=>a[0]<b[0]?-1:1)}
 function exOn(list,date){let last=null; for(const x of list){if(x[0]<=date) last=x; else break;} if(!last) return ''; if(last[0]===date) return EXD[last[1]]?last[1]:''; return (last[1]==='start'||last[1]==='fail'||last[1]==='refail')&&date<=TODAY?'prep':''}
+function lesFmt(a0,n){ if(!a0) return n+' та дарс'; const a=[]; for(let i=0;i<n;i++) a.push(a0+i); return (n<=5?a.join('-'):a0+'–'+(a0+n-1))+'-дарс'+(n>1?' ('+n+' та)':'') }
+function dayLines(sid,r){ const st=S.students[sid], out=[], bk=books(); if(!r) return out;
+  if(r.ar==='y'){ const ab=abOf(r,st), ks=Object.keys(ab); if(ks.length) ks.forEach(bn=>out.push(((bk[bn-1]||{}).name||'Китоб')+': '+lesFmt(r.af&&r.af[bn],ab[bn]))); else out.push('Араб тили: '+cnt(r,'ar')+' та дарс'); }
+  else if(r.ar==='n') out.push('Араб тили: топширмади'+(mis(r,'ar')>1?' ('+mis(r,'ar')+' та дарс)':''));
+  if(r.qu==='y'){ const c=cnt(r,'qu'); out.push('Қуръон: '+(r.qs?sura(r.qs)+' · ':'')+(r.ql!==undefined&&r.ql!==null?(r.ql+1)+(c>1?'–'+(r.ql+c):'')+'-қатор'+(c>1?' ('+c+' та)':''):c+' қатор')); }
+  else if(r.qu==='n') out.push('Қуръон: топширмади'+(mis(r,'qu')>1?' ('+mis(r,'qu')+' қатор)':''));
+  return out }
 function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),ds), dd=parse(ds); let h='<div class="cdet"><b>'+dd.getDate()+'-'+MON[dd.getMonth()]+', '+DOW[dd.getDay()].toLowerCase()+'</b>';
   if(ex) h+='<div class="chips"><span class="chip acc">'+ic('book')+'Имтиҳон: '+EXD[ex][0].toLowerCase()+'</span></div>';
   if(mode==='t'){ const at=(v,t)=>'<button type="button" class="btn small'+(r.a===v?' primary':'')+'" aria-pressed="'+(r.a===v)+'" data-act="cmark" data-sid="'+sid+'" data-date="'+ds+'" data-v="'+v+'">'+t+'</button>';
@@ -774,7 +782,7 @@ function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),
   if(!(r.a||r.ar||r.qu)){ if(!ex) h+='<span class="sub">Бу куни белги қўйилмаган.</span>'; return h+'</div>'; }
   if(r.a) h+='<div class="chips"><span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span></div>';
   const stD=S.students[sid], abD=abOf(r,stD), bkD=books();
-  if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); const w=sb[0]==='qu'?'қатор':'дарс'; const yes=!c?'':sb[0]==='ar'&&Object.keys(abD).length?Object.keys(abD).map(bn=>{const n=abD[bn], a0=r.af&&r.af[bn]; return '<span class="chip good">'+esc((bkD[bn-1]||{}).name||'Китоб')+': '+(a0?(n>1?a0+'–'+(a0+n-1):a0)+'-дарс ('+n+' та)':n+' та дарс')+'</span>';}).join(''):sb[0]==='qu'&&r.qs?'<span class="chip good">'+sura(r.qs)+' · '+c+' қатор'+(r.ql!==undefined&&r.ql!==null?', '+(r.ql+1)+'-қатордан':'')+'</span>':'<span class="chip good">'+c+' та '+w+' топширди</span>'; h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+yes+(m?'<span class="chip crit">'+m+' та '+w+' топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
+  if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); const w=sb[0]==='qu'?'қатор':'дарс'; const yes=!c?'':sb[0]==='ar'&&Object.keys(abD).length?Object.keys(abD).map(bn=>{const n=abD[bn], a0=r.af&&r.af[bn]; return '<span class="chip good">'+esc((bkD[bn-1]||{}).name||'Китоб')+': '+lesFmt(a0,n)+'</span>';}).join(''):sb[0]==='qu'&&r.qs?'<span class="chip good">'+sura(r.qs)+' · '+c+' қатор'+(r.ql!==undefined&&r.ql!==null?', '+(r.ql+1)+'-қатордан':'')+'</span>':'<span class="chip good">'+c+' та '+w+' топширди</span>'; h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+yes+(m?'<span class="chip crit">'+m+' та '+w+' топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
   return h+'</div>'; }
 /* short book name for the narrow calendar cell */
 function bshort(n){const t=String(n).replace(/^Мабда\S+\s+/,''); return (t.charAt(0).toUpperCase()+t.slice(1)).replace(/\s*\(таркиб\)/,' т.').replace(/\s+лин-нашиа/,'')}
@@ -784,10 +792,7 @@ function calBlock(sid,weeks,mode){ const stC=S.students[sid], xl=exList(sid), n=
     if(ex) inner='<span class="wm tall '+EXD[ex][1]+'">'+EXD[ex][0]+'</span>';
     else if(!r||!(r.a||r.ar||r.qu)) inner='<span class="wm none">—</span>';
     else if(r.a==='a') inner='<span class="wm bad">йўқ</span>';
-    else inner=SUBJ.map(sb=>{const v=r[sb[0]], c=cnt(r,sb[0]), cl=v==='y'?'ok':v==='n'?'bad':'none';
-      if(sb[0]==='ar'){ const ab=abOf(r,stC), ks=Object.keys(ab), bl=arBooks(stC), bk=books(); const ls=ks.length?ks.map(bn=>[bk[bn-1]?bk[bn-1].name:'Китоб',ab[bn]]):bl.length?[[bk[bl[0][1]-1].name,v==='y'?c:0]]:[[sb[1],v==='y'?c:0]];
-        return '<span class="wm bkn '+cl+'">'+ls.map(x=>'<i title="'+esc(x[0])+'"><u>'+esc(bshort(x[0]))+'</u>'+(x[1]>1?'<b>·'+x[1]+'</b>':'')+'</i>').join('')+'</span>'; }
-      return '<span class="wm '+cl+'">'+sb[1]+(v==='y'&&c>1?'<b class="wn">'+c+'</b>':'')+'</span>';}).join('');
+    else inner=SUBJ.map(sb=>{const v=r[sb[0]], c=cnt(r,sb[0]); return '<span class="wm '+(v==='y'?'ok':v==='n'?'bad':'none')+'">'+sb[1]+(v==='y'&&c>1?'<b class="wn">'+c+'</b>':'')+'</span>';}).join('');
     h+='<button type="button" class="wd'+(ds===TODAY?' today':'')+(on?' sel':'')+'" aria-pressed="'+on+'" aria-label="'+dd.getDate()+'-'+MON[dd.getMonth()]+'" data-act="cday" data-sid="'+sid+'" data-date="'+ds+'" data-m="'+mode+'"><b>'+dd.getDate()+'</b><small>'+DOW3[dd.getDay()]+'</small>'+inner+'</button>';}
   h+='</div>'+(mode==='t'?'<p class="wkhint">Олдинги кунлар учун календарни ўнгга суринг. Кунни боссангиз, пастдаги белгилар ўша кунга ёзилади.</p>':sel?calDetail(sid,sel,mode):'<p class="wkhint">'+(mode==='t'?'':(weeks>1?'Олдинги кунларни кўриш учун календарни ўнгга суринг. ':'')+'Кунни босинг: ўша куни нечта дарс топширгани чиқади.')+'</p>');
   return h+'</div>'; }
@@ -981,7 +986,7 @@ function viewTeacher(){
       return stp(k==='qu'?(q?SURAS[q.sura-1]+': нечта қатор':'Нечта қатор'):(v==='n'?'Нечта дарс топширмади':'Нечта дарс'), val, set?'data-act="cnum" data-f="'+f+'"':'data-act="pnum" data-k="'+k+'"');};
     if(open) h+='<div class="tbody">'+
       '<div class="q"><span class="lab">1. Кунни танланг</span>'+calBlock(s,3,'t')+'</div>'+
-      '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'</b>'+(rw.ex?' <button type="button" class="cexb" style="margin-left:6px" data-act="cex" data-sid="'+s+'" data-date="'+wdt+'">× Имтиҳон белгисини ўчириш</button>':'')+'</div>'+
+      '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'</b>'+dayLines(s,rw).map(x=>'<div class="dl">'+esc(x)+'</div>').join('')+(rw.ex?' <button type="button" class="cexb" style="margin-left:6px" data-act="cex" data-sid="'+s+'" data-date="'+wdt+'">× Имтиҳон белгисини ўчириш</button>':'')+'</div>'+
       '<div class="q"><span class="lab">2. Дарсга келдими?</span>'+opts(s,'a',[['p','Келди','g',ic('check')],['l','Кечикди','w',ic('clock')],['a','Келмади','c',ic('x')]],rw.a)+'</div>'+
       '<div class="q"><span class="lab">3. Араб тили дарси</span>'+cst('ar')+opts(s,'ar',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.ar)+'</div>'+
       '<div class="q"><span class="lab">4. Қуръон дарси</span>'+cst('qu')+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu)+'</div>'+
