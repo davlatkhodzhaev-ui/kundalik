@@ -193,6 +193,9 @@ async function handle(b: any, ip: string) {
     for (const f of Object.keys(ok)) if (f in b.patch) { if (ok[f].includes(b.patch[f])) r[f] = b.patch[f]; else delete r[f]; }
     // how many lessons were handed in / not handed in that day, per subject
     for (const f of ["arn", "qun", "arx", "qux"]) if (f in b.patch) { const n = Math.floor(Number(b.patch[f])); if (n >= 1 && n <= 99) r[f] = n; else delete r[f]; }
+    // lessons per book (book number -> count) and the sura the Quran lines came from
+    if ("ab" in b.patch) { const o: Record<string, number> = {}; const src = b.patch.ab; if (src && typeof src === "object") for (const k of Object.keys(src).slice(0, 4)) { const bn = Math.floor(Number(k)), n = Math.floor(Number(src[k])); if (bn >= 1 && bn <= 99 && n >= 1 && n <= 99) o[String(bn)] = n; } if (Object.keys(o).length) r.ab = o; else delete r.ab; }
+    if ("qs" in b.patch) { const n = Math.floor(Number(b.patch.qs)); if (n >= 1 && n <= 114) r.qs = n; else delete r.qs; }
     // exam step recorded on the day it happened
     if ("ex" in b.patch) { if (["start", "pass", "fail", "repass", "refail", "cancel"].includes(b.patch.ex)) r.ex = b.patch.ex; else delete r.ex; }
     if (r.a === "a") { r.ar = r.ar || "n"; r.qu = r.qu || "n"; }

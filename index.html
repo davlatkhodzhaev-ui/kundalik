@@ -417,6 +417,8 @@ input[type=number]{height:44px;padding:0 12px;border:1.5px solid var(--line);bor
 .ritem.s-h>.rrow .av{box-shadow:0 0 0 3px var(--warn)}
 .ritem.s-n>.rrow .av,.ritem.s-a>.rrow .av{box-shadow:0 0 0 3px var(--crit)}
 .btn.okb{background:var(--grad-good);color:#fff;border-color:transparent}
+.btn.blueb{background:linear-gradient(135deg,#2a3db8,#4a63e6);color:#fff;border-color:transparent}
+.chip.blue{background:var(--blue-soft);color:var(--blue)}
 .rmore2{display:flex;flex-direction:column;gap:12px;padding:2px 8px 16px}
 .rmore2 .rmore{padding:0}
 .wk,.bk{background:var(--bg);border-radius:16px;padding:12px}
@@ -740,13 +742,13 @@ function setProg(sid,slot,book,lesson){ const st=S.students[sid]; if(!st) return
   lesson=Math.max(1,max?Math.min(max,lesson):lesson);
   const c=Object.assign({},st,slot===2?{book2:book,lesson2:lesson}:{book:book,lesson:lesson}); if(book===QB&&((slot===2?st.lesson2:st.lesson)!==lesson||(slot===2?st.book2:st.book)!==QB)) delete c.qline;
   putDoc('students',sid,c); }
-const EX={prep:['Имтиҳонга тайёрланяпти','acc'],pass:['Имтиҳондан ўтди','good'],fail:['Имтиҳондан ўтмади','crit'],repass:['Қайта топширди','good'],refail:['Қайта топшира олмади','crit']};
+const EX={prep:['Имтиҳонга тайёрланяпти','warn'],pass:['Имтиҳондан ўтди','blue'],fail:['Имтиҳондан ўтмади','crit'],repass:['Қайта топширди','blue'],refail:['Қайта топшира олмади','crit']};
 function examChip(st){ const e=st&&st.exam; if(!e||!EX[e.s]) return ''; const b=books()[(e.b||1)-1]; return '<span class="chip '+EX[e.s][1]+'">'+ic('book')+EX[e.s][0]+(b?' · '+esc(b.name):'')+'</span>' }
 function examBlock(s,st){ const e=st.exam&&EX[st.exam.s]?st.exam.s:''; const bt=(v,t,c)=>'<button type="button" class="btn small'+(c?' '+c:'')+'" data-act="exam" data-sid="'+s+'" data-v="'+v+'">'+t+'</button>';
   if(!e) return '<div>'+bt('prep','Имтиҳонга тайёрланяпти','primary')+'</div>';
   let h='<div class="chips">'+examChip(st)+'</div><div class="chips">';
-  if(e==='prep') h+=bt('pass','Ўтди','okb')+bt('fail','Ўтмади','danger');
-  else if(e==='fail'||e==='refail'){ let n=0; exList(s).forEach(x=>{if(x[1]==='start') n=0; else if(x[1]==='fail'||x[1]==='refail') n++;}); if(n>1) h='<div class="chips">'+examChip(st)+'<span class="chip crit">'+n+' марта ўта олмади</span></div><div class="chips">'; h+=bt('repass','Қайта топширди','okb')+bt('refail','Яна ўта олмади','danger'); }
+  if(e==='prep') h+=bt('pass','Ўтди','blueb')+bt('fail','Ўтмади','danger');
+  else if(e==='fail'||e==='refail'){ let n=0; exList(s).forEach(x=>{if(x[1]==='start') n=0; else if(x[1]==='fail'||x[1]==='refail') n++;}); if(n>1) h='<div class="chips">'+examChip(st)+'<span class="chip crit">'+n+' марта ўта олмади</span></div><div class="chips">'; h+=bt('repass','Қайта топширди','blueb')+bt('refail','Яна ўта олмади','danger'); }
   else h+=bt('prep','Янги имтиҳон','');
   return h+bt('clear','Бекор қилиш','')+'</div>'; }
 function booksBlock(st){ const rows=[[st.book,st.lesson],[st.book2,st.lesson2]].filter(x=>x[0]); const bs=books();
@@ -767,7 +769,8 @@ function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),
     return h+'</div>'; }
   if(!(r.a||r.ar||r.qu)){ if(!ex) h+='<span class="sub">Бу куни белги қўйилмаган.</span>'; return h+'</div>'; }
   if(r.a) h+='<div class="chips"><span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span></div>';
-  if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); const w=sb[0]==='qu'?'қатор':'дарс'; h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+(c?'<span class="chip good">'+c+' та '+w+' топширди</span>':'')+(m?'<span class="chip crit">'+m+' та '+w+' топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
+  const stD=S.students[sid], abD=abOf(r,stD), bkD=books();
+  if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); const w=sb[0]==='qu'?'қатор':'дарс'; const yes=!c?'':sb[0]==='ar'&&Object.keys(abD).length?Object.keys(abD).map(bn=>'<span class="chip good">'+esc((bkD[bn-1]||{}).name||'Китоб')+': '+abD[bn]+' та дарс</span>').join(''):sb[0]==='qu'&&r.qs?'<span class="chip good">'+sura(r.qs)+' · '+c+' қатор</span>':'<span class="chip good">'+c+' та '+w+' топширди</span>'; h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+yes+(m?'<span class="chip crit">'+m+' та '+w+' топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
   return h+'</div>'; }
 function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+mode+'|'; let sel='';
   let h='<div class="wk"><div class="wkh"><b>'+weeks+' ҳафталик календарь</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади <i class="ex"></i>имтиҳон</span></div><div class="wkgrid row" data-ck="'+sid+'|'+mode+'">';
@@ -787,8 +790,16 @@ function advQuran(sid,dl){ const st=S.students[sid], q=qpos(st); if(!q||!dl) ret
   while(ln<0){ const pv=su-dir; if(pv<1||pv>114){ln=0;break;} su=pv; ln+=QL[su-1]; }
   const c=Object.assign({},st,q.slot===2?{lesson2:su}:{lesson:su}); if(ln) c.qline=ln; else delete c.qline; putDoc('students',sid,c); }
 function advBook(sid,k,dl){ if(k==='qu'){advQuran(sid,dl);return;} const st=S.students[sid]; if(!st||k!=='ar'||!dl) return; const slot=(st.book||1)!==QB?1:(st.book2&&st.book2!==QB?2:0); if(!slot) return; setProg(sid,slot,slot===2?st.book2:(st.book||1),(slot===2?(st.lesson2||1):(st.lesson||1))+dl); }
+function arBooks(st){const o=[]; if(!st) return o; if((st.book||1)!==QB) o.push([1,st.book||1]); if(st.book2&&st.book2!==QB) o.push([2,st.book2]); return o}
+function abOf(r,st){ if(!r||r.ar!=='y') return {}; if(r.ab) return Object.assign({},r.ab); const bl=arBooks(st), o={}; if(bl.length) o[bl[0][1]]=cnt(r,'ar'); return o }
+function absum(ab){let n=0; for(const k in ab) n+=Number(ab[k])||0; return n}
+function pab(sid,ds,book,idx){const v=ui.pc&&ui.pc[sid+'|'+ds+'|ar|'+book]; return v===undefined?(idx===0?1:0):v}
+function advBookNo(sid,book,dl){ const st=S.students[sid]; if(!st||!dl) return; book=Number(book); const slot=(st.book||1)===book?1:st.book2===book?2:0; if(!slot) return; setProg(sid,slot,book,(slot===2?(st.lesson2||1):(st.lesson||1))+dl); }
 function bump(sid,book,dv){ const st=S.students[sid]; if(!st||!dv) return; const k=book===QB?'qu':'ar';
-  editDay(st.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]); const c=cnt(r,k)+dv; if(c>0){r[k+'n']=Math.min(99,c);r[k]='y';} else {delete r[k+'n']; if(r[k]==='y') delete r[k];} delete r.seen; d.rows[sid]=r;}); }
+  editDay(st.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]);
+    if(k==='ar'){ const ab=abOf(r,st); ab[book]=Math.max(0,Math.min(99,(ab[book]||0)+dv)); if(!ab[book]) delete ab[book]; const n=absum(ab); if(n>0){r.ab=ab;r.arn=n;r.ar='y';delete r.arx;} else {delete r.ab;delete r.arn; if(r.ar==='y') delete r.ar;} }
+    else { const c=cnt(r,k)+dv; if(c>0){r[k+'n']=Math.min(99,c);r[k]='y';} else {delete r[k+'n']; if(r[k]==='y') delete r[k];} }
+    delete r.seen; d.rows[sid]=r;}); }
 function progBlock(s,st,slot){ const bk=slot===2?st.book2:(st.book||1), ls=slot===2?(st.lesson2||1):(st.lesson||1);
   return '<div class="prog"><select data-act="sbook" data-slot="'+slot+'" data-sid="'+s+'" aria-label="'+esc(st.name)+': '+slot+'-китоб">'+books().map((b,i)=>'<option value="'+(i+1)+'"'+(i+1===bk?' selected':'')+'>'+esc(b.name)+'</option>').join('')+'</select>'+(bk===QB?'<select data-act="ssura" data-slot="'+slot+'" data-sid="'+s+'" aria-label="Сура">'+suraOpts(ls)+'</select><div class="step"><button type="button" data-act="sqline" data-sid="'+s+'" data-v="-1" aria-label="Қаторни камайтириш">−</button><b>'+((qpos(st)||{}).line||0)+' / '+QL[Math.max(1,Math.min(114,ls))-1]+' қатор</b><button type="button" data-act="sqline" data-sid="'+s+'" data-v="1" aria-label="Қаторни кўпайтириш">+</button></div><select data-act="sqdir" data-sid="'+s+'" aria-label="Сура тугагач қайси сурага ўтиш"><option value=""'+(st.qdir==='rev'?'':' selected')+'>Кейингиси: катта рақамга (1 → 114)</option><option value="rev"'+(st.qdir==='rev'?' selected':'')+'>Кейингиси: кичик рақамга (114 → 1)</option></select>':'<div class="step"><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="-1" aria-label="Олдинги дарс">−</button><b>'+ls+'-дарс</b><button type="button" data-act="sles" data-slot="'+slot+'" data-sid="'+s+'" data-v="1" aria-label="Кейинги дарс">+</button></div>')+(slot===2?'<button type="button" class="xbtn" data-act="sbook2-del" data-sid="'+s+'" aria-label="Иккинчи китобни олиб ташлаш">×</button>':'')+'</div>' }
 function dayTeacher(d){return d.teacher||gTeachers(S.groups[d.gid])[0]||''}
@@ -835,7 +846,7 @@ function editDay(gid,date,t,fn){
     delete pend[id];
     ['topic','hw'].forEach(f=>{if((d[f]||'')!==(prev[f]||'')) send({a:'day.put',gid:gid,date:date,f:f,v:d[f]||''});});
     for(const sid in d.rows){const x=d.rows[sid], y=(prev.rows||{})[sid]||{}, patch={}; let ch=false;
-      ['a','ar','qu','arn','qun','arx','qux','ex'].forEach(f=>{if(x[f]!==y[f]){patch[f]=x[f]===undefined?null:x[f];ch=true;}});
+      ['a','ar','qu','arn','qun','arx','qux','ex','qs','ab'].forEach(f=>{if(JSON.stringify(x[f])!==JSON.stringify(y[f])){patch[f]=x[f]===undefined?null:x[f];ch=true;}});
       if(ch) send({a:'mark',sid:sid,date:date,patch:patch}); else if(x.seen&&!y.seen) send({a:'seen',sid:sid,date:date});}
     return;
   }
@@ -953,8 +964,11 @@ function viewTeacher(){
     const sum=(r.a||r.ar||r.qu)?((r.a?'<span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span>':'')+(r.a==='a'?'':SUBJ.map(sb=>'<span class="dot '+(r[sb[0]]==='y'?'good':r[sb[0]]==='n'?'crit':'none')+'"><i></i>'+sb[1]+'</span>').join(''))):'<span class="chip">Ҳали белгиланмаган</span>';
     h+='<div class="ritem'+(open?' open':'')+(state?' s-'+state:'')+'"><button type="button" class="rrow" data-act="topen" data-sid="'+s+'" aria-expanded="'+open+'">'+avatar(st.name,'',st)+'<span class="rn"><b>'+esc(st.name)+'</b><span class="tsum">'+sum+(st.exam&&st.exam.s==='prep'?'<span class="chip acc">Имтиҳон</span>':'')+'</span></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
     const wdt=workDate(s), rw=open?(rowOf(s,wdt)||{}):r, wdd=parse(wdt);
-    const cst=(k)=>{const v=rw[k], set=v==='y'||v==='n', f=k+(v==='n'?'x':'n'), val=v==='y'?cnt(rw,k):v==='n'?mis(rw,k):pcount(s,wdt,k), at=set?'data-act="cnum" data-f="'+f+'"':'data-act="pnum" data-k="'+k+'"';
-      return '<div class="ln"><span class="sub">'+(k==='qu'?'Нечта қатор':'Нечта дарс')+'</span><div class="step"><button type="button" '+at+' data-sid="'+s+'" data-date="'+wdt+'" data-v="-1" aria-label="Дарс сонини камайтириш">−</button><b>'+val+'</b><button type="button" '+at+' data-sid="'+s+'" data-date="'+wdt+'" data-v="1" aria-label="Дарс сонини кўпайтириш">+</button></div></div>';};
+    const stp=(lab,val,at)=>'<div class="ln"><span class="sub">'+lab+'</span><div class="step"><button type="button" '+at+' data-sid="'+s+'" data-date="'+wdt+'" data-v="-1" aria-label="'+lab+': камайтириш">−</button><b>'+val+'</b><button type="button" '+at+' data-sid="'+s+'" data-date="'+wdt+'" data-v="1" aria-label="'+lab+': кўпайтириш">+</button></div></div>';
+    const cst=(k)=>{const v=rw[k], bl=arBooks(st);
+      if(k==='ar'&&v!=='n'&&bl.length){ const ab=abOf(rw,st); return bl.map((x,i)=>stp(esc(books()[x[1]-1].name)+': нечта дарс', v==='y'?(ab[x[1]]||0):pab(s,wdt,x[1],i), (v==='y'?'data-act="cab"':'data-act="pab" data-i="'+i+'"')+' data-b="'+x[1]+'"')).join(''); }
+      const set=v==='y'||v==='n', f=k+(v==='n'?'x':'n'), val=v==='y'?cnt(rw,k):v==='n'?mis(rw,k):pcount(s,wdt,k), q=k==='qu'?qpos(st):null;
+      return stp(k==='qu'?(q?SURAS[q.sura-1]+': нечта қатор':'Нечта қатор'):(v==='n'?'Нечта дарс топширмади':'Нечта дарс'), val, set?'data-act="cnum" data-f="'+f+'"':'data-act="pnum" data-k="'+k+'"');};
     if(open) h+='<div class="tbody">'+
       '<div class="q"><span class="lab">1. Кунни танланг</span>'+calBlock(s,3,'t')+'</div>'+
       '<div class="note" style="margin:0"><b>Белгиланаётган кун: '+wdd.getDate()+'-'+MON[wdd.getMonth()]+', '+DOW[wdd.getDay()].toLowerCase()+(wdt===TODAY?' (бугун)':'')+'</b>'+(rw.ex?' <button type="button" class="cexb" style="margin-left:6px" data-act="cex" data-sid="'+s+'" data-date="'+wdt+'">× Имтиҳон белгисини ўчириш</button>':'')+'</div>'+
@@ -1208,12 +1222,18 @@ document.addEventListener('click',e=>{
     const f=b.dataset.f; let v=b.dataset.v; if(f==='g') v=Number(v);
     refocus='[data-act="mark"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]';
     const mst=S.students[sid]; if(!mst) return;
-    const wdm=workDate(sid); let dl=0;
-    editDay(mst.gid,wdm,'',d=>{const r=Object.assign({},d.rows[sid]); const old=r[f], oldN=old==='y'?cnt(r,f):0, n0=old==='y'?cnt(r,f):old==='n'?mis(r,f):pcount(sid,wdm,f);
+    const wdm=workDate(sid); let dl=0, moves=[];
+    editDay(mst.gid,wdm,'',d=>{const r=Object.assign({},d.rows[sid]); const old=r[f], oldN=old==='y'?cnt(r,f):0, n0=old==='y'?cnt(r,f):old==='n'?mis(r,f):pcount(sid,wdm,f), oldAb=f==='ar'?abOf(r,mst):{};
       if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'){ if(!r.ar) r.ar='n'; if(!r.qu) r.qu='n'; }
-      if(f==='ar'||f==='qu'){ if(r[f]==='y'){ r[f+'n']=n0; delete r[f+'x']; dl=n0-oldN; } else if(r[f]==='n'){ delete r[f+'n']; r[f+'x']=n0; dl=-oldN; } else { delete r[f+'n']; delete r[f+'x']; dl=-oldN; } }
+      if(f==='ar'){ const bl=arBooks(mst); let nb={};
+        if(r.ar==='y'){ if(old==='y') nb=oldAb; else { bl.forEach((x,i)=>{const n=pab(sid,wdm,x[1],i); if(n>0) nb[x[1]]=n;}); if(!absum(nb)&&bl.length) nb[bl[0][1]]=1; }
+          const n=absum(nb)||n0; r.arn=n; if(absum(nb)) r.ab=nb; else delete r.ab; delete r.arx; }
+        else if(r.ar==='n'){ delete r.arn; delete r.ab; r.arx=old==='n'?n0:(absum(oldAb)||1); }
+        else { delete r.arn; delete r.arx; delete r.ab; }
+        const ks={}; Object.keys(oldAb).concat(Object.keys(nb)).forEach(b=>{ks[b]=1;}); for(const b in ks){const dd=(nb[b]||0)-(oldAb[b]||0); if(dd) moves.push([b,dd]);}
+      }else if(f==='qu'){ if(r.qu==='y'){ r.qun=n0; delete r.qux; dl=n0-oldN; if(old!=='y'){const q=qpos(mst); if(q) r.qs=q.sura; else delete r.qs;} } else if(r.qu==='n'){ delete r.qun; delete r.qs; r.qux=n0; dl=-oldN; } else { delete r.qun; delete r.qux; delete r.qs; dl=-oldN; } }
       delete r.seen; d.rows[sid]=r;});
-    if(dl){ const rf=refocus; advBook(sid,f,dl); refocus=rf; render(true); }
+    if(dl||moves.length){ const rf=refocus; if(dl) advBook(sid,f,dl); moves.forEach(m=>advBookNo(sid,m[0],m[1])); refocus=rf; render(true); }
   }else if(act==='star'){
     const n=Number(b.dataset.v);
     refocus='[data-act="star"][data-sid="'+sid+'"][data-v="'+n+'"]';
@@ -1240,6 +1260,10 @@ document.addEventListener('click',e=>{
   else if(act==='cnum'){const st=S.students[sid], f=b.dataset.f, k=f.slice(0,2), ds=b.dataset.date, dv=Number(b.dataset.v); if(!st||!/^(ar|qu)[nx]$/.test(f)) return; const rf='[data-act="cnum"][data-sid="'+sid+'"][data-f="'+f+'"][data-v="'+b.dataset.v+'"]'; refocus=rf; let dl=0;
     editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(f.slice(2)==='n'){const n=cnt(r,k), nn=Math.max(1,Math.min(99,n+dv)); dl=nn-(r[k]==='y'?n:0); r[k+'n']=nn; delete r[k+'x']; r[k]='y';} else {const x=mis(r,k), nx=Math.max(1,Math.min(99,x+dv)); r[k+'x']=nx; delete r[k+'n']; r[k]='n';} delete r.seen; d.rows[sid]=r;});
     if(dl){ advBook(sid,k,dl); refocus=rf; render(true); }}
+  else if(act==='pab'){const bk=b.dataset.b, ds=b.dataset.date, key=sid+'|'+ds+'|ar|'+bk; ui.pc=ui.pc||{}; ui.pc[key]=Math.max(0,Math.min(99,pab(sid,ds,bk,Number(b.dataset.i)||0)+Number(b.dataset.v))); refocus='[data-act="pab"][data-sid="'+sid+'"][data-b="'+bk+'"][data-v="'+b.dataset.v+'"]'; render(true);}
+  else if(act==='cab'){const st=S.students[sid], bk=b.dataset.b, ds=b.dataset.date, dv=Number(b.dataset.v); if(!st) return; const rf='[data-act="cab"][data-sid="'+sid+'"][data-b="'+bk+'"][data-v="'+b.dataset.v+'"]'; refocus=rf; let dd=0;
+    editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(r.ar!=='y') return; const ab=abOf(r,st), o=ab[bk]||0, nv=Math.max(0,Math.min(99,o+dv)); const t2=Object.assign({},ab); if(nv) t2[bk]=nv; else delete t2[bk]; if(!absum(t2)) return; dd=nv-o; r.ab=t2; r.arn=absum(t2); delete r.seen; d.rows[sid]=r;});
+    if(dd){ advBookNo(sid,bk,dd); refocus=rf; render(true); }}
   else if(act==='pnum'){const k=b.dataset.k, ds=b.dataset.date, key=sid+'|'+ds+'|'+k; ui.pc=ui.pc||{}; ui.pc[key]=Math.max(1,Math.min(99,pcount(sid,ds,k)+Number(b.dataset.v))); refocus='[data-act="pnum"][data-sid="'+sid+'"][data-k="'+k+'"][data-v="'+b.dataset.v+'"]'; render(true);}
   else if(act==='sqline'){const st=S.students[sid], q=qpos(st); if(q){const ln=Math.max(0,Math.min(q.total,q.line+Number(b.dataset.v))), c=Object.assign({},st); if(ln) c.qline=ln; else delete c.qline; refocus='[data-act="sqline"][data-sid="'+sid+'"][data-v="'+b.dataset.v+'"]'; putDoc('students',sid,c);}}
   else if(act==='goattn'){const x=document.getElementById('attn'); if(x) x.scrollIntoView({behavior:'smooth',block:'start'});}
