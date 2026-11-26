@@ -770,7 +770,7 @@ function calDetail(sid,ds,mode){ const r=rowOf(sid,ds)||{}, ex=exOn(exList(sid),
   if(!(r.a||r.ar||r.qu)){ if(!ex) h+='<span class="sub">Бу куни белги қўйилмаган.</span>'; return h+'</div>'; }
   if(r.a) h+='<div class="chips"><span class="chip '+ATT[r.a][1]+'">'+ATT[r.a][0]+'</span></div>';
   const stD=S.students[sid], abD=abOf(r,stD), bkD=books();
-  if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); const w=sb[0]==='qu'?'қатор':'дарс'; const yes=!c?'':sb[0]==='ar'&&Object.keys(abD).length?Object.keys(abD).map(bn=>'<span class="chip good">'+esc((bkD[bn-1]||{}).name||'Китоб')+': '+abD[bn]+' та дарс</span>').join(''):sb[0]==='qu'&&r.qs?'<span class="chip good">'+sura(r.qs)+' · '+c+' қатор</span>':'<span class="chip good">'+c+' та '+w+' топширди</span>'; h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+yes+(m?'<span class="chip crit">'+m+' та '+w+' топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
+  if(r.a!=='a') SUBJ.forEach(sb=>{const c=cnt(r,sb[0]), m=mis(r,sb[0]); const w=sb[0]==='qu'?'қатор':'дарс'; const yes=!c?'':sb[0]==='ar'&&Object.keys(abD).length?Object.keys(abD).map(bn=>{const n=abD[bn], a0=r.af&&r.af[bn]; return '<span class="chip good">'+esc((bkD[bn-1]||{}).name||'Китоб')+': '+(a0?(n>1?a0+'–'+(a0+n-1):a0)+'-дарс ('+n+' та)':n+' та дарс')+'</span>';}).join(''):sb[0]==='qu'&&r.qs?'<span class="chip good">'+sura(r.qs)+' · '+c+' қатор'+(r.ql!==undefined&&r.ql!==null?', '+(r.ql+1)+'-қатордан':'')+'</span>':'<span class="chip good">'+c+' та '+w+' топширди</span>'; h+='<div class="ln"><span>'+sb[1]+'</span><span class="chips">'+yes+(m?'<span class="chip crit">'+m+' та '+w+' топширмади</span>':'')+(!c&&!m?'<span class="chip">белгиланмаган</span>':'')+'</span></div>';});
   return h+'</div>'; }
 function calBlock(sid,weeks,mode){ const xl=exList(sid), n=weeks*7, key=sid+'|'+mode+'|'; let sel='';
   let h='<div class="wk"><div class="wkh"><b>'+weeks+' ҳафталик календарь</b><span class="wkl"><i class="ok"></i>топширди <i class="bad"></i>топширмади <i class="ex"></i>имтиҳон</span></div><div class="wkgrid row" data-ck="'+sid+'|'+mode+'">';
@@ -792,12 +792,13 @@ function advQuran(sid,dl){ const st=S.students[sid], q=qpos(st); if(!q||!dl) ret
 function advBook(sid,k,dl){ if(k==='qu'){advQuran(sid,dl);return;} const st=S.students[sid]; if(!st||k!=='ar'||!dl) return; const slot=(st.book||1)!==QB?1:(st.book2&&st.book2!==QB?2:0); if(!slot) return; setProg(sid,slot,slot===2?st.book2:(st.book||1),(slot===2?(st.lesson2||1):(st.lesson||1))+dl); }
 function arBooks(st){const o=[]; if(!st) return o; if((st.book||1)!==QB) o.push([1,st.book||1]); if(st.book2&&st.book2!==QB) o.push([2,st.book2]); return o}
 function abOf(r,st){ if(!r||r.ar!=='y') return {}; if(r.ab) return Object.assign({},r.ab); const bl=arBooks(st), o={}; if(bl.length) o[bl[0][1]]=cnt(r,'ar'); return o }
+function lesOf(st,book){book=Number(book); return !st?1:(st.book||1)===book?(st.lesson||1):st.book2===book?(st.lesson2||1):1}
 function absum(ab){let n=0; for(const k in ab) n+=Number(ab[k])||0; return n}
 function pab(sid,ds,book,idx){const v=ui.pc&&ui.pc[sid+'|'+ds+'|ar|'+book]; return v===undefined?(idx===0?1:0):v}
 function advBookNo(sid,book,dl){ const st=S.students[sid]; if(!st||!dl) return; book=Number(book); const slot=(st.book||1)===book?1:st.book2===book?2:0; if(!slot) return; setProg(sid,slot,book,(slot===2?(st.lesson2||1):(st.lesson||1))+dl); }
 function bump(sid,book,dv){ const st=S.students[sid]; if(!st||!dv) return; const k=book===QB?'qu':'ar';
   editDay(st.gid,workDate(sid),'',d=>{const r=Object.assign({},d.rows[sid]);
-    if(k==='ar'){ const ab=abOf(r,st); ab[book]=Math.max(0,Math.min(99,(ab[book]||0)+dv)); if(!ab[book]) delete ab[book]; const n=absum(ab); if(n>0){r.ab=ab;r.arn=n;r.ar='y';delete r.arx;} else {delete r.ab;delete r.arn; if(r.ar==='y') delete r.ar;} }
+    if(k==='ar'){ const ab=abOf(r,st); ab[book]=Math.max(0,Math.min(99,(ab[book]||0)+dv)); if(!ab[book]) delete ab[book]; const n=absum(ab); const af=Object.assign({},r.af); if(!ab[book]) delete af[book]; else if(!af[book]) af[book]=Math.max(1,lesOf(st,book)-ab[book]); if(n>0){r.ab=ab;r.af=af;r.arn=n;r.ar='y';delete r.arx;} else {delete r.ab;delete r.af;delete r.arn; if(r.ar==='y') delete r.ar;} }
     else { const c=cnt(r,k)+dv; if(c>0){r[k+'n']=Math.min(99,c);r[k]='y';} else {delete r[k+'n']; if(r[k]==='y') delete r[k];} }
     delete r.seen; d.rows[sid]=r;}); }
 function progBlock(s,st,slot){ const bk=slot===2?st.book2:(st.book||1), ls=slot===2?(st.lesson2||1):(st.lesson||1);
@@ -846,7 +847,7 @@ function editDay(gid,date,t,fn){
     delete pend[id];
     ['topic','hw'].forEach(f=>{if((d[f]||'')!==(prev[f]||'')) send({a:'day.put',gid:gid,date:date,f:f,v:d[f]||''});});
     for(const sid in d.rows){const x=d.rows[sid], y=(prev.rows||{})[sid]||{}, patch={}; let ch=false;
-      ['a','ar','qu','arn','qun','arx','qux','ex','qs','ab'].forEach(f=>{if(JSON.stringify(x[f])!==JSON.stringify(y[f])){patch[f]=x[f]===undefined?null:x[f];ch=true;}});
+      ['a','ar','qu','arn','qun','arx','qux','ex','qs','ab','af','ql'].forEach(f=>{if(JSON.stringify(x[f])!==JSON.stringify(y[f])){patch[f]=x[f]===undefined?null:x[f];ch=true;}});
       if(ch) send({a:'mark',sid:sid,date:date,patch:patch}); else if(x.seen&&!y.seen) send({a:'seen',sid:sid,date:date});}
     return;
   }
@@ -1228,11 +1229,11 @@ document.addEventListener('click',e=>{
       if(r[f]===v) delete r[f]; else r[f]=v; if(f==='a'&&r.a==='a'){ if(!r.ar) r.ar='n'; if(!r.qu) r.qu='n'; }
       if(f==='ar'){ const bl=arBooks(mst); let nb={};
         if(r.ar==='y'){ if(old==='y') nb=oldAb; else { bl.forEach((x,i)=>{const n=pab(sid,wdm,x[1],i); if(n>0) nb[x[1]]=n;}); if(!absum(nb)&&bl.length) nb[bl[0][1]]=1; }
-          const n=absum(nb)||n0; r.arn=n; if(absum(nb)) r.ab=nb; else delete r.ab; delete r.arx; }
-        else if(r.ar==='n'){ delete r.arn; delete r.ab; r.arx=old==='n'?n0:(absum(oldAb)||1); }
-        else { delete r.arn; delete r.arx; delete r.ab; }
+          const n=absum(nb)||n0; r.arn=n; if(absum(nb)){ r.ab=nb; if(old!=='y'){const af={}; for(const bn in nb) af[bn]=lesOf(mst,bn); r.af=af;} } else { delete r.ab; delete r.af; } delete r.arx; }
+        else if(r.ar==='n'){ delete r.arn; delete r.ab; delete r.af; r.arx=old==='n'?n0:(absum(oldAb)||1); }
+        else { delete r.arn; delete r.arx; delete r.ab; delete r.af; }
         const ks={}; Object.keys(oldAb).concat(Object.keys(nb)).forEach(b=>{ks[b]=1;}); for(const b in ks){const dd=(nb[b]||0)-(oldAb[b]||0); if(dd) moves.push([b,dd]);}
-      }else if(f==='qu'){ if(r.qu==='y'){ r.qun=n0; delete r.qux; dl=n0-oldN; if(old!=='y'){const q=qpos(mst); if(q) r.qs=q.sura; else delete r.qs;} } else if(r.qu==='n'){ delete r.qun; delete r.qs; r.qux=n0; dl=-oldN; } else { delete r.qun; delete r.qux; delete r.qs; dl=-oldN; } }
+      }else if(f==='qu'){ if(r.qu==='y'){ r.qun=n0; delete r.qux; dl=n0-oldN; if(old!=='y'){const q=qpos(mst); if(q){r.qs=q.sura; r.ql=q.line;} else {delete r.qs; delete r.ql;}} } else if(r.qu==='n'){ delete r.qun; delete r.qs; delete r.ql; r.qux=n0; dl=-oldN; } else { delete r.qun; delete r.qux; delete r.qs; delete r.ql; dl=-oldN; } }
       delete r.seen; d.rows[sid]=r;});
     if(dl||moves.length){ const rf=refocus; if(dl) advBook(sid,f,dl); moves.forEach(m=>advBookNo(sid,m[0],m[1])); refocus=rf; render(true); }
   }else if(act==='star'){
@@ -1263,7 +1264,7 @@ document.addEventListener('click',e=>{
     if(dl){ advBook(sid,k,dl); refocus=rf; render(true); }}
   else if(act==='pab'){const bk=b.dataset.b, ds=b.dataset.date, key=sid+'|'+ds+'|ar|'+bk; ui.pc=ui.pc||{}; ui.pc[key]=Math.max(0,Math.min(99,pab(sid,ds,bk,Number(b.dataset.i)||0)+Number(b.dataset.v))); refocus='[data-act="pab"][data-sid="'+sid+'"][data-b="'+bk+'"][data-v="'+b.dataset.v+'"]'; render(true);}
   else if(act==='cab'){const st=S.students[sid], bk=b.dataset.b, ds=b.dataset.date, dv=Number(b.dataset.v); if(!st) return; const rf='[data-act="cab"][data-sid="'+sid+'"][data-b="'+bk+'"][data-v="'+b.dataset.v+'"]'; refocus=rf; let dd=0;
-    editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(r.ar!=='y') return; const ab=abOf(r,st), o=ab[bk]||0, nv=Math.max(0,Math.min(99,o+dv)); const t2=Object.assign({},ab); if(nv) t2[bk]=nv; else delete t2[bk]; if(!absum(t2)) return; dd=nv-o; r.ab=t2; r.arn=absum(t2); delete r.seen; d.rows[sid]=r;});
+    editDay(st.gid,ds,'',d=>{const r=Object.assign({},d.rows[sid]); if(r.ar!=='y') return; const ab=abOf(r,st), o=ab[bk]||0, nv=Math.max(0,Math.min(99,o+dv)); const t2=Object.assign({},ab); if(nv) t2[bk]=nv; else delete t2[bk]; if(!absum(t2)) return; dd=nv-o; r.ab=t2; r.arn=absum(t2); const af=Object.assign({},r.af); if(!nv) delete af[bk]; else if(!af[bk]) af[bk]=lesOf(st,bk)-o; r.af=af; delete r.seen; d.rows[sid]=r;});
     if(dd){ advBookNo(sid,bk,dd); refocus=rf; render(true); }}
   else if(act==='pnum'){const k=b.dataset.k, ds=b.dataset.date, key=sid+'|'+ds+'|'+k; ui.pc=ui.pc||{}; ui.pc[key]=Math.max(1,Math.min(99,pcount(sid,ds,k)+Number(b.dataset.v))); refocus='[data-act="pnum"][data-sid="'+sid+'"][data-k="'+k+'"][data-v="'+b.dataset.v+'"]'; render(true);}
   else if(act==='sqline'){const st=S.students[sid], q=qpos(st); if(q){const ln=Math.max(0,Math.min(q.total,q.line+Number(b.dataset.v))), c=Object.assign({},st); if(ln) c.qline=ln; else delete c.qline; refocus='[data-act="sqline"][data-sid="'+sid+'"][data-v="'+b.dataset.v+'"]'; putDoc('students',sid,c);}}
