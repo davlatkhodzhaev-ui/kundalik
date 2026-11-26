@@ -523,6 +523,7 @@ button.wd{border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlig
 #attn{scroll-margin-top:150px}
 #totop{position:fixed;right:14px;bottom:18px;z-index:20;width:44px;height:44px;border-radius:50%;border:0;background:var(--ink,#141a3c);color:#fff;font-size:20px;line-height:1;cursor:pointer;box-shadow:0 8px 20px -6px rgba(0,0,0,.5);display:grid;place-items:center}
 #totop[hidden]{display:none}
+.rk.t1,.rk.t2,.rk.t3{background:var(--grad-blue);color:#fff}
 </style>
 </head>
 <body>
@@ -1149,6 +1150,7 @@ function viewRoom(){
   if(!rows.length) return h+'<section class="panel"><p class="empty">Бу гуруҳда ҳали ўқувчи йўқ.</p></section>';
   h+='<section class="panel"><div class="rlist">'; let zprev=-9;
   rows.forEach((r,i)=>{const st=S.students[r.s], open=ui.open===r.s, top=i<3?' top t'+(i+1):' top', tt=rows.length>4?(i-3)/(rows.length-4):0, zn=i<3?-1:tt<0.34?0:tt<0.67?1:2, zc=['#12925f','#c98a0a','#c93838'][zn], rc=i<3?'':' style="background:'+zc+'"';
+    if(i===0) h+='<div style="display:flex;align-items:center;gap:8px;padding:4px 4px 6px;font-weight:700;font-size:13px;color:var(--blue)"><i style="width:10px;height:10px;border-radius:50%;background:var(--blue)"></i>Аъло<span style="flex:1;height:1px;background:var(--blue);opacity:.35"></span></div>';
     if(i>=3&&(i===3||zn!==zprev)) h+='<div style="display:flex;align-items:center;gap:8px;padding:12px 4px 6px;font-weight:700;font-size:13px;color:'+zc+'"><i style="width:10px;height:10px;border-radius:50%;background:'+zc+'"></i>'+['Яхши','Ўртача','Суст: эътибор керак'][zn]+'<span style="flex:1;height:1px;background:'+zc+';opacity:.35"></span></div>'; zprev=zn;
     h+='<div class="ritem'+(mine.indexOf(r.s)>=0?' mine':'')+(open?' open':'')+'"><button type="button" class="rrow" data-act="ropen" data-sid="'+r.s+'" aria-expanded="'+open+'"><span class="rk'+top+'"'+rc+'>'+(i+1)+'</span>'+avatar(st.name,'',st)+'<span class="rn"><b>'+esc(st.name)+'</b><small class="pg">'+esc(progText(st))+'</small>'+studentDots(r.s)+'</span><span class="rb">'+r.b+'<small>балл</small></span><span class="chev" aria-hidden="true">'+(open?'▴':'▾')+'</span></button>';
     if(open){const p=stats(entriesOf(r.s,from)), g=S.groups[st.gid]||{};
