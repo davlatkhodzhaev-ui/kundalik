@@ -650,6 +650,11 @@ body.tab #totop{right:18px}
 .lay.td{gap:12px}
 .lay.edit>.lw{outline:2px dashed var(--blue);outline-offset:4px;border-radius:18px}
 .lay.edit>.lw.hid{opacity:.55}
+.lay.edit>.lw>.lbar{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.lgrip{font-size:18px;line-height:1;color:var(--blue);padding:0 2px}
+.lw.ldrag{position:relative;z-index:60;opacity:.9;box-shadow:0 18px 40px rgba(20,24,60,.28);border-radius:20px;transition:none}
+.lw.ldrag>.lbar{cursor:grabbing}
+.lw.ltgt{outline:3px solid var(--blue)!important;outline-offset:5px;border-radius:20px;background:var(--blue-soft)}
 .lbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--blue-soft);border-radius:12px;padding:6px 8px}
 .lbar b{font-size:13px;color:var(--blue);margin-right:auto}
 .lbar button{border:0;min-width:38px;height:36px;padding:0 10px;border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:13.5px;cursor:pointer}
@@ -1162,11 +1167,11 @@ function laySave(){try{localStorage.setItem('kundalik-layout',JSON.stringify(LAY
 function layOf(pg){ const def=LDEF[pg], cur=(Array.isArray(LAY[pg])?LAY[pg]:[]).filter(x=>x&&def.some(d=>d[0]===x.id)).map(x=>({id:x.id,s:SIZES.indexOf(x.s)>=0?x.s:12,h:!!x.h}));
   def.forEach(d=>{if(!cur.some(x=>x.id===d[0])) cur.push({id:d[0],s:d[1],h:false});}); return cur }
 function layBtn(){return '<button type="button" class="dedit rnoprint'+(ui.ledit?' on':'')+'" data-act="ledit" aria-pressed="'+!!ui.ledit+'">'+(ui.ledit?'✓ Тайёр':'⚙ Тартиб')+'</button>'}
-function layBanner(){return ui.ledit?'<div class="lban rnoprint"><b>Тартибни ўзгартириш</b><span>↑ ↓ блокни тепага ёки пастга суради, ↔ кенглигини ўзгартиради, «Яшириш» кўринмайдиган қилади. Ўзгаришлар шу планшетда сақланади.</span><button type="button" class="btn small" data-act="lreset">Асл ҳолига қайтариш</button></div>':''}
+function layBanner(){return ui.ledit?'<div class="lban rnoprint"><b>Тартибни ўзгартириш</b><span>Блокни устидаги кўк чизиғидан (⠿) бармоқ билан ушлаб, керакли жойга суриб қўйинг. Ёки ↑ ↓ тугмалари. ↔ кенглигини ўзгартиради, «Яшириш» кўринмайдиган қилади.</span><button type="button" class="btn small" data-act="lreset">Асл ҳолига қайтариш</button></div>':''}
 function layout(pg,W,cls){ const Ls=layOf(pg), ed=!!ui.ledit; let h='<div class="lay '+(cls||'')+(ed?' edit':'')+'">';
   Ls.forEach((x,i)=>{ if(W[x.id]===undefined) return; if(x.h&&!ed) return;
     const bt=(act,v,lab,txt,dis)=>'<button type="button" data-act="'+act+'" data-p="'+pg+'" data-w="'+x.id+'"'+(v!==null?' data-v="'+v+'"':'')+' aria-label="'+lab+'"'+(dis?' disabled':'')+'>'+txt+'</button>';
-    h+='<div class="lw s'+x.s+(x.h?' hid':'')+'">'+(ed?'<div class="lbar rnoprint"><b>'+LNAME[pg+'.'+x.id]+'</b>'+bt('lmv',-1,'Тепага','↑',i===0)+bt('lmv',1,'Пастга','↓',i===Ls.length-1)+bt('lsz',null,'Кенглиги','↔ '+Math.round(x.s/12*100)+'%')+bt('lhide',null,x.h?'Кўрсатиш':'Яшириш',x.h?'Кўрсатиш':'Яшириш')+'</div>':'')+(x.h?'':W[x.id])+'</div>'; });
+    h+='<div class="lw s'+x.s+(x.h?' hid':'')+'" data-lp="'+pg+'" data-lw="'+x.id+'">'+(ed?'<div class="lbar rnoprint" title="Бармоқ билан ушлаб суринг"><span class="lgrip" aria-hidden="true">⠿</span><b>'+LNAME[pg+'.'+x.id]+'</b>'+bt('lmv',-1,'Тепага','↑',i===0)+bt('lmv',1,'Пастга','↓',i===Ls.length-1)+bt('lsz',null,'Кенглиги','↔ '+Math.round(x.s/12*100)+'%')+bt('lhide',null,x.h?'Кўрсатиш':'Яшириш',x.h?'Кўрсатиш':'Яшириш')+'</div>':'')+(x.h?'':W[x.id])+'</div>'; });
   return h+'</div>' }
 function viewTeacherTab(){
   const tg=groupIds(); if(!tg.length) return emptyState();
@@ -1479,6 +1484,7 @@ function typing(){const a=document.activeElement;return a&&$('#app').contains(a)
 let skipKeep=false;
 const OUTBTN='<button class="btn out" type="button" data-act="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></svg>Чиқиш</button>';
 function render(force){
+  if(LDR) return;
   if(!force&&typing()){dirty=true;return;}
   dirty=false;
   const gids=groupIds(), as=allowedStudents();
@@ -1521,6 +1527,28 @@ function render(force){
   if(foc&&!refocus){const x=document.getElementById(foc); if(x) x.focus({preventScroll:true});}
   if(refocus){const el=$('#app').querySelector(refocus); if(el) el.focus({preventScroll:true}); refocus=null;}
 }
+
+/* ---------- drag blocks (edit mode) ---------- */
+let LDR=null;
+function ldrTarget(x,y){ for(const n of document.elementsFromPoint(x,y)){ if(LDR.el.contains(n)) continue; let w=n.closest('.lw'); while(w&&w.dataset.lp!==LDR.pg) w=w.parentElement&&w.parentElement.closest('.lw'); if(w&&w!==LDR.el) return w; if(w===LDR.el) return null; } return null }
+function ldrEnd(ok){ if(!LDR) return; const d=LDR; LDR=null; clearInterval(d.tm);
+  window.removeEventListener('pointermove',ldrMove); window.removeEventListener('pointerup',ldrUp); window.removeEventListener('pointercancel',ldrCancel);
+  d.el.classList.remove('ldrag'); d.el.style.transform=''; if(d.tg) d.tg.classList.remove('ltgt');
+  if(ok&&d.tg){ const Ls=layOf(d.pg), i=Ls.findIndex(x=>x.id===d.id), j=Ls.findIndex(x=>x.id===d.tg.dataset.lw);
+    if(i>=0&&j>=0){ const it=Ls.splice(i,1)[0]; Ls.splice(j,0,it); LAY[d.pg]=Ls; laySave(); } }
+  render(true); }
+function ldrMove(e){ if(!LDR) return; e.preventDefault(); LDR.x=e.clientX; LDR.y=e.clientY;
+  LDR.el.style.transform='translate('+(e.clientX-LDR.sx)+'px,'+(e.clientY-LDR.sy+(window.scrollY-LDR.sy0))+'px)';
+  const tg=ldrTarget(e.clientX,e.clientY); if(tg!==LDR.tg){ if(LDR.tg) LDR.tg.classList.remove('ltgt'); LDR.tg=tg; if(tg) tg.classList.add('ltgt'); } }
+function ldrUp(){ ldrEnd(true) } function ldrCancel(){ ldrEnd(false) }
+document.addEventListener('pointerdown',e=>{
+  const bar=e.target.closest('.lay.edit>.lw>.lbar'); if(!bar||e.target.closest('button')||LDR) return;
+  const el=bar.parentElement; e.preventDefault();
+  LDR={el,pg:el.dataset.lp,id:el.dataset.lw,sx:e.clientX,sy:e.clientY,sy0:window.scrollY,x:e.clientX,y:e.clientY,tg:null};
+  LDR.sy=e.clientY; el.classList.add('ldrag');
+  LDR.tm=setInterval(()=>{ if(!LDR) return; const m=70; let v=0; if(LDR.y<m) v=-14; else if(LDR.y>innerHeight-m) v=14; if(v){ window.scrollBy(0,v); ldrMove({preventDefault(){},clientX:LDR.x,clientY:LDR.y}); } },30);
+  window.addEventListener('pointermove',ldrMove,{passive:false}); window.addEventListener('pointerup',ldrUp); window.addEventListener('pointercancel',ldrCancel);
+});
 
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
