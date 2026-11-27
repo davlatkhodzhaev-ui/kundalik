@@ -646,11 +646,16 @@ body.tab #totop{right:18px}
 @media (max-width:1000px){.dkpis,.rtiles{grid-template-columns:repeat(2,minmax(0,1fr))} .dmark{grid-template-columns:1fr} .dtwo,.rtwo{grid-template-columns:1fr} .dgrid{grid-template-columns:minmax(260px,40%) minmax(0,1fr)} .dhi{flex-basis:100%}}
 .lay{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start}
 .lw{min-width:0;display:flex;flex-direction:column;gap:8px}
-.lw.s4{grid-column:span 4}.lw.s5{grid-column:span 5}.lw.s6{grid-column:span 6}.lw.s7{grid-column:span 7}.lw.s8{grid-column:span 8}.lw.s12{grid-column:span 12}
+.lw.s3{grid-column:span 3}.lw.s9{grid-column:span 9}.lw.s10{grid-column:span 10}.lw.s11{grid-column:span 11}.lw.s4{grid-column:span 4}.lw.s5{grid-column:span 5}.lw.s6{grid-column:span 6}.lw.s7{grid-column:span 7}.lw.s8{grid-column:span 8}.lw.s12{grid-column:span 12}
 .lay.td{gap:12px}
 .lay.edit>.lw{outline:2px dashed var(--blue);outline-offset:4px;border-radius:18px}
 .lay.edit>.lw.hid{opacity:.55}
 .lay.edit>.lw>.lbar{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.lay.edit>.lw{position:relative}
+.lrs{position:absolute;top:50%;right:-15px;transform:translateY(-50%);width:26px;height:64px;border-radius:13px;background:var(--blue);display:flex;align-items:center;justify-content:center;cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;z-index:5;box-shadow:0 4px 12px rgba(40,60,200,.35)}
+.lrs i{width:8px;height:28px;border-left:2px solid #fff;border-right:2px solid #fff}
+.lrs em{display:none;position:absolute;right:30px;top:50%;transform:translateY(-50%);background:var(--ink,#111);color:#fff;font-style:normal;font-size:13px;font-weight:700;padding:4px 8px;border-radius:8px;white-space:nowrap}
+.lw.lrsz{outline-style:solid!important}.lw.lrsz>.lrs em{display:block}
 .lgrip{font-size:18px;line-height:1;color:var(--blue);padding:0 2px}
 .lw.ldrag{position:relative;z-index:60;opacity:.9;box-shadow:0 18px 40px rgba(20,24,60,.28);border-radius:20px;transition:none}
 .lw.ldrag>.lbar{cursor:grabbing}
@@ -664,7 +669,7 @@ body.tab #totop{right:18px}
 .lban{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--blue-soft);color:var(--ink);border-radius:16px;padding:12px 14px}
 .lban b{color:var(--blue)}.lban span{flex:1;min-width:240px;font-size:13px;color:var(--muted)}
 .ddet .lay.td .dsec{background:none}
-@media (max-width:1000px){.lay.td>.lw,.lay.r>.lw{grid-column:span 12}.lay.t>.lw.s4,.lay.t>.lw.s5{grid-column:span 5}.lay.t>.lw.s7,.lay.t>.lw.s8{grid-column:span 7}}
+@media (max-width:1000px){.lay.auto.td>.lw,.lay.auto.r>.lw{grid-column:span 12}.lay.auto.t>.lw.s4,.lay.auto.t>.lw.s5{grid-column:span 5}.lay.auto.t>.lw.s7,.lay.auto.t>.lw.s8{grid-column:span 7}}
 </style>
 </head>
 <body>
@@ -1161,17 +1166,17 @@ function groupDayFields(gid){const d=dayOf(gid,ui.date)||{}; return '<div class=
 /* ---------- tablet: user-arranged blocks (saved on this device) ---------- */
 const LDEF={t:[['kpis',12],['list',4],['detail',8]],td:[['hero',12],['cal',7],['books',5],['mark',12]],r:[['kpis',12],['chart',7],['attn',5],['table',12],['books',7],['exams',5],['tiles',12]]};
 const LNAME={'t.kpis':'Кўрсаткичлар','t.list':'Талабалар рўйхати','t.detail':'Танланган талаба','td.hero':'Талаба карточкаси','td.cal':'Календарь','td.books':'Китоблари ва кун','td.mark':'Белгилаш','r.kpis':'Кўрсаткичлар','r.chart':'Кунлик давомат','r.attn':'Эътибор талаб','r.table':'Талабалар жадвали','r.books':'Китоблар бўйича','r.exams':'Имтиҳонлар','r.tiles':'Бошқарув'};
-const SIZES=[4,5,6,7,8,12];
+const SIZES=[3,4,5,6,7,8,9,10,11,12];
 let LAY={}; try{LAY=JSON.parse(localStorage.getItem('kundalik-layout')||'{}')||{};}catch(e){LAY={};}
 function laySave(){try{localStorage.setItem('kundalik-layout',JSON.stringify(LAY));}catch(e){}}
 function layOf(pg){ const def=LDEF[pg], cur=(Array.isArray(LAY[pg])?LAY[pg]:[]).filter(x=>x&&def.some(d=>d[0]===x.id)).map(x=>({id:x.id,s:SIZES.indexOf(x.s)>=0?x.s:12,h:!!x.h}));
   def.forEach(d=>{if(!cur.some(x=>x.id===d[0])) cur.push({id:d[0],s:d[1],h:false});}); return cur }
 function layBtn(){return '<button type="button" class="dedit rnoprint'+(ui.ledit?' on':'')+'" data-act="ledit" aria-pressed="'+!!ui.ledit+'">'+(ui.ledit?'✓ Тайёр':'⚙ Тартиб')+'</button>'}
-function layBanner(){return ui.ledit?'<div class="lban rnoprint"><b>Тартибни ўзгартириш</b><span>Блокни кўк чизиғидан (⠿) бармоқ билан ушлаб, хоҳлаган жойга суриб қўйинг. ↔ кенглигини ўзгартиради, «Яшириш» кўринмайдиган қилади.</span><button type="button" class="btn small" data-act="lreset">Асл ҳолига қайтариш</button></div>':''}
-function layout(pg,W,cls){ const Ls=layOf(pg), ed=!!ui.ledit; let h='<div class="lay '+(cls||'')+(ed?' edit':'')+'">';
+function layBanner(){return ui.ledit?'<div class="lban rnoprint"><b>Тартибни ўзгартириш</b><span>Блокни кўк чизиғидан (⠿) бармоқ билан ушлаб, хоҳлаган жойга суриб қўйинг. Ўнг четидаги кўк тутқични ушлаб чапга-ўнгга сурсангиз, блок кичраяди ёки катталашади. «Яшириш» кўринмайдиган қилади.</span><button type="button" class="btn small" data-act="lreset">Асл ҳолига қайтариш</button></div>':''}
+function layout(pg,W,cls){ const Ls=layOf(pg), ed=!!ui.ledit; let h='<div class="lay '+(cls||'')+(ed?' edit':'')+(LAY[pg]?'':' auto')+'">';
   Ls.forEach((x,i)=>{ if(W[x.id]===undefined) return; if(x.h&&!ed) return;
     const bt=(act,v,lab,txt,dis)=>'<button type="button" data-act="'+act+'" data-p="'+pg+'" data-w="'+x.id+'"'+(v!==null?' data-v="'+v+'"':'')+' aria-label="'+lab+'"'+(dis?' disabled':'')+'>'+txt+'</button>';
-    h+='<div class="lw s'+x.s+(x.h?' hid':'')+'" data-lp="'+pg+'" data-lw="'+x.id+'">'+(ed?'<div class="lbar rnoprint" title="Бармоқ билан ушлаб суринг"><span class="lgrip" aria-hidden="true">⠿</span><b>'+LNAME[pg+'.'+x.id]+'</b>'+bt('lsz',null,'Кенглиги','↔ '+Math.round(x.s/12*100)+'%')+bt('lhide',null,x.h?'Кўрсатиш':'Яшириш',x.h?'Кўрсатиш':'Яшириш')+'</div>':'')+(x.h?'':W[x.id])+'</div>'; });
+    h+='<div class="lw s'+x.s+(x.h?' hid':'')+'" data-lp="'+pg+'" data-lw="'+x.id+'">'+(ed?'<div class="lbar rnoprint" title="Бармоқ билан ушлаб суринг"><span class="lgrip" aria-hidden="true">⠿</span><b>'+LNAME[pg+'.'+x.id]+'</b>'+bt('lhide',null,x.h?'Кўрсатиш':'Яшириш',x.h?'Кўрсатиш':'Яшириш')+'</div>':'')+(x.h?'':W[x.id])+(ed&&!x.h?'<span class="lrs rnoprint" data-lp="'+pg+'" data-lw="'+x.id+'" title="Ушлаб чапга-ўнгга суринг: кенглиги ўзгаради" aria-hidden="true"><i></i><em>'+Math.round(x.s/12*100)+'%</em></span>':'')+'</div>'; });
   return h+'</div>' }
 function viewTeacherTab(){
   const tg=groupIds(); if(!tg.length) return emptyState();
@@ -1484,7 +1489,7 @@ function typing(){const a=document.activeElement;return a&&$('#app').contains(a)
 let skipKeep=false;
 const OUTBTN='<button class="btn out" type="button" data-act="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></svg>Чиқиш</button>';
 function render(force){
-  if(LDR) return;
+  if(LDR||LRS) return;
   if(!force&&typing()){dirty=true;return;}
   dirty=false;
   const gids=groupIds(), as=allowedStudents();
@@ -1529,7 +1534,22 @@ function render(force){
 }
 
 /* ---------- drag blocks (edit mode) ---------- */
-let LDR=null;
+let LDR=null, LRS=null;
+function lrsMove(e){ if(!LRS) return; e.preventDefault(); const n=Math.max(3,Math.min(12,Math.round(LRS.s0+(e.clientX-LRS.x0)/LRS.cw)));
+  let m=n; if(LRS.pt) m=Math.max(3,Math.min(LRS.tot-3,n));
+  if(m!==LRS.s){ LRS.el.classList.remove('s'+LRS.s); LRS.s=m; LRS.el.classList.add('s'+m); LRS.em.textContent=Math.round(m/12*100)+'%';
+    if(LRS.pt){ LRS.pt.classList.remove('s'+LRS.ps); LRS.ps=LRS.tot-m; LRS.pt.classList.add('s'+LRS.ps); } } }
+function lrsEnd(){ if(!LRS) return; const d=LRS; LRS=null; window.removeEventListener('pointermove',lrsMove); window.removeEventListener('pointerup',lrsEnd); window.removeEventListener('pointercancel',lrsEnd);
+  d.el.classList.remove('lrsz'); const Ls=layOf(d.pg), i=Ls.findIndex(x=>x.id===d.id); if(i>=0){ Ls[i].s=d.s; if(d.pt){ const k=Ls.findIndex(x=>x.id===d.pt.dataset.lw); if(k>=0) Ls[k].s=d.ps; } LAY[d.pg]=Ls; laySave(); } render(true); }
+document.addEventListener('pointerdown',e=>{
+  const hd=e.target.closest('.lay.edit>.lw>.lrs'); if(!hd||LRS||LDR) return; e.preventDefault(); e.stopPropagation();
+  const el=hd.parentElement, lay=el.parentElement, gap=parseFloat(getComputedStyle(lay).columnGap)||14, cw=(lay.clientWidth+gap)/12;
+  const s0=Number((el.className.match(/\bs(\d+)\b/)||[0,12])[1]);
+  const sp=x=>Number((x.className.match(/\bs(\d+)\b/)||[0,12])[1]), top=el.getBoundingClientRect().top;
+  const pt=[el.nextElementSibling,el.previousElementSibling].find(x=>x&&x.classList.contains('lw')&&!x.classList.contains('hid')&&Math.abs(x.getBoundingClientRect().top-top)<4&&sp(x)+s0<=12)||null;
+  LRS={el,pg:el.dataset.lp,id:el.dataset.lw,x0:e.clientX,s0,s:s0,cw,em:hd.querySelector('em'),pt,ps:pt?sp(pt):0,tot:pt?sp(pt)+s0:12}; el.classList.add('lrsz');
+  window.addEventListener('pointermove',lrsMove,{passive:false}); window.addEventListener('pointerup',lrsEnd); window.addEventListener('pointercancel',lrsEnd);
+},true);
 function ldrTarget(x,y){ for(const n of document.elementsFromPoint(x,y)){ if(LDR.el.contains(n)) continue; let w=n.closest('.lw'); while(w&&w.dataset.lp!==LDR.pg) w=w.parentElement&&w.parentElement.closest('.lw'); if(w&&w!==LDR.el) return w; if(w===LDR.el) return null; } return null }
 function ldrEnd(ok){ if(!LDR) return; const d=LDR; LDR=null; clearInterval(d.tm);
   window.removeEventListener('pointermove',ldrMove); window.removeEventListener('pointerup',ldrUp); window.removeEventListener('pointercancel',ldrCancel);
