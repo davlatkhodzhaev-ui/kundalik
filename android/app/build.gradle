@@ -1,0 +1,24 @@
+plugins { id 'com.android.application' }
+
+def vcode = (System.getenv('VCODE') ?: '1') as int
+
+android {
+    namespace 'uz.madrasa.kundalik'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'uz.madrasa.kundalik'
+        minSdk 21
+        targetSdk 36
+        versionCode vcode
+        versionName "1.0.${vcode}"
+    }
+    buildTypes { release { minifyEnabled false } }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.+'
+}
