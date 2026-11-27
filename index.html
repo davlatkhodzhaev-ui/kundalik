@@ -643,6 +643,22 @@ body.tab #totop{right:18px}
 .rtile b{display:block;font-size:13.5px}.rtile small{display:block;font-size:12px;color:var(--muted)}
 .rpt{display:flex;flex-direction:column;gap:14px}
 @media (max-width:1000px){.dkpis,.rtiles{grid-template-columns:repeat(2,minmax(0,1fr))} .dmark{grid-template-columns:1fr} .dtwo,.rtwo{grid-template-columns:1fr} .dgrid{grid-template-columns:minmax(260px,40%) minmax(0,1fr)} .dhi{flex-basis:100%}}
+.lay{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start}
+.lw{min-width:0;display:flex;flex-direction:column;gap:8px}
+.lw.s4{grid-column:span 4}.lw.s5{grid-column:span 5}.lw.s6{grid-column:span 6}.lw.s7{grid-column:span 7}.lw.s8{grid-column:span 8}.lw.s12{grid-column:span 12}
+.lay.td{gap:12px}
+.lay.edit>.lw{outline:2px dashed var(--blue);outline-offset:4px;border-radius:18px}
+.lay.edit>.lw.hid{opacity:.55}
+.lbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--blue-soft);border-radius:12px;padding:6px 8px}
+.lbar b{font-size:13px;color:var(--blue);margin-right:auto}
+.lbar button{border:0;min-width:38px;height:36px;padding:0 10px;border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:13.5px;cursor:pointer}
+.lbar button:disabled{opacity:.35;cursor:default}
+.dedit{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 13px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;white-space:nowrap}
+.dedit.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.lban{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--blue-soft);color:var(--ink);border-radius:16px;padding:12px 14px}
+.lban b{color:var(--blue)}.lban span{flex:1;min-width:240px;font-size:13px;color:var(--muted)}
+.ddet .lay.td .dsec{background:none}
+@media (max-width:1000px){.lay.td>.lw,.lay.r>.lw{grid-column:span 12}.lay.t>.lw.s4,.lay.t>.lw.s5{grid-column:span 5}.lay.t>.lw.s7,.lay.t>.lw.s8{grid-column:span 7}}
 </style>
 </head>
 <body>
@@ -1135,6 +1151,22 @@ function attnList(sids){const warn=[]; sids.forEach(s=>{const dd=byDay(entriesOf
 function zoneOf(sid){ const from=addDays(TODAY,-30), rows=Object.keys(S.students).map(x=>{const l=entriesOf(x,from),q=stats(l);return {s:x,b:score(l),g:q.attAll?q.att/q.attAll:0};}).sort((a,b)=>b.b-a.b||b.g-a.g||S.students[a.s].name.localeCompare(S.students[b.s].name,'uz'));
   const i=rows.findIndex(r=>r.s===sid); if(i<0) return null; const tt=rows.length>4?(i-3)/(rows.length-4):0, zn=i<3?-1:tt<0.34?0:tt<0.67?1:2; return {i:i,b:rows[i].b,z:['Аъло','Яхши','Ўртача','Суст'][zn+1]} }
 function groupDayFields(gid){const d=dayOf(gid,ui.date)||{}; return '<div class="q"><span class="lab">Гуруҳнинг дарси · '+esc(nice(ui.date))+'</span><div class="controls"><div class="field grow"><label for="tt">Нима ўтилди</label><input type="text" id="tt" data-act="dayfield" data-f="topic" value="'+esc(d.topic||'')+'" placeholder="Дарс мавзуси"></div><div class="field grow"><label for="th">Уйга вазифа</label><input type="text" id="th" data-act="dayfield" data-f="hw" value="'+esc(d.hw||'')+'" placeholder="Ота-она ҳам кўради"></div></div></div>'}
+
+/* ---------- tablet: user-arranged blocks (saved on this device) ---------- */
+const LDEF={t:[['kpis',12],['list',4],['detail',8]],td:[['hero',12],['cal',7],['books',5],['mark',12]],r:[['kpis',12],['chart',7],['attn',5],['table',12],['books',7],['exams',5],['tiles',12]]};
+const LNAME={'t.kpis':'Кўрсаткичлар','t.list':'Талабалар рўйхати','t.detail':'Танланган талаба','td.hero':'Талаба карточкаси','td.cal':'Календарь','td.books':'Китоблари ва кун','td.mark':'Белгилаш','r.kpis':'Кўрсаткичлар','r.chart':'Кунлик давомат','r.attn':'Эътибор талаб','r.table':'Талабалар жадвали','r.books':'Китоблар бўйича','r.exams':'Имтиҳонлар','r.tiles':'Бошқарув'};
+const SIZES=[4,5,6,7,8,12];
+let LAY={}; try{LAY=JSON.parse(localStorage.getItem('kundalik-layout')||'{}')||{};}catch(e){LAY={};}
+function laySave(){try{localStorage.setItem('kundalik-layout',JSON.stringify(LAY));}catch(e){}}
+function layOf(pg){ const def=LDEF[pg], cur=(Array.isArray(LAY[pg])?LAY[pg]:[]).filter(x=>x&&def.some(d=>d[0]===x.id)).map(x=>({id:x.id,s:SIZES.indexOf(x.s)>=0?x.s:12,h:!!x.h}));
+  def.forEach(d=>{if(!cur.some(x=>x.id===d[0])) cur.push({id:d[0],s:d[1],h:false});}); return cur }
+function layBtn(){return '<button type="button" class="dedit rnoprint'+(ui.ledit?' on':'')+'" data-act="ledit" aria-pressed="'+!!ui.ledit+'">'+(ui.ledit?'✓ Тайёр':'⚙ Тартиб')+'</button>'}
+function layBanner(){return ui.ledit?'<div class="lban rnoprint"><b>Тартибни ўзгартириш</b><span>↑ ↓ блокни тепага ёки пастга суради, ↔ кенглигини ўзгартиради, «Яшириш» кўринмайдиган қилади. Ўзгаришлар шу планшетда сақланади.</span><button type="button" class="btn small" data-act="lreset">Асл ҳолига қайтариш</button></div>':''}
+function layout(pg,W,cls){ const Ls=layOf(pg), ed=!!ui.ledit; let h='<div class="lay '+(cls||'')+(ed?' edit':'')+'">';
+  Ls.forEach((x,i)=>{ if(W[x.id]===undefined) return; if(x.h&&!ed) return;
+    const bt=(act,v,lab,txt,dis)=>'<button type="button" data-act="'+act+'" data-p="'+pg+'" data-w="'+x.id+'"'+(v!==null?' data-v="'+v+'"':'')+' aria-label="'+lab+'"'+(dis?' disabled':'')+'>'+txt+'</button>';
+    h+='<div class="lw s'+x.s+(x.h?' hid':'')+'">'+(ed?'<div class="lbar rnoprint"><b>'+LNAME[pg+'.'+x.id]+'</b>'+bt('lmv',-1,'Тепага','↑',i===0)+bt('lmv',1,'Пастга','↓',i===Ls.length-1)+bt('lsz',null,'Кенглиги','↔ '+Math.round(x.s/12*100)+'%')+bt('lhide',null,x.h?'Кўрсатиш':'Яшириш',x.h?'Кўрсатиш':'Яшириш')+'</div>':'')+(x.h?'':W[x.id])+'</div>'; });
+  return h+'</div>' }
 function viewTeacherTab(){
   const tg=groupIds(); if(!tg.length) return emptyState();
   const gf=tg.indexOf(ui.tgf)>=0?ui.tgf:'all', gl=gf==='all'?tg:[gf];
@@ -1147,8 +1179,8 @@ function viewTeacherTab(){
   const sel=ui.topen, wd=parse(ui.date), all=tg.reduce((a,g)=>a+studentsOf(g).length,0);
   let h='<div class="dtop"><div class="dhi"><h1>Ассалому алайкум, устоз</h1><small>'+(ui.date===TODAY?'Бугун':esc(nice(ui.date))+':')+' '+n+' талабадан '+marked+' таси белгиланди</small></div>'+
     '<div class="ddate"><button type="button" data-act="day" data-v="-1" aria-label="Олдинги кун">‹</button><label class="dpickd"><span>'+wd.getDate()+'-'+MON[wd.getMonth()]+', '+DOW[wd.getDay()].toLowerCase()+'</span><input type="date" data-act="date" value="'+ui.date+'" aria-label="Санани танлаш"></label><button type="button" data-act="day" data-v="1" aria-label="Кейинги кун">›</button>'+(ui.date!==TODAY?'<button type="button" class="dtoday" data-act="today">Бугун</button>':'')+'</div>'+
-    '<div class="dseg" role="group" aria-label="Гуруҳ">'+['all'].concat(tg).map(x=>{const on=gf===x; return '<button type="button" data-act="tgf" data-v="'+x+'" class="'+(on?'on':'')+'" aria-pressed="'+on+'">'+(x==='all'?'Ҳаммаси':esc(gShort(S.groups[x])))+'<span>'+(x==='all'?all:studentsOf(x).length)+'</span></button>';}).join('')+'</div></div>';
-  h+='<div class="dkpis">'+
+    '<div class="dseg" role="group" aria-label="Гуруҳ">'+['all'].concat(tg).map(x=>{const on=gf===x; return '<button type="button" data-act="tgf" data-v="'+x+'" class="'+(on?'on':'')+'" aria-pressed="'+on+'">'+(x==='all'?'Ҳаммаси':esc(gShort(S.groups[x])))+'<span>'+(x==='all'?all:studentsOf(x).length)+'</span></button>';}).join('')+'</div>'+layBtn()+'</div>'+layBanner();
+  const K='<div class="dkpis">'+
     '<div class="dkpi"><div class="kring" style="--p:'+ap+'"><span>'+ap+'%</span></div><div><div class="kl">Давомат</div><div class="kv">'+(came+late)+'<small> / '+n+'</small></div><div class="kl">'+late+' кечикди · '+abs+' келмади</div></div></div>'+
     '<div class="dkpi"><div class="kw"><div class="kl">Араб тили топширди</div><div class="kv">'+ar+'<small> та талаба</small></div><div class="kt"><i style="width:'+pct(ar,n)+'%"></i></div></div></div>'+
     '<div class="dkpi"><div class="kw"><div class="kl">Қуръон топширди</div><div class="kv">'+qu+'<small> та талаба</small></div><div class="kt gold"><i style="width:'+pct(qu,n)+'%"></i></div></div></div>'+
@@ -1166,12 +1198,11 @@ function viewTeacherTab(){
   if(ui.taddst) D='<div class="dcard ddet">'+addStudentForm(tg)+'</div>';
   else if(!sel) D='<div class="dcard dempty">'+ic('users')+'<b>Талабани танланг</b><span>Чапдаги рўйхатдан исмни босинг.</span></div>';
   else { const st=S.students[sel], P=tParts(sel), z=zoneOf(sel), g=S.groups[st.gid]||{}; ui.gid=st.gid;
-    D='<div class="dcard ddet"><div class="dhero">'+avatar(st.name,'big',st)+'<div class="dhn"><h3>'+esc(st.name)+'</h3><small>'+esc(g.name||'')+(codeOf(sel)?' · ота-она коди '+esc(codeOf(sel)):'')+'</small><div class="dbadges">'+(z?'<span class="dbg gold">'+z.z+' · '+(z.i+1)+'-ўрин</span>':'')+(st.exam&&EX[st.exam.s]?'<span class="dbg">'+EX[st.exam.s][0]+'</span>':'')+'</div></div><div class="dscore"><b>'+(z?z.b:0)+'</b><small>балл · 30 кун</small></div></div>'+
-      '<div class="dtwo"><div class="dsec"><div class="dsub">Кунни танланг</div>'+P.cal+'</div><div class="dsec">'+booksBlock(st)+P.note+'</div></div>'+
-      '<div class="dmark"><div class="dbox"><h4>Дарсга келдими?</h4>'+P.att+'</div><div class="dbox"><h4>Араб тили</h4>'+P.ar+'</div><div class="dbox"><h4>Қуръон</h4>'+P.qu+'</div></div>'+
+    const HERO='<div class="dhero">'+avatar(st.name,'big',st)+'<div class="dhn"><h3>'+esc(st.name)+'</h3><small>'+esc(g.name||'')+(codeOf(sel)?' · ота-она коди '+esc(codeOf(sel)):'')+'</small><div class="dbadges">'+(z?'<span class="dbg gold">'+z.z+' · '+(z.i+1)+'-ўрин</span>':'')+(st.exam&&EX[st.exam.s]?'<span class="dbg">'+EX[st.exam.s][0]+'</span>':'')+'</div></div><div class="dscore"><b>'+(z?z.b:0)+'</b><small>балл · 30 кун</small></div></div>';
+    D='<div class="dcard ddet">'+layout('td',{hero:HERO,cal:'<div class="dsec"><div class="dsub">Кунни танланг</div>'+P.cal+'</div>',books:'<div class="dsec">'+booksBlock(st)+P.note+'</div>',mark:'<div class="dmark"><div class="dbox"><h4>Дарсга келдими?</h4>'+P.att+'</div><div class="dbox"><h4>Араб тили</h4>'+P.ar+'</div><div class="dbox"><h4>Қуръон</h4>'+P.qu+'</div></div>'},'td')+
       '<div class="dfoot"><span class="'+(pendingWrites?'sv':'ok')+'">● '+(pendingWrites?'Сақланмоқда…':'Сақланди')+'</span><button type="button" class="morebtn" data-act="tmore" data-sid="'+sel+'" aria-expanded="'+(ui.more===sel)+'"><i class="arr" aria-hidden="true">'+(ui.more===sel?'▾':'▸')+'</i>Қўшимча: китоб, имтиҳон, код, расм</button></div>'+
       (ui.more===sel?'<div class="dextra">'+groupDayFields(st.gid)+P.extra(0)+'</div>':'')+'</div>'; }
-  return h+'<div class="dgrid">'+Lh+D+'</div>';
+  return h+layout('t',{kpis:K,list:Lh,detail:D},'t');
 }
 function viewReport(){
   const tg=groupIds(); if(!tg.length) return emptyState();
@@ -1190,8 +1221,9 @@ function viewReport(){
   let h='<div class="rpt"><div class="dtop"><div class="dhi"><h1>Ҳисобот</h1><small>Мадраса бўйича умумий ҳолат · '+(rp==='w'?'охирги 7 кун':rp==='m'?'охирги 30 кун':'бутун вақт')+(rg==='all'?'':' · '+esc(S.groups[rg].name))+'</small></div>'+
     '<div class="dseg rnoprint" role="group" aria-label="Давр">'+[['w','Шу ҳафта'],['m','Шу ой'],['a','Бутун вақт']].map(o=>'<button type="button" data-act="rp" data-v="'+o[0]+'" class="'+(rp===o[0]?'on':'')+'" aria-pressed="'+(rp===o[0])+'">'+o[1]+'</button>').join('')+'</div>'+
     '<div class="dseg rnoprint" role="group" aria-label="Гуруҳ">'+['all'].concat(tg).map(x=>'<button type="button" data-act="rg" data-v="'+x+'" class="'+(rg===x?'on':'')+'" aria-pressed="'+(rg===x)+'">'+(x==='all'?'Ҳаммаси':esc(gShort(S.groups[x])))+'</button>').join('')+'</div>'+
-    '<button type="button" class="dgold rnoprint" data-act="rprint">⬇ Ҳисоботни чоп этиш</button></div>';
-  h+='<div class="dkpis">'+
+    '<button type="button" class="dgold rnoprint" data-act="rprint">⬇ Ҳисоботни чоп этиш</button>'+layBtn()+'</div>'+layBanner();
+  const W={};
+  W.kpis='<div class="dkpis">'+
     '<div class="dkpi">'+kr(aP,'var(--good)')+'<div><div class="kl">Ўртача давомат</div><div class="kv">'+aP+'<small>%</small></div>'+dlt(aP,pa)+'</div></div>'+
     '<div class="dkpi">'+kr(lP,'var(--blue)')+'<div><div class="kl">Дарс топшириш</div><div class="kv">'+lP+'<small>%</small></div>'+dlt(lP,pl)+'</div></div>'+
     '<div class="dkpi"><div><div class="kl">Топширилган дарслар</div><div class="kv">'+les+'<small> дарс</small></div><div class="kl">Қуръон: '+lines+' қатор</div></div></div>'+
@@ -1201,13 +1233,13 @@ function viewReport(){
     ch+='<div class="rbc" title="'+esc(nice(ds))+': '+p+' келди, '+l+' кечикди, '+a+' келмади"><div class="rst">'+(p+l+a?'<i style="height:'+hh(p)+'%;background:var(--good)"></i><i style="height:'+hh(l)+'%;background:var(--warn)"></i><i style="height:'+hh(a)+'%;background:var(--crit)"></i>':'')+'</div><small>'+((nd<=14||i%3===0)?dd.getDate():'')+'</small></div>';}
   ch+='</div>';
   const warn=attnList(ids);
-  h+='<div class="rtwo"><div class="dcard"><div class="dch"><h2>Кунлик давомат</h2><div class="rleg"><span><i style="background:var(--good)"></i>келди</span><span><i style="background:var(--warn)"></i>кечикди</span><span><i style="background:var(--crit)"></i>келмади</span></div></div>'+ch+'</div>'+
-    '<div class="dcard" id="attn"><div class="dch"><h2>Эътибор талаб</h2><span class="rcnt">'+warn.length+' талаба</span></div>'+(warn.length?warn.map(w=>{const st=S.students[w.s]; return '<div class="ratt">'+avatar(st.name,'sm',st)+'<div><b>'+esc(st.name)+'</b><small>'+[w.ab>=2?'охирги 5 дарс кунида '+w.ab+' марта келмади':'',w.ns>=5?w.ns+' дарсни топширмади':''].filter(Boolean).join(' · ')+'</small></div></div>';}).join(''):'<p class="empty">Ҳозирча орқада қолаётган талаба йўқ.</p>')+'</div></div>';
+  W.chart='<div class="dcard"><div class="dch"><h2>Кунлик давомат</h2><div class="rleg"><span><i style="background:var(--good)"></i>келди</span><span><i style="background:var(--warn)"></i>кечикди</span><span><i style="background:var(--crit)"></i>келмади</span></div></div>'+ch+'</div>';
+  W.attn='<div class="dcard" id="attn"><div class="dch"><h2>Эътибор талаб</h2><span class="rcnt">'+warn.length+' талаба</span></div>'+(warn.length?warn.map(w=>{const st=S.students[w.s]; return '<div class="ratt">'+avatar(st.name,'sm',st)+'<div><b>'+esc(st.name)+'</b><small>'+[w.ab>=2?'охирги 5 дарс кунида '+w.ab+' марта келмади':'',w.ns>=5?w.ns+' дарсни топширмади':''].filter(Boolean).join(' · ')+'</small></div></div>';}).join(''):'<p class="empty">Ҳозирча орқада қолаётган талаба йўқ.</p>')+'</div>';
   const rt=gl.indexOf(ui.rt)>=0?ui.rt:gl[0];
   const col=v=>v>=85?'var(--good)':v>=60?'var(--warn)':'var(--crit)';
   const pc=(a,b)=>{if(!b) return '<span class="mut">—</span>'; const v=pct(a,b); return '<div class="rpc"><span style="color:'+col(v)+'">'+v+'%</span><div class="rbt"><i style="width:'+v+'%;background:'+col(v)+'"></i></div></div>';};
   const trs=studentsOf(rt).map(s=>{const e=ent(s,from); return {s:s,q:stats(e),b:score(e)};}).sort((a,b)=>b.b-a.b);
-  h+='<div class="dcard"><div class="dch"><h2>Талабалар жадвали</h2>'+(gl.length>1?'<div class="dtabs rnoprint">'+gl.map(g=>'<button type="button" data-act="rt" data-v="'+g+'" class="'+(rt===g?'on':'')+'" aria-pressed="'+(rt===g)+'">'+esc(S.groups[g].name)+'</button>').join('')+'</div>':'')+'</div>'+
+  W.table='<div class="dcard"><div class="dch"><h2>Талабалар жадвали</h2>'+(gl.length>1?'<div class="dtabs rnoprint">'+gl.map(g=>'<button type="button" data-act="rt" data-v="'+g+'" class="'+(rt===g?'on':'')+'" aria-pressed="'+(rt===g)+'">'+esc(S.groups[g].name)+'</button>').join('')+'</div>':'')+'</div>'+
     '<div class="rtw"><table class="rtab"><thead><tr><th>№</th><th>Талаба</th><th>Давомат</th><th>Дарс топшириш</th><th>Балл</th><th>Китоб ва дарс</th></tr></thead><tbody>'+
     (trs.length?trs.map((x,i)=>{const st=S.students[x.s]; return '<tr><td class="mut">'+(i+1)+'</td><td><div class="rnm">'+avatar(st.name,'sm',st)+'<b>'+esc(st.name)+'</b></div></td><td>'+pc(x.q.att,x.q.attAll)+'</td><td>'+pc(x.q.done,x.q.lesAll)+'</td><td><b>'+x.b+'</b></td><td class="mut">'+esc(progText(st))+'</td></tr>';}).join(''):'<tr><td colspan="6" class="mut">Бу гуруҳда талаба йўқ.</td></tr>')+'</tbody></table></div></div>';
   const bs=books(); let bk='';
@@ -1221,16 +1253,16 @@ function viewReport(){
     if(k==='pass'||k==='repass') return ['bl','ўтди'+(last?' · '+parse(last[0]).getDate()+'-'+MON[parse(last[0]).getMonth()]:'')];
     return ['cr',(nf>1?nf+' марта ':'')+'ўта олмади']; };
   const ord={prep:0,fail:1,refail:1,pass:2,repass:2};
-  h+='<div class="rtwo"><div class="dcard"><div class="dch"><h2>Китоблар бўйича</h2><span class="rcnt mut">ўртача қаерга етишди</span></div>'+(bk||'<p class="empty">Китоб белгиланмаган.</p>')+'</div>'+
-    '<div class="dcard"><div class="dch"><h2>Имтиҳонлар</h2></div><div class="rex3"><div class="wa"><b>'+c3.prep+'</b><small>тайёрланяпти</small></div><div class="bl"><b>'+c3.pass+'</b><small>ўтди</small></div><div class="cr"><b>'+c3.fail+'</b><small>ўта олмади</small></div></div>'+
-    (exS.length?exS.sort((a,b)=>ord[S.students[a].exam.s]-ord[S.students[b].exam.s]).slice(0,8).map(s=>{const st=S.students[s], x=exInfo(s); return '<div class="rexl">'+avatar(st.name,'sm',st)+'<span>'+esc(st.name)+'</span><em class="'+x[0]+'">'+x[1]+'</em></div>';}).join(''):'<p class="empty">Ҳозир ҳеч ким имтиҳонга тайёрланмаяпти.</p>')+'</div></div>';
+  W.books='<div class="dcard"><div class="dch"><h2>Китоблар бўйича</h2><span class="rcnt mut">ўртача қаерга етишди</span></div>'+(bk||'<p class="empty">Китоб белгиланмаган.</p>')+'</div>';
+  W.exams='<div class="dcard"><div class="dch"><h2>Имтиҳонлар</h2></div><div class="rex3"><div class="wa"><b>'+c3.prep+'</b><small>тайёрланяпти</small></div><div class="bl"><b>'+c3.pass+'</b><small>ўтди</small></div><div class="cr"><b>'+c3.fail+'</b><small>ўта олмади</small></div></div>'+
+    (exS.length?exS.sort((a,b)=>ord[S.students[a].exam.s]-ord[S.students[b].exam.s]).slice(0,8).map(s=>{const st=S.students[s], x=exInfo(s); return '<div class="rexl">'+avatar(st.name,'sm',st)+'<span>'+esc(st.name)+'</span><em class="'+x[0]+'">'+x[1]+'</em></div>';}).join(''):'<p class="empty">Ҳозир ҳеч ким имтиҳонга тайёрланмаяпти.</p>')+'</div>';
   const T=[['codes','key','Ота-она кодлари','кўриш ва ўзгартириш'],['group','users','Гуруҳ қўшиш','янги гуруҳ очиш'],['books','book','Китоблар',books().length+' та китоб, дарс сони'],['file','check','Файлга сақлаш','барча маълумот захираси']];
-  h+='<div class="rtiles rnoprint">'+T.map(t=>'<button type="button" class="rtile'+(ui.rtile===t[0]?' on':'')+'" data-act="rtile" data-v="'+t[0]+'" aria-expanded="'+(ui.rtile===t[0])+'"><i>'+ic(t[1])+'</i><span><b>'+t[2]+'</b><small>'+t[3]+'</small></span></button>').join('')+'</div>';
-  if(ui.rtile==='codes') h+='<div class="rnoprint">'+gl.map(g=>'<section class="panel"><h2>'+ic('key')+esc(S.groups[g].name)+'<small>ота-она кодини жадвалда ўзгартиринг</small></h2>'+groupTable(g,true)+'</section>').join('')+'</div>';
-  else if(ui.rtile==='group') h+='<div class="rnoprint">'+admGroup()+'</div>';
-  else if(ui.rtile==='books') h+='<div class="rnoprint">'+admBooks()+'</div>';
-  else if(ui.rtile==='file') h+='<div class="rnoprint">'+(admExport()||'<section class="panel"><p class="empty">Намуна режимида файлга сақлаб бўлмайди.</p></section>')+'</div>';
-  return h+'</div>';
+  W.tiles='<div class="rtiles rnoprint">'+T.map(t=>'<button type="button" class="rtile'+(ui.rtile===t[0]?' on':'')+'" data-act="rtile" data-v="'+t[0]+'" aria-expanded="'+(ui.rtile===t[0])+'"><i>'+ic(t[1])+'</i><span><b>'+t[2]+'</b><small>'+t[3]+'</small></span></button>').join('')+'</div>';
+  if(ui.rtile==='codes') W.tiles+='<div class="rnoprint">'+gl.map(g=>'<section class="panel"><h2>'+ic('key')+esc(S.groups[g].name)+'<small>ота-она кодини жадвалда ўзгартиринг</small></h2>'+groupTable(g,true)+'</section>').join('')+'</div>';
+  else if(ui.rtile==='group') W.tiles+='<div class="rnoprint">'+admGroup()+'</div>';
+  else if(ui.rtile==='books') W.tiles+='<div class="rnoprint">'+admBooks()+'</div>';
+  else if(ui.rtile==='file') W.tiles+='<div class="rnoprint">'+(admExport()||'<section class="panel"><p class="empty">Намуна режимида файлга сақлаб бўлмайди.</p></section>')+'</div>';
+  return h+layout('r',W,'r')+'</div>';
 }
 function reportPrint(){ const el=document.querySelector('.rpt'); if(!el) return; let w=null; try{w=window.open('','_blank');}catch(e){}
   if(!w){toast('Янги ойна очилмади. Браузерда қалқиб чиқувчи ойналарга рухсат беринг.');return;}
@@ -1542,6 +1574,13 @@ document.addEventListener('click',e=>{
   else if(act==='goattn'){const x=document.getElementById('attn'); if(x) x.scrollIntoView({behavior:'smooth',block:'start'});}
   else if(act==='totop'){window.scrollTo({top:0,behavior:'smooth'});}
   else if(act==='tmore'){ui.more=ui.more===sid?null:sid;refocus='[data-act="tmore"][data-sid="'+sid+'"]';render(true);}
+  else if(act==='ledit'){ui.ledit=!ui.ledit;refocus='[data-act="ledit"]';render(true);}
+  else if(act==='lreset'){delete LAY.t;delete LAY.td;delete LAY.r;laySave();toast('Блоклар асл ҳолига қайтди.');render(true);}
+  else if(act==='lmv'||act==='lsz'||act==='lhide'){const pg=b.dataset.p, w=b.dataset.w, Ls=layOf(pg), i=Ls.findIndex(x=>x.id===w); if(i<0) return;
+    if(act==='lmv'){const j=i+Number(b.dataset.v); if(j<0||j>=Ls.length) return; const t=Ls[i]; Ls[i]=Ls[j]; Ls[j]=t;}
+    else if(act==='lsz'){const k=SIZES.indexOf(Ls[i].s); Ls[i].s=SIZES[(k+1)%SIZES.length];}
+    else Ls[i].h=!Ls[i].h;
+    LAY[pg]=Ls; laySave(); refocus='[data-act="'+act+'"][data-p="'+pg+'"][data-w="'+w+'"]'+(act==='lmv'?'[data-v="'+b.dataset.v+'"]':''); render(true);}
   else if(act==='tpick'){ui.topen=sid;ui.more=null;ui.taddst=false;ui.del=null;refocus='[data-act="tpick"][data-sid="'+sid+'"]';render(true);}
   else if(act==='tgf'){ui.tgf=b.dataset.v;render(true);}
   else if(act==='tlf'){ui.tlf=b.dataset.v;render(true);}
