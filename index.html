@@ -568,6 +568,7 @@ body.tab #totop{right:18px}
 .dtabs button{border:0;font:inherit;font-size:12px;font-weight:600;padding:6px 10px;border-radius:9px;background:var(--bg);color:var(--muted);cursor:pointer}
 .dtabs button.on{background:var(--blue-soft);color:var(--blue)}
 .dgrp{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:10px 8px 4px}
+.dscroll{max-height:calc(100dvh - 250px);min-height:240px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;scrollbar-width:thin}
 .drow{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:14px}
 .drow.sel{background:var(--blue-soft);box-shadow:inset 3px 0 0 var(--blue)}
 .dpick{flex:1;min-width:0;display:flex;align-items:center;gap:10px;border:0;background:none;padding:3px 0;font:inherit;color:inherit;text-align:left;cursor:pointer}
@@ -1186,14 +1187,14 @@ function viewTeacherTab(){
     '<div class="dkpi"><div class="kw"><div class="kl">Қуръон топширди</div><div class="kv">'+qu+'<small> та талаба</small></div><div class="kt gold"><i style="width:'+pct(qu,n)+'%"></i></div></div></div>'+
     '<a class="dkpi alert" href="#hisobot"><div><div class="kl">Эътибор талаб</div><div class="kv">'+warn.length+'<small> талаба</small></div></div><div class="kav">'+warn.slice(0,3).map(w=>avatar(S.students[w.s].name,'sm',S.students[w.s])).join('')+'</div></a></div>';
   const un=ids.filter(s=>!R(s).a).length, lf=ui.tlf==='un'?'un':'all';
-  let Lh='<div class="dcard dlist"><div class="dch"><h2>Талабалар</h2><div class="dtabs"><button type="button" data-act="tlf" data-v="all" class="'+(lf==='all'?'on':'')+'" aria-pressed="'+(lf==='all')+'">Ҳаммаси</button><button type="button" data-act="tlf" data-v="un" class="'+(lf==='un'?'on':'')+'" aria-pressed="'+(lf==='un')+'">Белгиланмаган '+un+'</button></div></div>';
+  let Lh='<div class="dcard dlist"><div class="dch"><h2>Талабалар</h2><div class="dtabs"><button type="button" data-act="tlf" data-v="all" class="'+(lf==='all'?'on':'')+'" aria-pressed="'+(lf==='all')+'">Ҳаммаси</button><button type="button" data-act="tlf" data-v="un" class="'+(lf==='un'?'on':'')+'" aria-pressed="'+(lf==='un')+'">Белгиланмаган '+un+'</button></div></div><div class="dscroll">';
   gl.forEach(g=>{ let gi=studentsOf(g); if(lf==='un') gi=gi.filter(s=>!R(s).a);
     if(gl.length>1) Lh+='<div class="dgrp">'+esc(S.groups[g].name)+'</div>';
     if(!gi.length) Lh+='<p class="empty" style="padding:4px 8px 8px">'+(lf==='un'?'Ҳаммаси белгиланган.':'Талаба йўқ.')+'</p>';
     gi.forEach(s=>{const st=S.students[s], r=R(s), on=s===sel;
       const dot=k=>'<i class="dd '+(r[k]==='y'?'g':r[k]==='n'?'c':'n')+'" title="'+(k==='ar'?'Араб тили':'Қуръон')+'"></i>';
       Lh+='<div class="drow'+(on?' sel':'')+'"><button type="button" class="dpick" data-act="tpick" data-sid="'+s+'" aria-pressed="'+on+'">'+avatar(st.name,'sm',st)+'<span class="sn"><b>'+esc(st.name)+'</b><small>'+esc(progShort(st))+(st.exam&&st.exam.s==='prep'?' · имтиҳон':'')+'</small></span></button><span class="sd">'+dot('ar')+dot('qu')+'</span><span class="qq">'+[['p','✓','келди'],['l','◷','кечикди'],['a','✕','келмади']].map(x=>'<button type="button" class="qb '+x[0]+(r.a===x[0]?' on':'')+'" data-act="mark" data-sid="'+s+'" data-date="'+ui.date+'" data-f="a" data-v="'+x[0]+'" aria-label="'+esc(st.name)+' '+x[2]+'" aria-pressed="'+(r.a===x[0])+'">'+x[1]+'</button>').join('')+'</span></div>';});});
-  Lh+='<button type="button" class="dadd" data-act="taddst" aria-expanded="'+!!ui.taddst+'">'+ic('plus')+'Янги талаба қўшиш</button></div>';
+  Lh+='</div><button type="button" class="dadd" data-act="taddst" aria-expanded="'+!!ui.taddst+'">'+ic('plus')+'Янги талаба қўшиш</button></div>';
   let D;
   if(ui.taddst) D='<div class="dcard ddet">'+addStudentForm(tg)+'</div>';
   else if(!sel) D='<div class="dcard dempty">'+ic('users')+'<b>Талабани танланг</b><span>Чапдаги рўйхатдан исмни босинг.</span></div>';
@@ -1507,10 +1508,12 @@ function render(force){
   if(auth&&!tabOn) h+='<div class="outbar">'+OUTBTN+'</div>';
   if(auth&&ui.out) h+='<div class="modal" role="dialog" aria-modal="true" aria-labelledby="out-h"><div class="box"><h2 id="out-h">Чиқишни хоҳлайсизми?</h2><p>'+(auth.role==='ota-ona'?'Чиқсангиз, қайта кириш учун фарзандингиз кодини яна ёзасиз ва хабарномалар келмай қолади.':'Чиқсангиз, қайта кириш учун кодни яна ёзасиз.')+'</p><div class="row"><button class="btn" type="button" data-act="out-no">Йўқ, қоламан</button><button class="btn out" style="height:44px" type="button" data-act="out-yes">Ҳа, чиқаман</button></div></div></div>';
   const cs={}; $('#app').querySelectorAll('.wkgrid.row').forEach(x=>{cs[x.dataset.ck]=x.scrollLeft;});
+  const dsc=$('#app').querySelector('.dscroll'), dst=dsc?dsc.scrollTop:0;
   const keep={}; let foc=null;
   if(!skipKeep) $('#app').querySelectorAll('form[data-form] input[id],form[data-form] select[id],form[data-form] textarea[id]').forEach(x=>{if(x.type!=='file'&&x.type!=='hidden') keep[x.id]=x.value;});
   const ae=document.activeElement; if(ae&&ae.id&&keep[ae.id]!==undefined) foc=ae.id;
   $('#app').innerHTML=h;
+  if(dst){const x=$('#app').querySelector('.dscroll'); if(x) x.scrollTop=dst;}
   $('#app').querySelectorAll('.wkgrid.row').forEach(x=>{x.scrollLeft=cs[x.dataset.ck]!==undefined?cs[x.dataset.ck]:x.scrollWidth;});
   requestAnimationFrame(()=>$('#app').querySelectorAll('.wkgrid.row').forEach(x=>{if(cs[x.dataset.ck]===undefined) x.scrollLeft=x.scrollWidth;}));
   for(const id in keep){const x=document.getElementById(id); if(x&&x.value!==keep[id]) x.value=keep[id];}
