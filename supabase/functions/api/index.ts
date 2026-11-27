@@ -1,4 +1,6 @@
 // Server for the Kundalik app: checks sign-in codes, stores marks, sends push notifications to parents.
+// Several madrasas share one server: each madrasa's data lives in its own collections ("<id>:students" ...);
+// the first madrasa (m0) keeps the original collection names.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
 
@@ -24,6 +26,11 @@ async function put(coll: string, id: string, data: unknown) {
 async function del(coll: string, id: string) {
   const { error } = await sb.from("kv").delete().eq("coll", coll).eq("id", id);
   if (error) throw error;
+}
+async function count(coll: string) {
+  const { count: n, error } = await sb.from("kv").select("id", { count: "exact", head: true }).eq("coll", coll);
+  if (error) throw error;
+  return n || 0;
 }
 async function all(coll: string): Promise<Record<string, any>> {
   const out: Record<string, any> = {};
@@ -74,6 +81,47 @@ async function rdToken(t: unknown): Promise<any> {
   } catch { return null; }
 }
 
+// ---------- madrasas ----------
+const C = (m: string, coll: string) => (!m || m === "m0" ? coll : m + ":" + coll);
+const MC: Record<string, { v: any; t: number }> = {};
+async function mad(m: string) {
+  const c = MC[m];
+  if (c && Date.now() - c.t < 15e3) return c.v;
+  const v = await get("madrasa", m);
+  MC[m] = { v, t: Date.now() };
+  return v;
+}
+async function putMad(m: string, v: any) { await put("madrasa", m, v); MC[m] = { v, t: Date.now() }; }
+const digits = (n: number) => String(Math.floor(10 ** (n - 1) + Math.random() * 9 * 10 ** (n - 1)));
+async function freeMcode() {
+  const used = new Set(Object.values(await all("madrasa")).map((x: any) => x.code));
+  for (let i = 0; i < 500; i++) { const c = digits(4); if (!used.has(c)) return c; }
+  return digits(6);
+}
+// one-time move to the several-madrasa layout: the existing data becomes madrasa m0
+let MIG = false;
+async function migrate() {
+  if (MIG) return;
+  if (!(await get("sys", "mig1"))) {
+    const k = await keys();
+    if (!(await get("madrasa", "m0"))) await putMad("m0", { name: "Асосий мадраса", code: await freeMcode(), teacher: k.teacher || "1111", on: true, tv: 0, created: Date.now() });
+    const students = await all("students");
+    for (const sid in students) if (students[sid].code) await put("pcode", students[sid].code, { m: "m0", sid });
+    if (!k.owner) { k.owner = digits(8); await put("sys", "keys", k); KEYS = k; }
+    await put("sys", "mig1", { at: Date.now() });
+  }
+  MIG = true;
+}
+// who is calling and for which madrasa; null when the token is missing, expired, or the madrasa is switched off
+async function ctx(p: any): Promise<any> {
+  if (!p) return null;
+  if (p.r === "ega") return { p, m: null, md: null };
+  const m = p.m || "m0", md = await mad(m);
+  if (!md || md.on === false) return null;
+  if ((p.r === "ustoz" || p.r === "rahbar") && (p.tv || 0) !== (md.tv || 0)) return null;
+  return { p, m, md };
+}
+
 // wrong-code limit: 4-digit codes are easy to guess, so each address gets 8 wrong tries per 15 minutes
 async function tooMany(ip: string) {
   const f = (await get("fails", ip)) || { n: 0, ts: 0 };
@@ -92,19 +140,22 @@ const isId = (s: unknown) => typeof s === "string" && /^[A-Za-z0-9_-]{1,40}$/.te
 const rid = (p: string) => p + crypto.randomUUID().replace(/-/g, "").slice(0, 10);
 const str = (v: unknown, max = 200) => String(v ?? "").trim().slice(0, max);
 function pubStudent(st: any) { const { code: _c, parent: _p, ...r } = st; return r; }
-async function freeCode(students: Record<string, any>, want?: string, except?: string) {
-  const used = new Set(Object.entries(students).filter(([id]) => id !== except).map(([, s]) => s.code));
-  if (want) return /^\d{4}$/.test(want) && !used.has(want) ? want : null;
-  for (let i = 0; i < 500; i++) { const c = String(1000 + Math.floor(Math.random() * 9000)); if (!used.has(c)) return c; }
+async function freeCode(m: string, want?: string, except?: string) {
+  if (want) {
+    if (!/^\d{4,6}$/.test(want)) return null;
+    const x = await get("pcode", want);
+    return !x || (x.m === m && x.sid === except) ? want : null;
+  }
+  for (let i = 0; i < 50; i++) { const c = digits(6); if (!(await get("pcode", c))) return c; }
   return null;
 }
 
-async function state(p: any) {
-  const [groups, students, marks, daymeta, settings] = await Promise.all([all("groups"), all("students"), all("marks"), all("days"), all("settings")]);
+async function state(p: any, m: string, md: any) {
+  const [groups, students, marks, daymeta, settings] = await Promise.all([all(C(m, "groups")), all(C(m, "students")), all(C(m, "marks")), all(C(m, "days")), all(C(m, "settings"))]);
   if (!Object.keys(groups).length) {
     groups.gb = { name: "Ётоқда қоладиганлар", kind: "b", teachers: [] };
     groups.gd = { name: "Келиб кетадиганлар", kind: "d", teachers: [] };
-    await put("groups", "gb", groups.gb); await put("groups", "gd", groups.gd);
+    await put(C(m, "groups"), "gb", groups.gb); await put(C(m, "groups"), "gd", groups.gd);
   }
   const priv = p && (p.r === "rahbar" || p.r === "ustoz");
   const st: Record<string, any> = {};
@@ -118,23 +169,23 @@ async function state(p: any) {
     const { sid: _s, date: _d, nk: _n, ...row } = m;
     days[did].rows[m.sid] = row;
   }
-  return { groups, students: st, days, settings };
+  return { groups, students: st, days, settings, madrasa: priv ? { name: md.name, code: md.code, teacher: md.teacher } : { name: md.name } };
 }
 
-async function notify(sid: string, row: any) {
-  const st = await get("students", sid); if (!st) return;
+async function notify(m: string, sid: string, row: any) {
+  const st = await get(C(m, "students"), sid); if (!st) return;
   const k = await keys();
   const body = row.a === "a"
     ? `${st.name} бугун дарсга келмади.`
     : `${st.name} дарсга ${row.a === "l" ? "кечикиб келди" : "келди"}. Араб тили: ${row.ar === "y" ? "топширди" : "топширмади"}. Қуръон: ${row.qu === "y" ? "топширди" : "топширмади"}.`;
-  const subs = await all("push");
+  const subs = await all(C(m, "push"));
   await Promise.all(Object.entries(subs).filter(([, s]) => (s.sids || []).includes(sid)).map(async ([id, s]) => {
     try {
       await webpush.sendNotification(s.sub, JSON.stringify({ title: "Кундалик", body, url: SITE }), {
         vapidDetails: { subject: SITE, publicKey: k.pub, privateKey: k.priv }, TTL: 6 * 3600,
       });
     } catch (e: any) {
-      if (e && (e.statusCode === 404 || e.statusCode === 410)) await del("push", id);
+      if (e && (e.statusCode === 404 || e.statusCode === 410)) await del(C(m, "push"), id);
     }
   }));
 }
@@ -146,49 +197,95 @@ async function handle(b: any, ip: string) {
   if (a === "push.key") return { key: (await keys()).pub };
   if (a === "login" || a === "addchild") {
     if (await tooMany(ip)) return { error: "wait" };
-    const k = await keys(); const code = str(b.code, 10);
-    if (a === "login" && b.role === "rahbar") { if (code === k.admin) return { token: await mkToken({ r: "rahbar" }), role: "rahbar" }; }
-    else if (a === "login" && b.role === "ustoz") { if (code === k.teacher) return { token: await mkToken({ r: "ustoz" }), role: "ustoz" }; }
-    else {
-      const students = await all("students");
-      const sid = /^\d{4}$/.test(code) ? Object.keys(students).find((x) => students[x].code === code) : undefined;
-      if (sid) {
+    const k = await keys(); const code = str(b.code, 12);
+    const findMad = async (mc: string) => { const ms = await all("madrasa"); return Object.keys(ms).find((x) => ms[x].code === mc && ms[x].on !== false); };
+    if (a === "login" && b.role === "ega") { if (k.owner && code === k.owner) return { token: await mkToken({ r: "ega" }), role: "ega" }; }
+    else if (a === "login" && b.role === "ustoz") {
+      const m = await findMad(str(b.mcode, 10));
+      if (m) { const md = await mad(m); if (md.teacher === code) return { token: await mkToken({ r: "ustoz", m, tv: md.tv || 0 }), role: "ustoz" }; }
+    }
+    else if (a === "login" && b.role === "hujra") {
+      const m = /^\d{4,6}$/.test(code) ? await findMad(code) : undefined;
+      if (m) return { token: await mkToken({ r: "hujra", m }), role: "hujra" };
+    }
+    else if (/^\d{4,6}$/.test(code)) {
+      const x = await get("pcode", code), md = x ? await mad(x.m) : null;
+      if (x && md && md.on !== false && (await get(C(x.m, "students"), x.sid))) {
         const prev = a === "addchild" ? await rdToken(b.t) : null;
-        const sids = Array.from(new Set([...(prev && prev.r === "ota-ona" ? prev.s : []), sid]));
-        return { token: await mkToken({ r: "ota-ona", s: sids }), role: "ota-ona", sids };
+        if (prev && prev.r === "ota-ona" && (prev.m || "m0") !== x.m) return { error: "otherMadrasa" };
+        const sids = Array.from(new Set([...(prev && prev.r === "ota-ona" ? prev.s : []), x.sid]));
+        return { token: await mkToken({ r: "ota-ona", m: x.m, s: sids }), role: "ota-ona", sids };
       }
     }
     await failed(ip);
     return { error: "code" };
   }
-  const p = await rdToken(b.t);
-  if (a === "state") return { ...(await state(p)), role: p ? p.r : "hujra", sids: p && p.s ? p.s : [] };
-  if (!p) return { error: "auth" };
+  const c = await ctx(await rdToken(b.t));
+  if (a === "state") {
+    if (!c || !c.m) return { error: "auth" };
+    return { ...(await state(c.p, c.m, c.md)), role: c.p.r, sids: c.p.s || [] };
+  }
+  if (!c) return { error: "auth" };
+  const p = c.p, m: string = c.m;
+
+  // ---------- owner: the list of madrasas ----------
+  if (p.r === "ega") {
+    if (a === "madrasa.list") {
+      const ms = await all("madrasa");
+      const list = await Promise.all(Object.entries(ms).map(async ([id, x]: [string, any]) => ({ id, name: x.name, code: x.code, teacher: x.teacher, on: x.on !== false, created: x.created || 0, n: await count(C(id, "students")) })));
+      return { list: list.sort((x, y) => x.created - y.created) };
+    }
+    if (a === "madrasa.add") {
+      const name = str(b.name, 80); if (!name) return { error: "bad" };
+      const id = rid("m");
+      await putMad(id, { name, code: await freeMcode(), teacher: digits(4), on: true, tv: 0, created: Date.now() });
+      return { ok: true, id };
+    }
+    if (a === "madrasa.put" || a === "madrasa.enter") {
+      if (!isId(b.mid)) return { error: "bad" };
+      const md = await get("madrasa", b.mid); if (!md) return { error: "bad" };
+      if (a === "madrasa.enter") return { token: await mkToken({ r: "ustoz", m: b.mid, tv: md.tv || 0 }), role: "ustoz" };
+      if ("name" in b && str(b.name, 80)) md.name = str(b.name, 80);
+      if ("on" in b) md.on = !!b.on;
+      if (b.regen === "teacher") { md.teacher = digits(4); md.tv = (md.tv || 0) + 1; }
+      if (b.regen === "code") md.code = await freeMcode();
+      await putMad(b.mid, md);
+      return { ok: true };
+    }
+    return { error: "auth" };
+  }
   const staff = p.r === "rahbar" || p.r === "ustoz";
 
   if (a === "seen") {
     if (p.r !== "ota-ona" || !(p.s || []).includes(b.sid) || !isDate(b.date)) return { error: "auth" };
-    const id = b.sid + "_" + b.date; const m = await get("marks", id);
-    if (m) await put("marks", id, { ...m, seen: true });
+    const id = b.sid + "_" + b.date; const mk = await get(C(m, "marks"), id);
+    if (mk) await put(C(m, "marks"), id, { ...mk, seen: true });
     return { ok: true };
   }
   if (a === "push.sub") {
     if (p.r !== "ota-ona" || !b.sub || typeof b.sub.endpoint !== "string") return { error: "auth" };
     const id = (await hmac("push", b.sub.endpoint)).slice(0, 40);
-    await put("push", id, { sids: p.s, sub: b.sub });
+    await put(C(m, "push"), id, { sids: p.s, sub: b.sub });
     return { ok: true };
   }
   if (a === "push.unsub") {
-    if (b.endpoint) await del("push", (await hmac("push", String(b.endpoint))).slice(0, 40));
+    if (b.endpoint) await del(C(m, "push"), (await hmac("push", String(b.endpoint))).slice(0, 40));
     return { ok: true };
   }
   if (!staff) return { error: "auth" };
 
+  if (a === "teacher.code") {
+    const code = str(b.code, 10); if (!/^\d{4,8}$/.test(code)) return { error: "bad" };
+    const md = { ...c.md, teacher: code, tv: (c.md.tv || 0) + 1 };
+    await putMad(m, md);
+    return { ok: true, token: await mkToken({ r: "ustoz", m, tv: md.tv }) };
+  }
+
   if (a === "mark") {
     if (!isId(b.sid) || !isDate(b.date) || !b.patch) return { error: "bad" };
-    const st = await get("students", b.sid); if (!st) return { error: "bad" };
+    const st = await get(C(m, "students"), b.sid); if (!st) return { error: "bad" };
     const id = b.sid + "_" + b.date;
-    const r: any = { ...((await get("marks", id)) || {}), sid: b.sid, date: b.date };
+    const r: any = { ...((await get(C(m, "marks"), id)) || {}), sid: b.sid, date: b.date };
     const ok: Record<string, string[]> = { a: ["p", "l", "a"], ar: ["y", "n"], qu: ["y", "n"] };
     for (const f of Object.keys(ok)) if (f in b.patch) { if (ok[f].includes(b.patch[f])) r[f] = b.patch[f]; else delete r[f]; }
     // how many lessons were handed in / not handed in that day, per subject
@@ -206,20 +303,20 @@ async function handle(b: any, ip: string) {
     const sig = r.a === "a" ? "a" : (r.a && r.ar && r.qu ? r.a + r.ar + r.qu : "");
     const send = !!sig && sig !== r.nk && b.date === todayBishkek();
     if (sig) r.nk = sig;
-    await put("marks", id, r);
-    if (send) await notify(b.sid, r);
+    await put(C(m, "marks"), id, r);
+    if (send) await notify(m, b.sid, r);
     return { ok: true, notified: send };
   }
   if (a === "day.put") {
     if (!isId(b.gid) || !isDate(b.date) || !["topic", "hw"].includes(b.f)) return { error: "bad" };
     const id = b.gid + "_" + b.date;
-    const d = (await get("days", id)) || { gid: b.gid, date: b.date, topic: "", hw: "" };
+    const d = (await get(C(m, "days"), id)) || { gid: b.gid, date: b.date, topic: "", hw: "" };
     d[b.f] = str(b.v, 300);
-    await put("days", id, d);
+    await put(C(m, "days"), id, d);
     return { ok: true };
   }
   if (a === "student.put") {
-    const students = await all("students"); const d = b.data || {};
+    const students = await all(C(m, "students")); const d = b.data || {};
     const isNew = !b.sid; const sid = isNew ? rid("s") : b.sid;
     if (!isId(sid) || (!isNew && !students[sid])) return { error: "bad" };
     const st: any = { ...(students[sid] || {}) };
@@ -232,22 +329,31 @@ async function handle(b: any, ip: string) {
     if ("qdir" in d) { if (d.qdir === "rev") st.qdir = "rev"; else delete st.qdir; }
     if ("exam" in d) { if (d.exam && ["prep", "pass", "fail", "repass", "refail"].includes(d.exam.s)) st.exam = { s: d.exam.s, b: Math.floor(Number(d.exam.b)) || 1 }; else delete st.exam; }
     if ("photo" in d) { if (typeof d.photo === "string" && d.photo.startsWith("data:image/") && d.photo.length < 60000) st.photo = d.photo; else delete st.photo; }
-    if ("code" in d && str(d.code)) { const c = await freeCode(students, str(d.code, 4), sid); if (!c) return { error: "codeTaken" }; st.code = c; }
-    if (!st.code) { const c = await freeCode(students, undefined, sid); if (!c) return { error: "bad" }; st.code = c; }
+    const oldCode = st.code;
+    if ("code" in d && str(d.code)) { const pc = await freeCode(m, str(d.code, 6), sid); if (!pc) return { error: "codeTaken" }; st.code = pc; }
+    if (!st.code) { const pc = await freeCode(m, undefined, sid); if (!pc) return { error: "bad" }; st.code = pc; }
     if (!st.name || !st.gid) return { error: "bad" };
-    await put("students", sid, st);
+    await put(C(m, "students"), sid, st);
+    if (st.code !== oldCode) { await put("pcode", st.code, { m, sid }); if (oldCode) { const x = await get("pcode", oldCode); if (x && x.m === m && x.sid === sid) await del("pcode", oldCode); } }
     return { ok: true, sid, student: st };
   }
   // Teachers and the admin have the same rights.
-  if (a === "student.del") { if (isId(b.sid)) await del("students", b.sid); return { ok: true }; }
+  if (a === "student.del") {
+    if (isId(b.sid)) {
+      const st = await get(C(m, "students"), b.sid);
+      if (st && st.code) { const x = await get("pcode", st.code); if (x && x.m === m && x.sid === b.sid) await del("pcode", st.code); }
+      await del(C(m, "students"), b.sid);
+    }
+    return { ok: true };
+  }
   if (a === "group.put") {
     const gid = b.gid && isId(b.gid) ? b.gid : rid("g"); const d = b.data || {};
-    await put("groups", gid, { name: str(d.name, 80), kind: ["b", "d"].includes(d.kind) ? d.kind : "", teachers: Array.isArray(d.teachers) ? d.teachers.map((x: unknown) => str(x, 60)).filter(Boolean).slice(0, 20) : [] });
+    await put(C(m, "groups"), gid, { name: str(d.name, 80), kind: ["b", "d"].includes(d.kind) ? d.kind : "", teachers: Array.isArray(d.teachers) ? d.teachers.map((x: unknown) => str(x, 60)).filter(Boolean).slice(0, 20) : [] });
     return { ok: true, gid };
   }
   if (a === "books.put") {
     const list = (Array.isArray(b.list) ? b.list : []).slice(0, 20).map((x: any) => ({ name: str(x && x.name, 80), lessons: Math.max(0, Math.floor(Number(x && x.lessons)) || 0) }));
-    await put("settings", "books", { list });
+    await put(C(m, "settings"), "books", { list });
     return { ok: true };
   }
   return { error: "unknown" };
@@ -259,6 +365,7 @@ Deno.serve(async (req) => {
   try {
     const b = await req.json();
     const ip = (req.headers.get("x-forwarded-for") || "x").split(",")[0].trim().replace(/[^0-9a-fA-F.:]/g, "").slice(0, 45) || "x";
+    await migrate();
     return json(await handle(b, ip));
   } catch (e) {
     console.error(e);
