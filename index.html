@@ -644,7 +644,7 @@ body.tab #totop{right:18px}
 .rtile b{display:block;font-size:13.5px}.rtile small{display:block;font-size:12px;color:var(--muted)}
 .rpt{display:flex;flex-direction:column;gap:14px}
 @media (max-width:1000px){.dkpis,.rtiles{grid-template-columns:repeat(2,minmax(0,1fr))} .dmark{grid-template-columns:1fr} .dtwo,.rtwo{grid-template-columns:1fr} .dgrid{grid-template-columns:minmax(260px,40%) minmax(0,1fr)} .dhi{flex-basis:100%}}
-.egalink{text-align:center;margin-top:18px}.egalink button{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:8px}
+.egalink{text-align:center;margin-top:18px;color:var(--muted);font-size:13px}.egalink a{color:var(--muted);text-decoration:underline;padding:8px}.egalink button{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:8px}
 .madlist{display:flex;flex-direction:column}
 .madrow{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line,#eceef6)}.madrow:last-child{border-bottom:0}
 .madrow .mi{width:42px;height:42px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-weight:800;flex:none}
@@ -1520,7 +1520,7 @@ function viewLogin(){
   let h='<section class="hero"><div><h1>Хуш <em>келибсиз</em></h1><p>Электрон кундаликка кириш учун аввал кимлигингизни танланг, кейин кириш кодингизни ёзинг.</p></div></section>';
   if(!ui.lrole){
     const card=(r,icn,t,d)=>'<button type="button" class="rolecard" data-act="lrole" data-v="'+r+'"><span class="bub">'+ic(icn)+'</span><b>'+t+'</b><span>'+d+'</span></button>';
-    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат ва дарсларни белгилайман, талабаларни бошқараман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('hujra','cup','Умумий ҳолат','Мадраса бўйича рейтинг. Мадраса коди билан очилади')+'</div>'+(net?'<div class="egalink"><button type="button" data-act="lrole" data-v="ega">Мадрасалар эгаси</button></div>':'');
+    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат ва дарсларни белгилайман, талабаларни бошқараман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('hujra','cup','Умумий ҳолат','Мадраса бўйича рейтинг. Мадраса коди билан очилади')+'</div>'+(net?'<div class="egalink"><a href="privacy.html" target="_blank" rel="noopener">Махфийлик сиёсати</a> · <button type="button" data-act="lrole" data-v="ega">Мадрасалар эгаси</button></div>':'');
   }
   const r=ui.lrole, ts=teachers();
   h+='<section class="panel login"><h2>'+ic(r==='ustoz'?'book':r==='ota-ona'?'users':r==='hujra'?'cup':'chart')+(r==='hujra'?'Умумий ҳолатга кириш':RNAME[r]+' сифатида кириш')+'</h2><form data-form="login" class="stack" style="gap:14px">';
