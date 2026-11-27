@@ -644,6 +644,18 @@ body.tab #totop{right:18px}
 .rtile b{display:block;font-size:13.5px}.rtile small{display:block;font-size:12px;color:var(--muted)}
 .rpt{display:flex;flex-direction:column;gap:14px}
 @media (max-width:1000px){.dkpis,.rtiles{grid-template-columns:repeat(2,minmax(0,1fr))} .dmark{grid-template-columns:1fr} .dtwo,.rtwo{grid-template-columns:1fr} .dgrid{grid-template-columns:minmax(260px,40%) minmax(0,1fr)} .dhi{flex-basis:100%}}
+.egalink{text-align:center;margin-top:18px}.egalink button{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:8px}
+.madlist{display:flex;flex-direction:column}
+.madrow{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line,#eceef6)}.madrow:last-child{border-bottom:0}
+.madrow .mi{width:42px;height:42px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-weight:800;flex:none}
+.madrow.off .mi{opacity:.45}.madrow .mn{flex:1;min-width:0}.madrow .mn>b{display:block;font-size:15px}.madrow .mn small{color:var(--muted);font-size:12.5px;line-height:1.5}
+.msw{width:46px;height:28px;border-radius:14px;border:0;background:#c9cde0;position:relative;cursor:pointer;flex:none;margin-top:6px}.msw:after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}
+.msw.on{background:#1f9d63}.msw.on:after{left:21px}
+.mmore{border:0;background:var(--bg);border-radius:10px;width:34px;height:34px;cursor:pointer;flex:none;margin-top:3px;font-size:14px}
+.madadd{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.madadd input{flex:1;min-width:180px}
+.btn.gold{background:linear-gradient(90deg,#c9a24f,#e9cd86);color:#151a33;border:0}
+.madcodes{display:flex;gap:12px;margin:12px 0}.madcodes div{flex:1;background:var(--bg);border-radius:14px;padding:12px}.madcodes span{display:block;font-size:12.5px;color:var(--muted);font-weight:600}.madcodes b{font-size:30px;letter-spacing:6px}
+.tsega{margin-bottom:6px}
 .lay{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start}
 .lw{min-width:0;display:flex;flex-direction:column;gap:8px}
 .lw.s3{grid-column:span 3}.lw.s9{grid-column:span 9}.lw.s10{grid-column:span 10}.lw.s11{grid-column:span 11}.lw.s4{grid-column:span 4}.lw.s5{grid-column:span 5}.lw.s6{grid-column:span 6}.lw.s7{grid-column:span 7}.lw.s8{grid-column:span 8}.lw.s12{grid-column:span 12}
@@ -762,9 +774,9 @@ const DOW2=['Ду','Се','Чо','Па','Жу','Ша','Як'];
 const MON=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 const nice=s=>{const d=parse(s);return d.getDate()+'-'+MON[d.getMonth()]+', '+DOW[d.getDay()].toLowerCase()};
 let TODAY=iso(new Date());
-const ROLES=['ustoz','ota-ona','rahbar','hujra','hisobot'];
-const ALLOW={'rahbar':['ustoz','ota-ona','hujra','hisobot'],'ustoz':['ustoz','ota-ona','hujra','hisobot'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra']};
-const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Устоз','hujra':'Умумий ҳолат','hisobot':'Ҳисобот'};
+const ROLES=['ustoz','ota-ona','rahbar','hujra','hisobot','ega'];
+const ALLOW={'rahbar':['ustoz','ota-ona','hujra','hisobot'],'ustoz':['ustoz','ota-ona','hujra','hisobot'],'ota-ona':['ota-ona','hujra'],'hujra':['hujra'],'ega':['ega']};
+const RNAME={'ustoz':'Устоз','ota-ona':'Ота-она','rahbar':'Устоз','hujra':'Умумий ҳолат','hisobot':'Ҳисобот','ega':'Мадрасалар эгаси'};
 const ATT={p:['Келди','good'],l:['Кечикди','warn'],a:['Келмади','crit']};
 const LES={y:['Топширди','good'],h:['Чала топширди','warn'],n:['Топширмади','crit']};
 const KIND={b:'Ётоқда қолади',d:'Келиб кетади'};
@@ -788,8 +800,13 @@ let net=false, tok=null, refT=null, sendQ=Promise.resolve(), pendingWrites=0, pu
 const srv={students:{},groups:{}}; let lastSig='';
 try{tok=localStorage.getItem('kundalik-tok')||null;}catch(e){}
 function setTok(t){tok=t||null;try{if(tok) localStorage.setItem('kundalik-tok',tok); else localStorage.removeItem('kundalik-tok');}catch(e){}}
+let egaTok=null; try{egaTok=localStorage.getItem('kundalik-egatok')||null;}catch(e){}
+function setEgaTok(t){egaTok=t||null;try{if(egaTok) localStorage.setItem('kundalik-egatok',egaTok); else localStorage.removeItem('kundalik-egatok');}catch(e){}}
+let MCODE=''; try{MCODE=localStorage.getItem('kundalik-mc')||'';}catch(e){}
+function setMcode(c){MCODE=c||'';try{localStorage.setItem('kundalik-mc',MCODE);}catch(e){}}
+let MADS=null, newMad=null;
 async function call(b){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({t:tok},b))});return r.json();}
-function apiErr(e){toast(e==='auth'?'Бу амалга рухсатингиз йўқ. Чиқиб, қайта кириб кўринг.':e==='codeTaken'?'Бу код бошқа талабада бор ёки 4 рақамли эмас. Бошқа код танланг.':e==='wait'?'Кўп марта хато код киритилди. 15 дақиқадан кейин уриниб кўринг.':'Сақлаб бўлмади. Қайта уриниб кўринг.');}
+function apiErr(e){toast(e==='auth'?'Бу амалга рухсатингиз йўқ. Чиқиб, қайта кириб кўринг.':e==='codeTaken'?'Бу код бошқа талабада бор ёки 4–6 рақамли эмас. Бошқа код танланг.':e==='otherMadrasa'?'Бу фарзанд бошқа мадрасада. Уни қўшиш учун чиқиб, унинг коди билан алоҳида киринг.':e==='wait'?'Кўп марта хато код киритилди. 15 дақиқадан кейин уриниб кўринг.':'Сақлаб бўлмади. Қайта уриниб кўринг.');}
 let wseq=0;
 function send(b,after){pendingWrites++; wseq++; sendQ=sendQ.then(()=>call(b)).then(r=>{if(r&&r.error) apiErr(r.error); else if(after) after(r||{});}).catch(()=>{toast('Интернет йўқ. Сақланмади, қайта уриниб кўринг.');}).then(()=>{pendingWrites--; scheduleRefresh();}); return sendQ;}
 function scheduleRefresh(){clearTimeout(refT);refT=setTimeout(refresh,700);}
@@ -797,14 +814,21 @@ async function refresh(){
   if(!net) return;
   try{
     const q0=wseq;
+    if(auth&&auth.role==='ega'){
+      const L=await call({a:'madrasa.list'});
+      if(L&&L.error==='auth'){auth=null;setTok(null);setEgaTok(null);saveAuth();ui.lrole=null;loading=false;render(true);return;}
+      if(!L||L.error) throw new Error('list');
+      const sig='ega|'+JSON.stringify(L.list); const same=sig===lastSig; lastSig=sig; MADS=L.list; loading=false; dbError=false; if(!same) render(); return;
+    }
+    if(!auth||!tok){ loading=false; dbError=false; if(auth&&auth.role!=='hujra'){auth=null;saveAuth();} if(auth&&auth.role==='hujra'){auth=null;saveAuth();ui.lrole=null;} render(); return; }
     let r=await call({a:'state'});
-    if(r&&r.error==='auth'&&tok){setTok(null); if(auth&&auth.role!=='hujra'){auth=null;saveAuth();ui.lrole=null;} r=await call({a:'state'});}
+    if(r&&r.error==='auth'){setTok(null); auth=null; saveAuth(); ui.lrole=null; loading=false; dbError=false; render(true); return;}
     if(!r||r.error) throw new Error('state');
     if(pendingWrites>0||q0!==wseq){scheduleRefresh();return;}
-    const nS={groups:r.groups||{},students:r.students||{},days:r.days||{},settings:r.settings||{}}, sig=JSON.stringify(nS)+'|'+r.role+'|'+(r.sids||[]).join();
+    const nS={groups:r.groups||{},students:r.students||{},days:r.days||{},settings:r.settings||{},madrasa:r.madrasa||null}, sig=JSON.stringify(nS)+'|'+r.role+'|'+(r.sids||[]).join();
     const same=!loading&&!dbError&&sig===lastSig; lastSig=sig; S=nS;
     srv.students=Object.assign({},S.students); srv.groups=Object.assign({},S.groups);
-    if(auth&&auth.role!=='hujra'&&r.role!==auth.role){auth=null;setTok(null);saveAuth();ui.lrole=null;}
+    if(auth&&r.role!==auth.role){auth=null;setTok(null);saveAuth();ui.lrole=null;}
     if(auth&&auth.role==='ota-ona') auth.sids=r.sids||[];
     loading=false; dbError=false; if(!same) render();
   }catch(e){ if(!dbError){dbError=true;render();} clearTimeout(refT); refT=setTimeout(refresh,5000); }
@@ -883,7 +907,7 @@ function bookBar(st){ const b1=(st&&st.book)||0, b2=(st&&st.book2)||0, lo=b2?Mat
 function bookFields(pre){ const bs=books(), o=bs.map((b,i)=>'<option value="'+(i+1)+'">'+esc(b.name)+'</option>').join('');
   return '<div class="controls"><div class="field grow"><label for="'+pre+'-b">Биринчи китоб</label><select id="'+pre+'-b" name="book">'+o+'</select></div><div class="field" style="flex:0 1 120px"><label for="'+pre+'-l">Дарс</label><input type="number" id="'+pre+'-l" name="lesson" min="1" value="1" inputmode="numeric"></div><div class="field" style="flex:1 1 150px" hidden><label for="'+pre+'-s">Сура</label><select id="'+pre+'-s" name="sura">'+suraOpts(1)+'</select></div></div>'+
     '<div class="controls"><div class="field grow"><label for="'+pre+'-b2">Иккинчи китоб (бўлса)</label><select id="'+pre+'-b2" name="book2"><option value="">— йўқ —</option>'+o+'</select></div><div class="field" style="flex:0 1 120px"><label for="'+pre+'-l2">Дарс</label><input type="number" id="'+pre+'-l2" name="lesson2" min="1" value="1" inputmode="numeric"></div><div class="field" style="flex:1 1 150px" hidden><label for="'+pre+'-s2">Сура</label><select id="'+pre+'-s2" name="sura2">'+suraOpts(1)+'</select></div></div>'+
-    '<div class="field"><label for="'+pre+'-c">Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" id="'+pre+'-c" name="code" inputmode="numeric" maxlength="4" placeholder="бўш қолса, ўзи берилади"></div>' }
+    '<div class="field"><label for="'+pre+'-c">Ота-она учун кириш коди (4–6 рақам)</label><input class="codein" type="text" id="'+pre+'-c" name="code" inputmode="numeric" maxlength="6" placeholder="бўш қолса, ўзи берилади"></div>' }
 function syncSura(){document.querySelectorAll('form[data-form="student"]').forEach(f=>{[['book','lesson','sura'],['book2','lesson2','sura2']].forEach(x=>{const b=f.querySelector('[name="'+x[0]+'"]'), l=f.querySelector('[name="'+x[1]+'"]'), su=f.querySelector('[name="'+x[2]+'"]'); if(!b||!l||!su) return; const q=Number(b.value)===QB; l.closest('.field').hidden=q; su.closest('.field').hidden=!q;});});}
 document.addEventListener('change',e=>{if(e.target&&(e.target.name==='book'||e.target.name==='book2')) syncSura();});
 function setProg(sid,slot,book,lesson){ const st=S.students[sid]; if(!st) return; book=Math.max(1,Math.min(NB,book)); const max=book===QB?114:books()[book-1].lessons;
@@ -1101,7 +1125,7 @@ function groupTable(gid,admin){
     h+='<tr><td class="num">'+(i+1)+'</td><td><div class="cellname">'+avatar(st.name,'sm',st)+'<b>'+esc(st.name)+'</b></div></td>'+
       '<td class="num">'+(p.attAll?pill(pct(p.att,p.attAll)):'—')+'</td><td class="num">'+(p.lesAll?pill(pct(p.done,p.lesAll)):'—')+'</td>'+
       '<td class="num"><b>'+score(entriesOf(s,from))+'</b></td><td>'+esc(progText(st))+'</td>'+
-      (admin?'<td><input class="codein" type="text" inputmode="numeric" maxlength="4" id="cd-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'" aria-label="'+esc(st.name)+': ота-она коди"></td><td class="num">'+(ui.del===s?'<span class="chips" style="justify-content:flex-end"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ</button></span>':'<button class="btn small" type="button" data-act="del" data-sid="'+s+'">Ўчириш</button>')+'</td>':'')+'</tr>';});
+      (admin?'<td><input class="codein" type="text" inputmode="numeric" maxlength="6" id="cd-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'" aria-label="'+esc(st.name)+': ота-она коди"></td><td class="num">'+(ui.del===s?'<span class="chips" style="justify-content:flex-end"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ</button></span>':'<button class="btn small" type="button" data-act="del" data-sid="'+s+'">Ўчириш</button>')+'</td>':'')+'</tr>';});
   return h+'</tbody></table></div>';
 }
 
@@ -1121,7 +1145,7 @@ function tParts(s){
   P.qu=cst('qu')+opts(s,'qu',[['y','Топширди','g',ic('check')],['n','Топширмади','c',ic('x')]],rw.qu);
   P.extra=function(n){const N=i=>n?(n+i)+'. ':''; return '<div class="q"><span class="lab">'+N(0)+'Китоб ва дарс</span>'+progBlock(s,st,1)+(st.book2?progBlock(s,st,2):'<div><button type="button" class="btn small" data-act="sbook2-add" data-sid="'+s+'">'+ic('plus')+'Иккинчи китоб қўшиш</button></div>')+'</div>'+
 '<div class="q"><span class="lab">'+N(1)+'Имтиҳон<small style="font-weight:500;color:var(--muted)"> · '+(d=>{const x=parse(d);return x.getDate()+'-'+MON[x.getMonth()]})(workDate(s))+' кунига ёзилади</small></span>'+examBlock(s,st)+'</div>'+
-'<div class="q"><label class="lab" for="tc-'+s+'">'+N(2)+'Ота-она учун кириш коди (4 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="4" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
+'<div class="q"><label class="lab" for="tc-'+s+'">'+N(2)+'Ота-она учун кириш коди (4–6 рақам)</label><input class="codein" type="text" inputmode="numeric" maxlength="6" id="tc-'+s+'" data-act="scode" data-sid="'+s+'" value="'+esc(codeOf(s))+'"></div>'+
 '<div class="q"><label class="lab" for="tp-'+s+'">'+N(3)+'Расми</label><div class="chips" style="align-items:center"><input type="file" accept="image/*" id="tp-'+s+'" data-act="sphoto" data-sid="'+s+'" style="max-width:100%">'+(st.photo?'<button type="button" class="btn small" data-act="sphoto-del" data-sid="'+s+'">Расмни ўчириш</button>':'')+'</div></div>'+
 '<div class="q"><label class="lab" for="tn-'+s+'">'+N(4)+'Исм-фамилияни ўзгартириш</label><div class="chips" style="align-items:center"><input type="text" id="tn-'+s+'" value="'+esc(st.name)+'" style="flex:1;min-width:160px"><button type="button" class="btn small" data-act="sname" data-sid="'+s+'">'+ic('check')+'Сақлаш</button></div></div>'+
 '<div class="q"><span class="lab">'+N(5)+'Талабани ўчириш</span>'+(ui.del===s?'<div class="note crit" style="margin:0 0 8px">'+esc(st.name)+' рўйхатдан бутунлай ўчирилади. Уни қайтариб бўлмайди.</div><div class="chips"><button class="btn small danger" type="button" data-act="del-yes" data-sid="'+s+'">Ҳа, ўчириш</button><button class="btn small" type="button" data-act="del-no">Йўқ, қолсин</button></div>':'<div><button class="btn small danger" type="button" data-act="del" data-sid="'+s+'">'+ic('x')+'Талабани ўчириш</button></div>')+'</div>';};
@@ -1267,9 +1291,10 @@ function viewReport(){
   W.books='<div class="dcard"><div class="dch"><h2>Китоблар бўйича</h2><span class="rcnt mut">ўртача қаерга етишди</span></div>'+(bk||'<p class="empty">Китоб белгиланмаган.</p>')+'</div>';
   W.exams='<div class="dcard"><div class="dch"><h2>Имтиҳонлар</h2></div><div class="rex3"><div class="wa"><b>'+c3.prep+'</b><small>тайёрланяпти</small></div><div class="bl"><b>'+c3.pass+'</b><small>ўтди</small></div><div class="cr"><b>'+c3.fail+'</b><small>ўта олмади</small></div></div>'+
     (exS.length?exS.sort((a,b)=>ord[S.students[a].exam.s]-ord[S.students[b].exam.s]).slice(0,8).map(s=>{const st=S.students[s], x=exInfo(s); return '<div class="rexl">'+avatar(st.name,'sm',st)+'<span>'+esc(st.name)+'</span><em class="'+x[0]+'">'+x[1]+'</em></div>';}).join(''):'<p class="empty">Ҳозир ҳеч ким имтиҳонга тайёрланмаяпти.</p>')+'</div>';
-  const T=[['codes','key','Ота-она кодлари','кўриш ва ўзгартириш'],['group','users','Гуруҳ қўшиш','янги гуруҳ очиш'],['books','book','Китоблар',books().length+' та китоб, дарс сони'],['file','check','Файлга сақлаш','барча маълумот захираси']];
+  const T=[['mad','key','Мадраса кодлари','устоз коди, мадраса коди'],['codes','users','Ота-она кодлари','кўриш ва ўзгартириш'],['group','users','Гуруҳ қўшиш','янги гуруҳ очиш'],['books','book','Китоблар',books().length+' та китоб, дарс сони'],['file','check','Файлга сақлаш','барча маълумот захираси']];
   W.tiles='<div class="rtiles rnoprint">'+T.map(t=>'<button type="button" class="rtile'+(ui.rtile===t[0]?' on':'')+'" data-act="rtile" data-v="'+t[0]+'" aria-expanded="'+(ui.rtile===t[0])+'"><i>'+ic(t[1])+'</i><span><b>'+t[2]+'</b><small>'+t[3]+'</small></span></button>').join('')+'</div>';
   if(ui.rtile==='codes') W.tiles+='<div class="rnoprint">'+gl.map(g=>'<section class="panel"><h2>'+ic('key')+esc(S.groups[g].name)+'<small>ота-она кодини жадвалда ўзгартиринг</small></h2>'+groupTable(g,true)+'</section>').join('')+'</div>';
+  else if(ui.rtile==='mad') W.tiles+='<div class="rnoprint">'+admCodes()+'</div>';
   else if(ui.rtile==='group') W.tiles+='<div class="rnoprint">'+admGroup()+'</div>';
   else if(ui.rtile==='books') W.tiles+='<div class="rnoprint">'+admBooks()+'</div>';
   else if(ui.rtile==='file') W.tiles+='<div class="rnoprint">'+(admExport()||'<section class="panel"><p class="empty">Намуна режимида файлга сақлаб бўлмайди.</p></section>')+'</div>';
@@ -1340,6 +1365,34 @@ function gradeChart(days){
   return s+'</svg>';
 }
 const stateText=a=>a.state==='a'?'Дарсга келмади':!a.n?'Келди, дарслар ҳали белгиланмаган':a.n+' дарсдан '+a.y+' тасини топширди';
+/* ---------- owner: madrasas ---------- */
+const SITE_URL='https://davlatkhodzhaev-ui.github.io/kundalik/';
+function madMsg(x){return 'Электрон кундалик\nМадраса: '+x.name+'\nМадраса коди: '+x.code+'\nУстоз коди: '+x.teacher+'\n\nИлова: '+SITE_URL}
+function viewOwner(){
+  const L=MADS||[];
+  let h='<section class="hero"><div><h1>Мадраса<em>лар</em></h1><p>Янги мадраса очинг ва унинг икки кодини мадрасага беринг. Ҳар мадраса фақат ўз талабаларини кўради.</p></div></section>';
+  if(newMad){const x=L.find(m=>m.id===newMad); if(x) h+='<section class="panel madnew"><div class="note ok"><b>«'+esc(x.name)+'» тайёр.</b> Шу икки кодни мадрасага беринг.</div><div class="madcodes"><div><span>Мадраса коди</span><b>'+esc(x.code)+'</b></div><div><span>Устоз коди</span><b>'+esc(x.teacher)+'</b></div></div><div class="chips"><button class="btn" type="button" data-act="mcopy" data-mid="'+x.id+'">'+ic('check')+'Нусха олиш</button><a class="btn" target="_blank" rel="noopener" href="https://t.me/share/url?url='+encodeURIComponent(SITE_URL)+'&text='+encodeURIComponent(madMsg(x))+'">Telegram\'да юбориш</a><button class="btn" type="button" data-act="mnewx">Ёпиш</button></div></section>';}
+  h+='<section class="panel"><h2>'+ic('users')+'Мадрасалар<small>'+L.length+' та</small></h2>';
+  if(!MADS) h+='<p class="empty">Юкланмоқда…</p>';
+  h+='<div class="madlist">'+L.map(x=>'<div class="madrow'+(x.on?'':' off')+'"><div class="mi">'+esc(initials(x.name))+'</div><div class="mn"><b>'+esc(x.name)+'</b><small>Мадраса коди <b>'+esc(x.code)+'</b> · устоз коди <b>'+esc(x.teacher)+'</b> · '+x.n+' талаба'+(x.on?'':' · ўчирилган')+'</small>'+
+    (ui.mopen===x.id?'<div class="chips" style="margin-top:10px"><button class="btn small" type="button" data-act="menter" data-mid="'+x.id+'">Ичига кириш</button><button class="btn small" type="button" data-act="mcopy" data-mid="'+x.id+'">Кодлардан нусха</button><a class="btn small" target="_blank" rel="noopener" href="https://t.me/share/url?url='+encodeURIComponent(SITE_URL)+'&text='+encodeURIComponent(madMsg(x))+'">Telegram</a><button class="btn small" type="button" data-act="mregen" data-mid="'+x.id+'">Янги устоз коди</button></div>'+
+      '<form data-form="mren" data-mid="'+x.id+'" class="chips" style="margin-top:8px"><input type="text" name="name" value="'+esc(x.name)+'" maxlength="80" aria-label="Мадраса номи" style="flex:1;min-width:160px"><button class="btn small" type="submit">Номини сақлаш</button></form>':'')+
+    '</div><button type="button" class="msw'+(x.on?' on':'')+'" data-act="mon" data-mid="'+x.id+'" role="switch" aria-checked="'+x.on+'" aria-label="'+esc(x.name)+' ёқилган"></button><button type="button" class="mmore" data-act="mopen" data-mid="'+x.id+'" aria-expanded="'+(ui.mopen===x.id)+'" aria-label="Батафсил">'+(ui.mopen===x.id?'▾':'▸')+'</button></div>').join('')+'</div>';
+  h+='<form data-form="madd" class="madadd"><input type="text" name="name" maxlength="80" placeholder="Янги мадраса номи" aria-label="Янги мадраса номи" required><button class="btn gold" type="submit">'+ic('plus')+'Янги мадраса очиш</button></form></section>';
+  h+='<p class="hint">«Янги устоз коди» боссангиз, эски код ишламай қолади ва у мадраса устозлари янги код билан қайта киради. Ўчирилган мадраса кира олмайди, маълумотлари эса сақланиб қолади.</p>';
+  return h;
+}
+function initials(n){return String(n||'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+function admCodes(){
+  if(!net) return '<section class="panel"><h2>'+ic('key')+'Кириш кодлари</h2><div class="people"><div class="person"><div class="nm"><b>Устозлар</b><span>ҳамма устозга битта код</span></div><span class="chip code"><b>'+TEACHER_CODE+'</b></span></div><div class="person"><div class="nm"><b>Ота-оналар</b><span>ҳар бир талабанинг ўз коди</span></div></div></div></section>';
+  const md=S.madrasa||{};
+  return '<section class="panel"><h2>'+ic('key')+'Мадраса кодлари<small>'+esc(md.name||'')+'</small></h2><div class="people">'+
+    '<div class="person"><div class="nm"><b>Мадраса коди</b><span>устозлар кириши ва «Умумий ҳолат» учун</span></div><span class="chip code"><b>'+esc(md.code||'—')+'</b></span></div>'+
+    '<div class="person"><div class="nm"><b>Устоз коди</b><span>ҳамма устозга битта</span></div><span class="chip code"><b>'+esc(md.teacher||'—')+'</b></span></div>'+
+    '<div class="person"><div class="nm"><b>Ота-оналар</b><span>ҳар бир талабанинг ўз коди, жадвалларда</span></div></div></div>'+
+    '<form data-form="tcode" class="chips" style="margin-top:12px"><input class="codein" type="text" name="code" inputmode="numeric" maxlength="8" placeholder="масалан 4821" aria-label="Янги устоз коди" style="width:170px" required><button class="btn" type="submit">Устоз кодини ўзгартириш</button></form>'+
+    '<p class="hint" style="margin-top:8px">Кодни ўзгартирсангиз, бошқа устозлар янги код билан қайта киради.</p></section>';
+}
 function viewParent(){
   const ids=allowedStudents(); if(!ids.length||!S.students[ui.sid]) return emptyState();
   const st=S.students[ui.sid], g=S.groups[st.gid]||{};
@@ -1426,10 +1479,7 @@ function viewAdmin(){
   else{const mx=sc[top[0]]; h+='<div class="bars">'+top.map(s=>barRow(S.students[s].name,sc[s]/mx*100,sc[s]+' балл','gold',avatar(S.students[s].name,'sm',S.students[s]))).join('')+'</div>';}
   h+='</section></div>';
   h+='<div class="two"><section class="panel"><h2>'+ic('chart')+'Кунлик давомат<small>%, барча ўқувчилар</small></h2>'+dayColumns()+'</section>';
-  h+='<section class="panel"><h2>'+ic('key')+'Кириш кодлари</h2><div class="people">'+
-    '<div class="person"><div class="nm"><b>Устозлар</b><span>ҳамма устозга битта код</span></div><span class="chip code"><b>'+TEACHER_CODE+'</b></span></div>'+
-    '<div class="person"><div class="nm"><b>Ота-оналар</b><span>ҳар бир талабанинг ўз коди, юқоридаги жадвалларда</span></div></div>'+
-    '<div class="person"><div class="nm"><b>Умумий ҳолат</b><span>кодсиз очилади</span></div></div></div></section></div>';
+  h+=admCodes()+'</div>';
   h+=admGroup()+admBooks()+admExport();
   if(!net) h+='<section class="panel"><h2>Намуна маълумотлар</h2><p class="empty" style="margin-bottom:12px">Синов учун 30 та ўйлаб топилган ўқувчи (10 ётоқда, 20 келиб кетади) ва 3 устоз. Тугмани боссангиз, базадаги ҳозирги ҳамма ёзувлар ўчиб, ўрнига шу намуна ёзилади ва ўзгаришлар сақланадиган бўлади.</p>'+
     (ui.reset?'<div class="chips"><button class="btn danger" type="button" data-act="reset-yes">Ҳа, ҳаммасини ўчириб қайта юкла</button><button class="btn" type="button" data-act="reset-no">Йўқ</button></div>':'<button class="btn" type="button" data-act="reset"'+(busy?' disabled':'')+'>Намунани қайта юклаш</button>')+'</section>';
@@ -1470,11 +1520,13 @@ function viewLogin(){
   let h='<section class="hero"><div><h1>Хуш <em>келибсиз</em></h1><p>Электрон кундаликка кириш учун аввал кимлигингизни танланг, кейин кириш кодингизни ёзинг.</p></div></section>';
   if(!ui.lrole){
     const card=(r,icn,t,d)=>'<button type="button" class="rolecard" data-act="lrole" data-v="'+r+'"><span class="bub">'+ic(icn)+'</span><b>'+t+'</b><span>'+d+'</span></button>';
-    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат ва дарсларни белгилайман, талабаларни бошқараман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('hujra','cup','Умумий ҳолат','Барча ўқувчилар рейтинги ва баллари. Кодсиз очилади')+'</div>';
+    return h+'<div class="roles">'+card('ustoz','book','Устозман','Давомат ва дарсларни белгилайман, талабаларни бошқараман')+card('ota-ona','users','Ота-онаман','Фарзандим қандай ўқиётганини кўраман')+card('hujra','cup','Умумий ҳолат','Мадраса бўйича рейтинг. Мадраса коди билан очилади')+'</div>'+(net?'<div class="egalink"><button type="button" data-act="lrole" data-v="ega">Мадрасалар эгаси</button></div>':'');
   }
   const r=ui.lrole, ts=teachers();
   h+='<section class="panel login"><h2>'+ic(r==='ustoz'?'book':r==='ota-ona'?'users':r==='hujra'?'cup':'chart')+(r==='hujra'?'Умумий ҳолатга кириш':RNAME[r]+' сифатида кириш')+'</h2><form data-form="login" class="stack" style="gap:14px">';
-  h+='<div class="field"><label for="lg-c">'+(r==='ota-ona'?'Фарзандингиз коди':r==='hujra'?'Ҳолат коди':'Кириш коди')+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="4 та рақам" required></div>';
+  if(r==='ustoz'&&net) h+='<div class="field"><label for="lg-m">Мадраса коди</label><input type="text" id="lg-m" name="mcode" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="мадрасангиз коди" value="'+esc(MCODE)+'" required></div>';
+  const LB={'ota-ona':['Фарзандингиз коди',6,'устоз берган код'],'hujra':[net?'Мадраса коди':'Ҳолат коди',6,'мадраса коди'],'ega':['Эгаси коди',8,'8 та рақам'],'ustoz':[net?'Устоз коди':'Кириш коди',8,net?'устоз коди':'4 та рақам']}[r]||['Кириш коди',8,''];
+  h+='<div class="field"><label for="lg-c">'+LB[0]+'</label><input type="text" id="lg-c" name="code" inputmode="numeric" autocomplete="off" maxlength="'+LB[1]+'" placeholder="'+LB[2]+'"'+(r==='hujra'&&net?' value="'+esc(MCODE)+'"':'')+' required></div>';
   if(ui.lerr) h+='<div class="note crit">'+esc(ui.lerr)+'</div>';
   h+='<div class="chips"><button class="btn primary" type="submit">Кириш</button><button class="btn" type="button" data-act="lback">Орқага</button></div></form>'+
     (net?'':'<div class="hint"><b>Синов нусхаси учун.</b> Устозлар коди: '+TEACHER_CODE+' (ҳамма устозга битта). Ота-она кодлари «Устоз» бўлимидаги жадвалда кўринади.</div>')+'</section>';
@@ -1500,10 +1552,10 @@ function render(force){
   $('#mode').textContent=mode==='db'?'':'Намуна режими';
   $('#tabs').hidden=allow.length<2;
   const me=$('#me'); me.hidden=!auth;
-  me.innerHTML=auth?'<span class="chip">'+RNAME[auth.role]+(auth.teacher?' · '+esc(auth.teacher):'')+'</span>'+OUTBTN:'';
+  me.innerHTML=auth?(egaTok&&auth.role!=='ega'?'<button type="button" class="btn small" data-act="toega">← Мадрасалар</button>':'')+'<span class="chip">'+RNAME[auth.role]+(auth.teacher?' · '+esc(auth.teacher):'')+(S.madrasa&&auth.role!=='ega'?' · '+esc(S.madrasa.name):'')+'</span>'+OUTBTN:'';
   const tabOn=TAB&&!!auth, side=$('#tside'); document.body.classList.toggle('tab',tabOn); side.hidden=!tabOn;
   if(tabOn){ const SV={'ustoz':'<path d="M4 5.5h11a3 3 0 0 1 3 3V19H7a3 3 0 0 1-3-3z"/><path d="M8 10h6M8 13.5h4"/>','ota-ona':'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.7-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17.5" cy="10" r="2.3"/><path d="M16 14.6c2.4-.3 4 1.2 4.5 3.9"/>','hujra':'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.5 20h7"/>','hisobot':'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'}, NM={'ustoz':'Устоз','ota-ona':'Ота-она','hujra':'Ҳолат','hisobot':'Ҳисобот'};
-    side.innerHTML='<div class="tslogo" aria-hidden="true"></div>'+['ustoz','ota-ona','hujra','hisobot'].filter(r=>allow.indexOf(r)>=0).map(r=>'<a href="#'+r+'" class="'+(ui.role===r?'on':'')+'"'+(ui.role===r?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+SV[r]+'</svg><span>'+NM[r]+'</span></a>').join('')+'<span class="tssp"></span><button type="button" class="tsout" data-act="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></svg><span>Чиқиш</span></button>'; }
+    side.innerHTML='<div class="tslogo" aria-hidden="true"></div>'+['ustoz','ota-ona','hujra','hisobot'].filter(r=>allow.indexOf(r)>=0).map(r=>'<a href="#'+r+'" class="'+(ui.role===r?'on':'')+'"'+(ui.role===r?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+SV[r]+'</svg><span>'+NM[r]+'</span></a>').join('')+'<span class="tssp"></span>'+(egaTok&&auth.role!=='ega'?'<button type="button" class="tsout tsega" data-act="toega"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span>Мадраса­лар</span></button>':'')+'<button type="button" class="tsout" data-act="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></svg><span>Чиқиш</span></button>'; }
   let h='';
   if(mode==='local') h+='<div class="note"><b>Намуна маълумотлар.</b> Исмлар ва баҳолар ўйлаб топилган. Бу кўринишда ўзгаришлар сақланмайди.</div>';
   if(dbError) h+='<div class="note crit"><b>Интернетга уланиб бўлмади.</b> '+(net?'Ҳозир белгилаб бўлмайди. Интернет қайтиши билан илова ўзи уланади.':'Саҳифани кейинроқ қайта очинг.')+'</div>';
@@ -1513,6 +1565,7 @@ function render(force){
   if(!auth) h+=viewLogin();
   else if(ui.role==='ustoz'||(ui.role==='hisobot'&&!TAB)) h+=TAB?viewTeacherTab():viewTeacher()+viewAdmin();
   else if(ui.role==='hisobot') h+=viewReport();
+  else if(ui.role==='ega') h+=viewOwner();
   else if(ui.role==='ota-ona') h+=viewParent();
   else if(ui.role==='hujra') h+=viewRoom();
   else h+=viewAdmin();
@@ -1639,6 +1692,13 @@ document.addEventListener('click',e=>{
   else if(act==='rp'){ui.rp=b.dataset.v;render(true);}
   else if(act==='rg'){ui.rg=b.dataset.v;render(true);}
   else if(act==='rt'){ui.rt=b.dataset.v;render(true);}
+  else if(act==='toega'){ if(egaTok){setTok(egaTok); auth={role:'ega'}; saveAuth(); ui.role='ega'; S={groups:{},students:{},days:{},settings:{}}; lastSig=''; loading=true; location.hash='ega'; render(true); refresh();} }
+  else if(act==='mopen'){ui.mopen=ui.mopen===b.dataset.mid?null:b.dataset.mid;render(true);}
+  else if(act==='mnewx'){newMad=null;render(true);}
+  else if(act==='mcopy'){const x=(MADS||[]).find(m=>m.id===b.dataset.mid); if(x){try{navigator.clipboard.writeText(madMsg(x)).then(()=>toast('Кодлар нусхаланди.'),()=>toast('Нусха олинмади.'));}catch(e){toast('Нусха олинмади.');}}}
+  else if(act==='mon'){const x=(MADS||[]).find(m=>m.id===b.dataset.mid); if(x){x.on=!x.on; render(true); send({a:'madrasa.put',mid:x.id,on:x.on},()=>toast(x.on?'Мадраса ёқилди.':'Мадраса ўчирилди.'));}}
+  else if(act==='mregen'){send({a:'madrasa.put',mid:b.dataset.mid,regen:'teacher'},()=>toast('Янги устоз коди берилди.'));}
+  else if(act==='menter'){call({a:'madrasa.enter',mid:b.dataset.mid}).then(r=>{ if(!r||r.error){apiErr(r&&r.error);return;} if(!egaTok) setEgaTok(tok); setTok(r.token); auth={role:'ustoz',sids:[]}; saveAuth(); ui.role='ustoz'; S={groups:{},students:{},days:{},settings:{}}; lastSig=''; loading=true; location.hash='ustoz'; render(true); refresh(); }).catch(()=>toast('Интернет йўқ.'));}
   else if(act==='rtile'){ui.rtile=ui.rtile===b.dataset.v?null:b.dataset.v;render(true);}
   else if(act==='rprint'){reportPrint();}
   else if(act==='topen'){ui.topen=ui.topen===sid?null:sid;refocus='[data-act="topen"][data-sid="'+sid+'"]';render(true);}
@@ -1646,8 +1706,8 @@ document.addEventListener('click',e=>{
   else if(act==='ropen'){ui.open=ui.open===sid?null:sid;refocus='[data-act="ropen"][data-sid="'+sid+'"]';render(true);}
   else if(act==='rf'){ui.rf=b.dataset.v;refocus='[data-act="rf"][data-v="'+ui.rf+'"]';render(true);}
   else if(act==='lrole'){
-    if(b.dataset.v==='hujra'){auth={role:'hujra'};saveAuth();ui.role='hujra';ui.lrole=null;ui.lerr='';render(true);}
-    else{ui.lrole=b.dataset.v;ui.lerr='';refocus='#lg-c';render(true);}
+    if(b.dataset.v==='hujra'&&!net){auth={role:'hujra'};saveAuth();ui.role='hujra';ui.lrole=null;ui.lerr='';render(true);}
+    else{ui.lrole=b.dataset.v;ui.lerr='';refocus=(b.dataset.v==='ustoz'&&net&&!MCODE)?'#lg-m':'#lg-c';render(true);}
   }
   else if(act==='lback'){ui.lrole=null;ui.lerr='';render(true);}
   else if(act==='logout'){ if(auth&&auth.role==='hujra') doLogout(); else {ui.out=true;render(true);} }
@@ -1677,7 +1737,7 @@ document.addEventListener('change',e=>{
   else if(act==='note'){const sid=t.dataset.sid,v=t.value.trim();editDay(ui.gid,ui.date,curTeacher(),d=>{const r=Object.assign({},d.rows[sid]); if(v) r.n=v; else delete r.n; delete r.seen; d.rows[sid]=r;});}
 });
 function doLogout(){
-  const fin=()=>{auth=null;setTok(null);pushOn=null;saveAuth();ui.out=false;ui.lrole=null;ui.lerr='';render(true);};
+  const fin=()=>{auth=null;setTok(null);setEgaTok(null);MADS=null;newMad=null;lastSig='';pushOn=null;saveAuth();ui.out=false;ui.lrole=null;ui.lerr='';render(true);};
   if(net&&auth&&auth.role==='ota-ona'&&swOk){ Promise.race([(async()=>{const reg=await navigator.serviceWorker.getRegistration(), sub=reg&&await reg.pushManager.getSubscription(); if(sub){await call({a:'push.unsub',endpoint:sub.endpoint}); await sub.unsubscribe();}})(),new Promise(r=>setTimeout(r,3000))]).catch(()=>{}).then(fin); }
   else fin();
 }
@@ -1702,8 +1762,12 @@ function submitForm(e){
     const code=String(fd.get('code')||'').trim();
     if(net){
       const add=f.dataset.form==='addchild';
-      call(add?{a:'addchild',code:code}:{a:'login',role:ui.lrole,code:code}).then(r=>{
-        if(!r||r.error){const m=r&&r.error==='wait'?'Кўп марта хато код киритилди. 15 дақиқадан кейин уриниб кўринг.':'Код нотўғри. Қайта текшириб ёзинг ёки кодни устоздан сўранг.'; if(add) toast(m); else ui.lerr=m; render(true); return;}
+      const mcode=String(fd.get('mcode')||'').trim(), lr=ui.lrole;
+      call(add?{a:'addchild',code:code}:{a:'login',role:lr,code:code,mcode:mcode}).then(r=>{
+        if(!r||r.error){const m=r&&r.error==='wait'?'Кўп марта хато код киритилди. 15 дақиқадан кейин уриниб кўринг.':r&&r.error==='otherMadrasa'?'Бу фарзанд бошқа мадрасада. Уни қўшиш учун чиқиб, унинг коди билан алоҳида киринг.':lr==='ustoz'?'Мадраса коди ёки устоз коди нотўғри. Қайта текшириб ёзинг.':lr==='hujra'?'Мадраса коди нотўғри. Кодни устоздан сўранг.':'Код нотўғри. Қайта текшириб ёзинг ёки кодни устоздан сўранг.'; if(add) toast(m); else ui.lerr=m; render(true); return;}
+        if(!add&&lr==='ustoz') setMcode(mcode); if(!add&&lr==='hujra') setMcode(code);
+        if(r.role==='ega') setEgaTok(r.token); else if(!add) setEgaTok(null);
+        if(!add){lastSig=''; S={groups:{},students:{},days:{},settings:{}}; loading=true;}
         setTok(r.token); auth={role:r.role,sids:r.sids||[]}; saveAuth(); ui.role=r.role; ui.lrole=null; ui.lerr='';
         if(add){ui.sid=(r.sids||[]).slice(-1)[0]; toast('Фарзанд қўшилди.');}
         skipKeep=true; render(true); skipKeep=false; refresh().then(()=>{if(r.role==='ota-ona') pushCheck();});
@@ -1725,6 +1789,9 @@ function submitForm(e){
     else ui.lerr='Код нотўғри. Қайта текшириб ёзинг ёки кодни устоздан сўранг.';
     render(true); return;
   }
+  if(f.dataset.form==='madd'){const nm=String(fd.get('name')||'').trim(); if(!nm) return; send({a:'madrasa.add',name:nm},r=>{newMad=r.id; f.reset(); toast('Мадраса очилди.');}); return;}
+  if(f.dataset.form==='mren'){const nm=String(fd.get('name')||'').trim(); if(!nm) return; send({a:'madrasa.put',mid:f.dataset.mid,name:nm},()=>toast('Номи сақланди.')); return;}
+  if(f.dataset.form==='tcode'){const c=String(fd.get('code')||'').trim(); if(!/^\d{4,8}$/.test(c)){toast('Устоз коди 4–8 та рақам бўлсин.');return;} send({a:'teacher.code',code:c},r=>{if(r.token) setTok(r.token); f.reset(); toast('Устоз коди ўзгарди: '+c+'. Бошқа устозларга янги кодни айтинг.');}); return;}
   if(f.dataset.form==='books'){const list=[];for(let i=0;i<NB;i++) list.push({name:String(fd.get('bn'+i)||'').trim(),lessons:Math.max(0,Number(fd.get('bl'+i))||0)}); if(!S.settings) S.settings={}; putDoc('settings','books',{list:list}); toast('Китоблар сақланди.'); return;}
   const name=String(fd.get('name')||'').trim(); if(!name) return;
   if(f.dataset.form==='student'){const nid=newId('s'), cd=String(fd.get('code')||'').trim();
@@ -1777,7 +1844,7 @@ if('serviceWorker' in navigator&&/github\.io$/.test(location.hostname)){try{navi
 if(!(window.claude&&typeof window.claude.use==='function')){
   /* Outside Claude the app always works with the real database: sample data is never shown here. */
   net=true; mode='db'; loading=true; S={groups:{},students:{},days:{},settings:{}};
-  if(auth&&auth.role!=='hujra'&&!tok){auth=null;saveAuth();}
+  if(auth&&!tok){auth=null;saveAuth();}
   render(true);
   refresh().then(()=>{if(auth&&auth.role==='ota-ona') pushCheck();});
   setInterval(()=>{if(!document.hidden) refresh();},20000);
